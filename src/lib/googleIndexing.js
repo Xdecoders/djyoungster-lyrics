@@ -6,28 +6,55 @@ import { google } from 'googleapis'
  *
  * Setup:
  * 1. Create a Google Cloud project
- * 2. Enable "Web Search Indexing API"
+ * 2. Enable "Web Search Indexing API" (also called "Indexing API")
  * 3. Create a service account and download JSON key
  * 4. Add service account email as owner in Search Console
  * 5. Set GOOGLE_SERVICE_ACCOUNT_EMAIL and GOOGLE_PRIVATE_KEY in .env
+ *
+ * IMPORTANT: For GOOGLE_PRIVATE_KEY in .env:
+ * - Copy the entire private_key value from the JSON file including -----BEGIN/END-----
+ * - Keep the \n characters as-is (don't convert to actual newlines in .env)
+ * - Wrap in double quotes in .env file
  */
 
-const getAuthClient = () => {
-  const credentials = {
-    client_email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n')
-  }
+const getAuthClient = async () => {
+  const clientEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL
+  let privateKey = process.env.GOOGLE_PRIVATE_KEY
 
-  if (!credentials.client_email || !credentials.private_key) {
+  if (!clientEmail || !privateKey) {
+    console.log('[GoogleIndexing] Missing credentials - GOOGLE_SERVICE_ACCOUNT_EMAIL or GOOGLE_PRIVATE_KEY not set')
     return null
   }
 
-  return new google.auth.JWT(
-    credentials.client_email,
-    null,
-    credentials.private_key,
-    ['https://www.googleapis.com/auth/indexing']
-  )
+  // Handle different ways the private key might be stored
+  // Replace literal \n with actual newlines
+  privateKey = privateKey.replace(/\\n/g, '\n')
+
+  // Remove surrounding quotes if present
+  if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+    privateKey = privateKey.slice(1, -1)
+  }
+
+  console.log('[GoogleIndexing] Auth client email:', clientEmail)
+  console.log('[GoogleIndexing] Private key starts with:', privateKey.substring(0, 30))
+
+  try {
+    const auth = new google.auth.JWT(
+      clientEmail,
+      null,
+      privateKey,
+      ['https://www.googleapis.com/auth/indexing']
+    )
+
+    // Authorize to verify credentials work
+    await auth.authorize()
+    console.log('[GoogleIndexing] Auth successful')
+
+    return auth
+  } catch (error) {
+    console.error('[GoogleIndexing] Auth failed:', error.message)
+    return null
+  }
 }
 
 /**
@@ -37,10 +64,10 @@ const getAuthClient = () => {
  */
 export async function submitUrlForIndexing(url, type = 'URL_UPDATED') {
   try {
-    const auth = getAuthClient()
+    const auth = await getAuthClient()
 
     if (!auth) {
-      console.log('Google Indexing API not configured - skipping indexing')
+      console.log('[GoogleIndexing] API not configured - skipping indexing for:', url)
       return { success: false, message: 'Google Indexing API not configured' }
     }
 
@@ -93,7 +120,7 @@ export async function submitMultipleUrlsForIndexing(urls) {
  */
 export async function getIndexingStatus(url) {
   try {
-    const auth = getAuthClient()
+    const auth = await getAuthClient()
 
     if (!auth) {
       return { success: false, message: 'Google Indexing API not configured' }
