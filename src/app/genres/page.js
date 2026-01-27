@@ -1,0 +1,31 @@
+import GenresPageClient from './GenresPageClient'
+import { getSeoSettings } from '@/lib/seo'
+
+export async function generateMetadata() {
+  const seo = await getSeoSettings('genres')
+
+  return {
+    title: seo.metaTitle,
+    description: seo.metaDescription,
+    keywords: seo.metaKeywords,
+    openGraph: {
+      title: seo.ogTitle,
+      description: seo.ogDescription,
+      url: 'https://djyoungster.com/genres',
+      siteName: 'DJYoungster',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seo.ogTitle,
+      description: seo.ogDescription,
+    },
+    alternates: {
+      canonical: 'https://djyoungster.com/genres',
+    },
+  }
+}
+
+export default function GenresPage() {
+  return <GenresPageClient />
+}

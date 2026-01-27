@@ -1,0 +1,463 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
+import Link from 'next/link'
+import {
+  FiMusic,
+  FiDisc,
+  FiUser,
+  FiCalendar,
+  FiClock,
+  FiEye,
+  FiPlay,
+  FiShare2,
+  FiChevronRight,
+  FiX,
+  FiCopy,
+  FiCheck,
+  FiTwitter
+} from 'react-icons/fi'
+import { FaWhatsapp, FaFacebook } from 'react-icons/fa'
+
+function ShareModal({ isOpen, onClose, album }) {
+  const [copied, setCopied] = useState(false)
+
+  if (!isOpen) return null
+
+  const url = typeof window !== 'undefined' ? window.location.href : ''
+  const shareText = `Check out "${album.title}" by ${album.artist?.name} on DJYoungster!`
+
+  const shareLinks = [
+    {
+      name: 'WhatsApp',
+      icon: FaWhatsapp,
+      color: 'bg-green-500 hover:bg-green-600',
+      url: `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${url}`)}`
+    },
+    {
+      name: 'Twitter',
+      icon: FiTwitter,
+      color: 'bg-sky-500 hover:bg-sky-600',
+      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`
+    },
+    {
+      name: 'Facebook',
+      icon: FaFacebook,
+      color: 'bg-blue-600 hover:bg-blue-700',
+      url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
+    },
+  ]
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(url)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-6">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
+        >
+          <FiX className="w-5 h-5" />
+        </button>
+
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Share this album</h3>
+
+        <div className="flex justify-center gap-4 mb-6">
+          {shareLinks.map((link) => (
+            <a
+              key={link.name}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`p-3 rounded-full text-white ${link.color} transition-all hover:scale-110`}
+              title={link.name}
+            >
+              <link.icon className="w-6 h-6" />
+            </a>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 p-3 bg-slate-50 dark:bg-slate-700 rounded-xl">
+          <input
+            type="text"
+            value={url}
+            readOnly
+            className="flex-1 bg-transparent text-sm text-slate-600 dark:text-slate-300 outline-none truncate"
+          />
+          <button
+            onClick={copyToClipboard}
+            className="px-3 py-1.5 bg-primary text-white text-sm rounded-lg hover:bg-emerald-600 transition flex items-center gap-1"
+          >
+            {copied ? <FiCheck className="w-4 h-4" /> : <FiCopy className="w-4 h-4" />}
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function SongRow({ song, index }) {
+  const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+
+  const formatViews = (views) => {
+    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'
+    if (views >= 1000) return (views / 1000).toFixed(1) + 'K'
+    return views?.toString() || '0'
+  }
+
+  return (
+    <Link
+      href={`/song/${song.slug}`}
+      className="flex items-center gap-4 p-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition group"
+    >
+      <span className="w-8 text-center text-slate-400 dark:text-slate-500 font-medium group-hover:hidden">
+        {index + 1}
+      </span>
+      <span className="w-8 text-center hidden group-hover:block">
+        <FiPlay className="w-5 h-5 text-primary mx-auto" />
+      </span>
+
+      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+        {song.coverImage ? (
+          <img src={song.coverImage} alt={song.title} className="w-full h-full object-cover" />
+        ) : (
+          <FiMusic className="w-5 h-5 text-primary" />
+        )}
+      </div>
+
+      <div className="flex-1 min-w-0">
+        <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">
+          {song.title}
+        </h3>
+        <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{artistNames}</p>
+      </div>
+
+      {song.duration && (
+        <span className="text-sm text-slate-400 dark:text-slate-500 hidden sm:block">{song.duration}</span>
+      )}
+
+      <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500">
+        <FiEye className="w-4 h-4" />
+        <span className="text-sm">{formatViews(song.views)}</span>
+      </div>
+    </Link>
+  )
+}
+
+function AlbumCard({ album }) {
+  return (
+    <Link href={`/album/${album.slug}`} className="group">
+      <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition">
+        {album.coverImage ? (
+          <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+        ) : (
+          <FiDisc className="w-12 h-12 text-emerald-400" />
+        )}
+      </div>
+      <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">{album.title}</h3>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{album._count?.songs || 0} songs</p>
+    </Link>
+  )
+}
+
+export default function AlbumPageClient() {
+  const params = useParams()
+  const [album, setAlbum] = useState(null)
+  const [moreAlbums, setMoreAlbums] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [showShareModal, setShowShareModal] = useState(false)
+
+  useEffect(() => {
+    fetchAlbum()
+  }, [params.slug])
+
+  const fetchAlbum = async () => {
+    try {
+      setLoading(true)
+      const res = await fetch(`/api/public/albums/${params.slug}`)
+
+      if (!res.ok) {
+        if (res.status === 404) {
+          setError('Album not found')
+        } else {
+          setError('Failed to load album')
+        }
+        return
+      }
+
+      const data = await res.json()
+      setAlbum(data.album)
+      setMoreAlbums(data.moreAlbums || [])
+    } catch (err) {
+      console.error('Error fetching album:', err)
+      setError('Failed to load album')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const formatViews = (views) => {
+    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'
+    if (views >= 1000) return (views / 1000).toFixed(1) + 'K'
+    return views?.toString() || '0'
+  }
+
+  const formatDate = (dateString) => {
+    if (!dateString) return null
+    const date = new Date(dateString)
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-500 dark:text-slate-400">Loading album...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FiDisc className="w-10 h-10 text-rose-400" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Album Not Found</h1>
+          <p className="text-slate-500 dark:text-slate-400 mb-6">The album you're looking for doesn't exist.</p>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition"
+          >
+            Go Home
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+      {/* Breadcrumb */}
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+        <ol className="flex items-center gap-2 text-sm">
+          <li>
+            <Link href="/" className="text-slate-500 dark:text-slate-400 hover:text-primary transition">Home</Link>
+          </li>
+          <FiChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+          <li>
+            <Link href="/albums" className="text-slate-500 dark:text-slate-400 hover:text-primary transition">Albums</Link>
+          </li>
+          <FiChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+          <li className="text-slate-800 dark:text-white font-medium truncate">{album.title}</li>
+        </ol>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        {/* Album Header */}
+        <div className="relative rounded-2xl overflow-hidden mb-8">
+          {/* Background Image with Blur */}
+          <div className="absolute inset-0">
+            {album.coverImage ? (
+              <img
+                src={album.coverImage}
+                alt=""
+                className="w-full h-full object-cover scale-110 blur-xl"
+              />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-r from-slate-800 to-slate-900" />
+            )}
+            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+          </div>
+
+          {/* Content */}
+          <div className="relative z-10 p-6 sm:p-8">
+            <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
+              {/* Cover Image */}
+              <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl bg-white/10 flex items-center justify-center overflow-hidden shadow-2xl ring-1 ring-white/20 mx-auto sm:mx-0 flex-shrink-0">
+                {album.coverImage ? (
+                  <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+                ) : (
+                  <FiDisc className="w-20 h-20 text-white/80" />
+                )}
+              </div>
+
+              {/* Album Info */}
+              <div className="flex-1 text-center sm:text-left">
+                <p className="text-sm text-white/60 font-medium mb-2">Album</p>
+                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 drop-shadow-lg">{album.title}</h1>
+
+                {/* Artist */}
+                <Link
+                  href={`/artist/${album.artist?.slug}`}
+                  className="inline-flex items-center gap-3 mb-4 group"
+                >
+                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden ring-1 ring-white/20">
+                    {album.artist?.imageUrl ? (
+                      <img src={album.artist.imageUrl} alt={album.artist.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <FiUser className="w-5 h-5 text-white/80" />
+                    )}
+                  </div>
+                  <span className="font-medium text-white/80 group-hover:text-white transition">
+                    {album.artist?.name}
+                  </span>
+                </Link>
+
+                {/* Stats */}
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-white/70 mb-6">
+                  {album.releaseDate && (
+                    <span className="flex items-center gap-1.5">
+                      <FiCalendar className="w-4 h-4" />
+                      {formatDate(album.releaseDate)}
+                    </span>
+                  )}
+                  <span className="flex items-center gap-1.5">
+                    <FiMusic className="w-4 h-4" />
+                    {album.totalSongs} songs
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <FiEye className="w-4 h-4" />
+                    {formatViews(album.totalViews)} views
+                  </span>
+                </div>
+
+                {/* Label */}
+                {album.label && (
+                  <p className="text-sm text-white/60 mb-4">
+                    <span className="font-medium">Label:</span> {album.label}
+                  </p>
+                )}
+
+                {/* Actions */}
+                <div className="flex items-center justify-center sm:justify-start gap-3">
+                  <button
+                    onClick={() => setShowShareModal(true)}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-white/10 text-white/80 rounded-xl font-medium hover:bg-white/20 transition"
+                  >
+                    <FiShare2 className="w-4 h-4" />
+                    Share
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Tracklist */}
+          <div className="lg:col-span-2">
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
+              <div className="p-5 border-b border-slate-100 dark:border-slate-700">
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+                  <FiMusic className="w-5 h-5 text-primary" />
+                  Tracklist
+                </h2>
+              </div>
+              <div className="divide-y divide-slate-50 dark:divide-slate-700">
+                {album.songs?.length > 0 ? (
+                  album.songs.map((song, index) => (
+                    <SongRow key={song.id} song={song} index={index} />
+                  ))
+                ) : (
+                  <div className="p-12 text-center">
+                    <FiMusic className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                    <p className="text-slate-500 dark:text-slate-400">No songs in this album yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="lg:col-span-1">
+            {/* Album Info Card */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+              <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Album Info</h3>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
+                    <FiUser className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">Artist</p>
+                    <Link href={`/artist/${album.artist?.slug}`} className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary">
+                      {album.artist?.name}
+                    </Link>
+                  </div>
+                </div>
+                {album.releaseDate && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
+                      <FiCalendar className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">Release Date</p>
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{formatDate(album.releaseDate)}</p>
+                    </div>
+                  </div>
+                )}
+                {album.label && (
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
+                      <FiDisc className="w-4 h-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-400 dark:text-slate-500">Label</p>
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{album.label}</p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
+                    <FiMusic className="w-4 h-4 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400 dark:text-slate-500">Total Songs</p>
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{album.totalSongs}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* More from Artist */}
+            {moreAlbums.length > 0 && (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
+                <h3 className="font-semibold text-slate-800 dark:text-white mb-4">More from {album.artist?.name}</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {moreAlbums.slice(0, 4).map((alb) => (
+                    <AlbumCard key={alb.id} album={alb} />
+                  ))}
+                </div>
+                <Link
+                  href={`/artist/${album.artist?.slug}`}
+                  className="mt-4 flex items-center justify-center gap-2 text-sm text-primary hover:text-emerald-600 font-medium"
+                >
+                  View All Albums
+                  <FiChevronRight className="w-4 h-4" />
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <ShareModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        album={album}
+      />
+    </div>
+  )
+}

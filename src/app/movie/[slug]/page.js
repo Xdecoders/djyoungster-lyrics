@@ -1,0 +1,100 @@
+import { prisma } from '@/lib/prisma'
+import MoviePageClient from './MoviePageClient'
+
+export async function generateMetadata({ params }) {
+  const { slug } = await params
+
+  try {
+    const movie = await prisma.movie.findUnique({
+      where: { slug },
+      include: {
+        _count: { select: { songs: true } },
+        songs: {
+          orderBy: { createdAt: 'desc' },
+          take: 1,
+          select: { coverImage: true }
+        }
+      }
+    })
+
+    if (!movie) {
+      return {
+        title: 'Movie Not Found | DJYoungster',
+        description: 'The movie you are looking for does not exist.',
+      }
+    }
+
+    const title = movie.metaTitle || `${movie.title}${movie.year ? ` (${movie.year})` : ''} Songs & Lyrics | DJYoungster`
+    const description = movie.metaDescription ||
+      `Listen to all ${movie._count.songs} songs from ${movie.title}${movie.year ? ` (${movie.year})` : ''} with lyrics. ${movie.director ? `Directed by ${movie.director}.` : ''} Find complete movie soundtrack on DJYoungster.`
+
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+    const pageUrl = `${siteUrl}/movie/${slug}`
+    // Use latest song's cover image or posterUrl or default
+    const latestSongImage = movie.songs?.[0]?.coverImage
+    const imageUrl = movie.posterUrl || latestSongImage || `${siteUrl}/og-image.jpg`
+
+    return {
+      title,
+      description,
+      keywords: [
+        movie.title,
+        `${movie.title} songs`,
+        `${movie.title} lyrics`,
+        `${movie.title} soundtrack`,
+        `${movie.title} movie songs`,
+        movie.director,
+        movie.year?.toString(),
+        'movie songs',
+        'soundtrack',
+        'lyrics',
+        'music',
+      ].filter(Boolean).join(', '),
+      openGraph: {
+        title,
+        description,
+        url: pageUrl,
+        siteName: 'DJYoungster',
+        type: 'video.movie',
+        images: [
+          {
+            url: imageUrl,
+            width: 1200,
+            height: 630,
+            alt: `${movie.title} Soundtrack`,
+          },
+        ],
+        locale: 'en_US',
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title,
+        description,
+        images: [imageUrl],
+        creator: '@djyoungster',
+        site: '@djyoungster',
+      },
+      alternates: {
+        canonical: pageUrl,
+      },
+      robots: {
+        index: true,
+        follow: true,
+      },
+      other: {
+        'video:director': movie.director || undefined,
+        'video:release_date': movie.year?.toString() || undefined,
+      },
+    }
+  } catch (error) {
+    console.error('Error generating metadata:', error)
+    return {
+      title: 'Movie Soundtrack | DJYoungster',
+      description: 'Find movie songs and lyrics on DJYoungster.',
+    }
+  }
+}
+
+export default function MoviePage() {
+  return <MoviePageClient />
+}

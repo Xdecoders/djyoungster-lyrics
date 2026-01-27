@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Song {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String   @unique
+  lyrics          String   @db.Text
+  lyricsRomanized String?  @db.Text  // Transliterated lyrics (Roman script)
+  lyricsTranslated String? @db.Text  // English translation
+  lyricsHindi     String?  @db.Text  // Hindi version of lyrics
+  lyricsPunjabi   String?  @db.Text  // Punjabi version of lyrics
+  meaning         String?  @db.Text  // Song meaning/interpretation
+  duration        String?
+  language        String?
+  releaseYear     Int?
+  verified        Boolean  @default(false)
+  views           Int      @default(0)
+  likes           Int      @default(0)
+  status          String   @default("published")
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  coverImage      String?
+  youtubeUrl      String?
+  spotifyUrl      String?
+  appleMusicUrl   String?
+
+  // Contributors
+  lyricist        String?  // Writer/Lyricist
+  composer        String?  // Music Composer/Director
+  singers         String?  // Additional singers (comma separated)
+  label           String?  // Music Label/Copyright Company
+  starring        String?  // Models/Starring (comma separated)
+  producer        String?  // Music Producer
+  director        String?  // Music Video Director
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  album      Album?         @relation(fields: [albumId], references: [id])
+  albumId    String?
+  movie      Movie?         @relation(fields: [movieId], references: [id])
+  movieId    String?
+  artists    SongArtist[]
+  genres     SongGenre[]
+  categories SongCategory[]
+  songLikes  SongLike[]
+  reports    Report[]
+
+  @@index([slug])
+  @@index([title])
+}
+
+model SongLike {
+  id        String   @id @default(uuid())
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId    String
+  ipAddress String
+  createdAt DateTime @default(now())
+
+  @@unique([songId, ipAddress])
+  @@index([songId])
+  @@index([ipAddress])
+}
+
+model Artist {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  bio             String?  @db.Text
+  imageUrl        String?
+  country         String?
+  socialLinks     String?  @db.Text
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  songs  SongArtist[]
+  albums Album[]
+
+  @@index([slug])
+}
+
+model Album {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String   @unique
+  coverImage      String?
+  releaseDate     DateTime?
+  label           String?
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  artist   Artist @relation(fields: [artistId], references: [id])
+  artistId String
+  songs    Song[]
+
+  @@index([slug])
+}
+
+model Genre {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?  @db.Text
+  imageUrl        String?
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  songs SongGenre[]
+
+  @@index([slug])
+}
+
+model Category {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  songs SongCategory[]
+
+  @@index([slug])
+}
+
+model SiteSeoSettings {
+  id              String   @id @default(uuid())
+  pageKey         String   @unique  // homepage, songs, artists, albums, movies, genres
+  pageTitle       String?
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  metaKeywords    String?  @db.Text
+  ogTitle         String?
+  ogDescription   String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([pageKey])
+}
+
+model Movie {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String?  @unique
+  year            Int?
+  director        String?
+  posterUrl       String?
+  description     String?  @db.Text
+  cast            String?  @db.Text  // Starring actors (comma separated)
+  producer        String?
+  musicDirector   String?            // Music Director/Composer
+  writer          String?            // Screenplay/Story Writer
+  genre           String?            // Movie genre
+  language        String?            // Movie language
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  songs Song[]
+
+  @@index([slug])
+}
+
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SongArtist {
+  song     Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId   String
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId String
+
+  @@id([songId, artistId])
+}
+
+model SongGenre {
+  song    Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId  String
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
+  genreId String
+
+  @@id([songId, genreId])
+}
+
+model SongCategory {
+  song       Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId     String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+
+  @@id([songId, categoryId])
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  type        String   // lyrics, spelling, artist, album, credits, other
+  description String?  @db.Text
+  status      String   @default("pending") // pending, reviewed, resolved
+
+  // Related content
+  songId      String?
+  song        Song?    @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  // Reporter info
+  reporterIp  String?
+  reporterEmail String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([songId])
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String?
+  status       String   @default("active") // active, unsubscribed
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  ipAddress    String?
+
+  @@index([email])
+  @@index([status])
+}
+
+model Newsletter {
+  id          String   @id @default(uuid())
+  subject     String
+  content     String   @db.Text
+  status      String   @default("draft") // draft, sent
+  sentAt      DateTime?
+  sentTo      Int      @default(0) // Number of recipients
+  openCount   Int      @default(0)
+  clickCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
