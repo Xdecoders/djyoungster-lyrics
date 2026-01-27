@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { unstable_noStore as noStore } from 'next/cache'
 
 // Default SEO settings for each page
 const DEFAULT_SETTINGS = {
@@ -41,6 +42,9 @@ const DEFAULT_SETTINGS = {
 }
 
 export async function getSeoSettings(pageKey) {
+  // Disable caching to always fetch fresh SEO settings from database
+  noStore()
+
   const defaults = {
     metaTitle: DEFAULT_SETTINGS[pageKey]?.metaTitle,
     metaDescription: DEFAULT_SETTINGS[pageKey]?.metaDescription,
