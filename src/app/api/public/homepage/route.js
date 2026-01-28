@@ -99,13 +99,29 @@ export async function GET() {
       }
     })
 
+    // Fetch popular tags
+    const tags = await prisma.tag.findMany({
+      take: 14,
+      include: {
+        _count: {
+          select: { songs: true }
+        }
+      },
+      orderBy: {
+        songs: {
+          _count: 'desc'
+        }
+      }
+    })
+
     return NextResponse.json({
       latestSongs,
       trendingSongs,
       categories,
       genres,
       artists,
-      albums
+      albums,
+      tags
     })
   } catch (error) {
     console.error('Error fetching homepage data:', error)

@@ -128,6 +128,24 @@ export default async function sitemap() {
     // Category model might not exist
   }
 
+  // Fetch all tags
+  let tagPages = []
+  try {
+    const tags = await prisma.tag.findMany({
+      select: { slug: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+    })
+
+    tagPages = tags.map((tag) => ({
+      url: `${baseUrl}/tag/${tag.slug}`,
+      lastModified: tag.createdAt,
+      changeFrequency: 'weekly',
+      priority: 0.5,
+    }))
+  } catch (e) {
+    // Tag model might not exist
+  }
+
   return [
     ...staticPages,
     ...songPages,
@@ -136,5 +154,6 @@ export default async function sitemap() {
     ...genrePages,
     ...moviePages,
     ...categoryPages,
+    ...tagPages,
   ]
 }

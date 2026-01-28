@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiMusic, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiCheck, FiX } from 'react-icons/fi'
+import { FiMusic, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiCheck, FiX, FiEye } from 'react-icons/fi'
 
 export default function SongsList() {
   const router = useRouter()
@@ -172,14 +172,24 @@ export default function SongsList() {
                       <td className="px-4 sm:px-6 py-4">
                         <div className="flex justify-end gap-1">
                           <Link
+                            href={`/song/${song.slug}`}
+                            target="_blank"
+                            className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                            title="Preview"
+                          >
+                            <FiEye className="w-4 h-4" />
+                          </Link>
+                          <Link
                             href={`/admin/songs/${song.id}`}
                             className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
+                            title="Edit"
                           >
                             <FiEdit2 className="w-4 h-4" />
                           </Link>
                           <button
                             onClick={() => setDeleteConfirm(song.id)}
                             className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                            title="Delete"
                           >
                             <FiTrash2 className="w-4 h-4" />
                           </button>

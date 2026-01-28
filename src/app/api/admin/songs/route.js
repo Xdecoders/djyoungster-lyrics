@@ -23,6 +23,11 @@ export async function GET() {
             category: true
           }
         },
+        tags: {
+          include: {
+            tag: true
+          }
+        },
         movie: true
       },
       orderBy: {
@@ -95,7 +100,14 @@ export async function POST(request) {
               connect: { id: categoryId }
             }
           }))
-        }
+        },
+        tags: data.tagIds?.length > 0 ? {
+          create: data.tagIds.map(tagId => ({
+            tag: {
+              connect: { id: tagId }
+            }
+          }))
+        } : undefined
       },
       include: {
         artists: {
@@ -106,6 +118,11 @@ export async function POST(request) {
         genres: {
           include: {
             genre: true
+          }
+        },
+        tags: {
+          include: {
+            tag: true
           }
         }
       }

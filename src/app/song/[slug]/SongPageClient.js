@@ -31,7 +31,8 @@ import {
   FiPlay,
   FiType,
   FiPlus,
-  FiMinus
+  FiMinus,
+  FiTag
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
 import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube } from 'react-icons/fa'
@@ -193,7 +194,7 @@ function SongCredits({ song }) {
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
       <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
         <FiUsers className="w-4 h-4 text-primary" />
-        Song Credits
+        {song.title} - Song Credits
       </h3>
       <div className="space-y-3">
         {credits.map((item, index) => (
@@ -228,7 +229,7 @@ function SongMeaning({ song }) {
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
       <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
         <FiBookOpen className="w-4 h-4 text-primary" />
-        Song Meaning
+        {song.title} - Song Meaning
       </h3>
       <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
         <p className="whitespace-pre-line">{displayText}</p>
@@ -846,6 +847,7 @@ export default function SongPageClient() {
 
   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
   const genres = song.genres?.map(sg => sg.genre) || []
+  const tags = song.tags?.map(st => st.tag) || []
   const categories = song.categories?.map(sc => sc.category) || []
   const currentUrl = typeof window !== 'undefined' ? window.location.href : ''
 
@@ -975,6 +977,7 @@ export default function SongPageClient() {
                           ))}
                         </div>
                       )}
+
                     </div>
                   </div>
 
@@ -1160,6 +1163,27 @@ export default function SongPageClient() {
                     View More Songs
                     <FiChevronRight className="w-4 h-4" />
                   </Link>
+                </div>
+              )}
+
+              {/* Tags */}
+              {tags.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+                  <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                    <FiTag className="w-4 h-4 text-primary" />
+                    Tags
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <Link
+                        key={tag.id}
+                        href={`/tag/${tag.slug}`}
+                        className="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 transition capitalize"
+                      >
+                        #{tag.name}
+                      </Link>
+                    ))}
+                  </div>
                 </div>
               )}
             </aside>

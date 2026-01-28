@@ -16,7 +16,8 @@ import {
   FiX,
   FiAlertCircle,
   FiMail,
-  FiSearch
+  FiSearch,
+  FiFileText
 } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 
@@ -68,6 +69,7 @@ export default function AdminLayout({ children }) {
     { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail },
     { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badge: true },
     { href: '/admin/seo-settings', label: 'SEO Settings', icon: FiSearch },
+    { href: '/admin/pages', label: 'Pages', icon: FiFileText },
     { href: '/admin/settings', label: 'Settings', icon: FiSettings },
   ]
 

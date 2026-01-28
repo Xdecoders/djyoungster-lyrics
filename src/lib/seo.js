@@ -1,6 +1,30 @@
 import { prisma } from '@/lib/prisma'
 import { unstable_noStore as noStore } from 'next/cache'
 
+// Get global site settings (favicon, etc.)
+export async function getSiteSettings() {
+  noStore()
+
+  try {
+    const settings = await prisma.siteSeoSettings.findUnique({
+      where: { pageKey: 'global' }
+    })
+
+    if (settings?.metaKeywords) {
+      try {
+        return JSON.parse(settings.metaKeywords)
+      } catch (e) {
+        return { favicon: null }
+      }
+    }
+
+    return { favicon: null }
+  } catch (error) {
+    console.error('Error fetching site settings:', error)
+    return { favicon: null }
+  }
+}
+
 // Default SEO settings for each page
 const DEFAULT_SETTINGS = {
   homepage: {

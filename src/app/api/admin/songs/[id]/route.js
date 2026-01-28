@@ -25,6 +25,11 @@ export async function GET(request, { params }) {
           include: {
             category: true
           }
+        },
+        tags: {
+          include: {
+            tag: true
+          }
         }
       }
     })
@@ -57,6 +62,7 @@ export async function PUT(request, { params }) {
       prisma.songArtist.deleteMany({ where: { songId: id } }),
       prisma.songGenre.deleteMany({ where: { songId: id } }),
       prisma.songCategory.deleteMany({ where: { songId: id } }),
+      prisma.songTag.deleteMany({ where: { songId: id } }),
     ])
 
     // Update song with new data
@@ -110,7 +116,14 @@ export async function PUT(request, { params }) {
               connect: { id: categoryId }
             }
           }))
-        }
+        },
+        tags: (data.tagIds?.length > 0) ? {
+          create: data.tagIds.map(tagId => ({
+            tag: {
+              connect: { id: tagId }
+            }
+          }))
+        } : undefined
       },
       include: {
         artists: {
@@ -126,6 +139,11 @@ export async function PUT(request, { params }) {
         categories: {
           include: {
             category: true
+          }
+        },
+        tags: {
+          include: {
+            tag: true
           }
         }
       }

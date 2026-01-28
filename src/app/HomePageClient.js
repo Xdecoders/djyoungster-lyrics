@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FiMusic, FiSearch, FiChevronLeft, FiChevronRight, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiEye, FiArrowRight, FiFilm, FiX } from 'react-icons/fi'
+import { FiMusic, FiSearch, FiChevronLeft, FiChevronRight, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiEye, FiArrowRight, FiFilm, FiX, FiTag } from 'react-icons/fi'
 
 // Debounce hook
 function useDebounce(value, delay) {
@@ -129,24 +129,6 @@ function SearchWithAutocomplete() {
 
   return (
     <div ref={wrapperRef} className="max-w-2xl mx-auto">
-      {/* Filter Tabs */}
-      <div className="flex justify-center gap-2 mb-4">
-        {filters.map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => { setFilter(key); setSelectedIndex(-1) }}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              filter === key
-                ? 'bg-primary text-white shadow-md'
-                : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary hover:text-primary'
-            }`}
-          >
-            <Icon className="w-4 h-4" />
-            {label}
-          </button>
-        ))}
-      </div>
-
       {/* Search Input */}
       <form onSubmit={handleSubmit} className="relative">
         <div className="relative">
@@ -580,9 +562,14 @@ function CategorySongList({ category, colorScheme }) {
 export default function HomePageClient() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [siteSettings, setSiteSettings] = useState({
+    heroHeading: 'Discover Your Favorite Song Lyrics',
+    heroDescription: 'Explore thousands of song lyrics from your favorite artists. Search, discover, and sing along!'
+  })
 
   useEffect(() => {
     fetchData()
+    fetchSiteSettings()
   }, [])
 
   const fetchData = async () => {
@@ -594,6 +581,19 @@ export default function HomePageClient() {
       console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchSiteSettings = async () => {
+    try {
+      const res = await fetch('/api/public/site-settings')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.heroHeading) setSiteSettings(prev => ({ ...prev, heroHeading: data.heroHeading }))
+        if (data.heroDescription) setSiteSettings(prev => ({ ...prev, heroDescription: data.heroDescription }))
+      }
+    } catch (error) {
+      console.error('Error fetching site settings:', error)
     }
   }
 
@@ -614,33 +614,16 @@ export default function HomePageClient() {
       <section className="py-16 sm:py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-800 dark:text-white mb-6 leading-tight">
-            Discover Your Favorite
-            <span className="block bg-gradient-to-r from-primary via-emerald-500 to-teal-500 bg-clip-text text-transparent pb-2">
-              Song Lyrics
+            <span className="bg-gradient-to-r from-primary via-emerald-500 to-teal-500 bg-clip-text text-transparent pb-2">
+              {siteSettings.heroHeading}
             </span>
           </h1>
           <p className="text-lg text-slate-600 dark:text-slate-300 mb-10 max-w-2xl mx-auto">
-            Explore thousands of song lyrics from your favorite artists. Search, discover, and sing along!
+            {siteSettings.heroDescription}
           </p>
 
           {/* Search with Autocomplete */}
           <SearchWithAutocomplete />
-
-          {/* Popular Searches */}
-          <div className="mt-8">
-            <p className="text-sm text-slate-500 dark:text-slate-400 mb-3">Popular Searches:</p>
-            <div className="flex flex-wrap justify-center gap-2">
-              {['Arijit Singh', 'Diljit Dosanjh', 'Atif Aslam', 'Honey Singh', 'Badshah', 'AP Dhillon'].map((term) => (
-                <Link
-                  key={term}
-                  href={`/search?q=${encodeURIComponent(term)}`}
-                  className="px-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-full text-sm text-slate-600 dark:text-slate-300 hover:border-primary hover:text-primary dark:hover:border-primary dark:hover:text-primary transition-colors"
-                >
-                  {term}
-                </Link>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
@@ -727,6 +710,34 @@ export default function HomePageClient() {
               <ArtistCard key={artist.id} artist={artist} index={index} />
             ))}
           </Carousel>
+        )}
+
+        {/* Browse by Tags */}
+        {data?.tags?.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-xl">
+                <FiTag className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+              </div>
+              <h2 className="text-xl font-bold text-slate-800 dark:text-white">Browse by Tags</h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
+              {data.tags.slice(0, 14).map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`/tag/${tag.slug}`}
+                  className="group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-4 text-center hover:border-primary hover:shadow-md transition-all duration-200"
+                >
+                  <p className="font-medium text-slate-800 dark:text-white group-hover:text-primary transition capitalize truncate">
+                    {tag.name} Songs
+                  </p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                    {tag._count?.songs || 0} songs
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </section>
         )}
 
         {/* Recent Albums */}

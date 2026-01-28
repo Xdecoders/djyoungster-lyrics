@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { FiSearch, FiSave, FiCheck, FiHome, FiMusic, FiUser, FiDisc, FiFilm, FiTag } from 'react-icons/fi'
+import { useState, useEffect, useRef } from 'react'
+import { FiSearch, FiSave, FiCheck, FiHome, FiMusic, FiUser, FiDisc, FiFilm, FiTag, FiGlobe, FiImage, FiUpload, FiX } from 'react-icons/fi'
 
 const PAGE_ICONS = {
   homepage: FiHome,
@@ -28,9 +28,116 @@ export default function SeoSettingsPage() {
   const [saved, setSaved] = useState({})
   const [editedSettings, setEditedSettings] = useState({})
 
+  // Favicon states
+  const [faviconUrl, setFaviconUrl] = useState('')
+  const [faviconPreview, setFaviconPreview] = useState('')
+  const [uploadingFavicon, setUploadingFavicon] = useState(false)
+  const [savingGlobal, setSavingGlobal] = useState(false)
+  const [globalSaved, setGlobalSaved] = useState(false)
+  const faviconInputRef = useRef(null)
+
+  // Hero section states
+  const [heroHeading, setHeroHeading] = useState('')
+  const [heroDescription, setHeroDescription] = useState('')
+
   useEffect(() => {
     fetchSettings()
+    fetchGlobalSettings()
   }, [])
+
+  const fetchGlobalSettings = async () => {
+    try {
+      const res = await fetch('/api/admin/site-settings')
+      if (res.ok) {
+        const data = await res.json()
+        if (data.favicon) {
+          setFaviconUrl(data.favicon)
+          setFaviconPreview(data.favicon)
+        }
+        if (data.heroHeading) setHeroHeading(data.heroHeading)
+        if (data.heroDescription) setHeroDescription(data.heroDescription)
+      }
+    } catch (error) {
+      console.error('Error fetching global settings:', error)
+    }
+  }
+
+  const handleFaviconUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/x-icon', 'image/ico', 'image/svg+xml', 'image/jpeg']
+    if (!validTypes.includes(file.type)) {
+      alert('Please upload a PNG, ICO, SVG, or JPEG file')
+      return
+    }
+
+    // Validate size (max 1MB for favicon)
+    if (file.size > 1024 * 1024) {
+      alert('Favicon should be less than 1MB')
+      return
+    }
+
+    setUploadingFavicon(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        setFaviconUrl(data.url)
+        setFaviconPreview(data.url)
+      } else {
+        alert(data.message || 'Failed to upload favicon')
+      }
+    } catch (error) {
+      console.error('Error uploading favicon:', error)
+      alert('Error uploading favicon')
+    } finally {
+      setUploadingFavicon(false)
+    }
+  }
+
+  const handleSaveGlobal = async () => {
+    setSavingGlobal(true)
+    try {
+      const res = await fetch('/api/admin/site-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          favicon: faviconUrl,
+          heroHeading: heroHeading,
+          heroDescription: heroDescription
+        })
+      })
+
+      if (res.ok) {
+        setGlobalSaved(true)
+        setTimeout(() => setGlobalSaved(false), 3000)
+      } else {
+        alert('Failed to save settings')
+      }
+    } catch (error) {
+      console.error('Error saving settings:', error)
+      alert('Error saving settings')
+    } finally {
+      setSavingGlobal(false)
+    }
+  }
+
+  const clearFavicon = () => {
+    setFaviconUrl('')
+    setFaviconPreview('')
+    if (faviconInputRef.current) {
+      faviconInputRef.current.value = ''
+    }
+  }
 
   const fetchSettings = async () => {
     try {
@@ -108,6 +215,157 @@ export default function SeoSettingsPage() {
         </div>
       </div>
 
+      {/* Global Site Settings - Favicon & Hero */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
+              <FiGlobe className="w-5 h-5" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-slate-800">Global Site Settings</h2>
+              <p className="text-xs text-slate-400">Favicon, hero section, and site-wide settings</p>
+            </div>
+          </div>
+          <button
+            onClick={handleSaveGlobal}
+            disabled={savingGlobal}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition ${
+              globalSaved
+                ? 'bg-green-100 text-green-600'
+                : 'bg-primary text-white hover:bg-emerald-600'
+            }`}
+          >
+            {savingGlobal ? (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : globalSaved ? (
+              <FiCheck className="w-4 h-4" />
+            ) : (
+              <FiSave className="w-4 h-4" />
+            )}
+            {globalSaved ? 'Saved!' : 'Save'}
+          </button>
+        </div>
+
+        <div className="p-6">
+          <label className="block text-sm font-medium text-slate-700 mb-3">
+            <FiImage className="inline w-4 h-4 mr-2" />
+            Site Favicon
+          </label>
+
+          <div className="flex items-start gap-6">
+            {/* Favicon Preview */}
+            <div className="flex-shrink-0">
+              {faviconPreview ? (
+                <div className="relative">
+                  <div className="w-20 h-20 rounded-xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={faviconPreview}
+                      alt="Favicon preview"
+                      className="max-w-full max-h-full object-contain"
+                    />
+                  </div>
+                  <button
+                    onClick={clearFavicon}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition"
+                  >
+                    <FiX className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <div className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center">
+                  <FiImage className="w-8 h-8 text-slate-300" />
+                </div>
+              )}
+            </div>
+
+            {/* Upload Section */}
+            <div className="flex-1 space-y-3">
+              <div className="flex gap-3">
+                <input
+                  ref={faviconInputRef}
+                  type="file"
+                  accept=".png,.ico,.svg,.jpg,.jpeg"
+                  onChange={handleFaviconUpload}
+                  className="hidden"
+                  id="favicon-upload"
+                />
+                <label
+                  htmlFor="favicon-upload"
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium cursor-pointer transition ${
+                    uploadingFavicon
+                      ? 'bg-slate-100 text-slate-400'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {uploadingFavicon ? (
+                    <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <FiUpload className="w-4 h-4" />
+                  )}
+                  {uploadingFavicon ? 'Uploading...' : 'Upload Favicon'}
+                </label>
+              </div>
+
+              <p className="text-xs text-slate-400">
+                Recommended: 32x32 or 180x180 PNG. Supports PNG, ICO, SVG, JPEG. Max 1MB.
+              </p>
+
+              {/* URL Input */}
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">Or enter favicon URL</label>
+                <input
+                  type="text"
+                  value={faviconUrl}
+                  onChange={(e) => {
+                    setFaviconUrl(e.target.value)
+                    setFaviconPreview(e.target.value)
+                  }}
+                  placeholder="https://example.com/favicon.png"
+                  className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition text-sm"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-slate-100 my-6"></div>
+
+          {/* Hero Section Settings */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+              <FiHome className="w-4 h-4" />
+              Homepage Hero Section
+            </h3>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Hero Heading</label>
+              <input
+                type="text"
+                value={heroHeading}
+                onChange={(e) => setHeroHeading(e.target.value)}
+                placeholder="Discover Your Favorite Song Lyrics"
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+              />
+              <p className="text-xs text-slate-400 mt-1">Main heading displayed on the homepage</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Hero Description</label>
+              <textarea
+                value={heroDescription}
+                onChange={(e) => setHeroDescription(e.target.value)}
+                placeholder="Explore thousands of song lyrics from your favorite artists. Search, discover, and sing along!"
+                rows={2}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
+              />
+              <p className="text-xs text-slate-400 mt-1">Subtitle text below the heading</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Page-specific SEO Settings */}
       <div className="space-y-6">
         {settings.map((setting) => {
           const Icon = PAGE_ICONS[setting.pageKey] || FiSearch

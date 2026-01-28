@@ -50,6 +50,7 @@ model Song {
   artists    SongArtist[]
   genres     SongGenre[]
   categories SongCategory[]
+  tags       SongTag[]
   songLikes  SongLike[]
   reports    Report[]
 
@@ -210,6 +211,26 @@ model SongCategory {
   @@id([songId, categoryId])
 }
 
+model Tag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  slug      String    @unique
+  createdAt DateTime  @default(now())
+
+  songs SongTag[]
+
+  @@index([slug])
+}
+
+model SongTag {
+  song   Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId  String
+
+  @@id([songId, tagId])
+}
+
 model Report {
   id          String   @id @default(uuid())
   type        String   // lyrics, spelling, artist, album, credits, other
@@ -255,4 +276,18 @@ model Newsletter {
   clickCount  Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Page {
+  id              String   @id @default(uuid())
+  slug            String   @unique  // about-us, privacy-policy, terms-and-conditions, disclaimer, contact-us
+  title           String
+  content         String   @db.LongText
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  isPublished     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
 }

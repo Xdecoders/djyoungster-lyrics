@@ -30,6 +30,7 @@ export default function AddSong() {
     albumId: '',
     genreIds: [],
     categoryIds: [],
+    tagIds: [],
     movieId: '',
     coverImage: '',
     youtubeUrl: '',
@@ -115,6 +116,14 @@ export default function AddSong() {
   const [newCategoryData, setNewCategoryData] = useState({ name: '' })
   const [savingCategory, setSavingCategory] = useState(false)
 
+  // Tag search states
+  const [tagSearch, setTagSearch] = useState('')
+  const [showTagDropdown, setShowTagDropdown] = useState(false)
+  const [selectedTags, setSelectedTags] = useState([])
+  const [availableTags, setAvailableTags] = useState([])
+  const tagSearchRef = useRef(null)
+  const [savingTag, setSavingTag] = useState(false)
+
   // Song credits suggestions
   const [creditSuggestions, setCreditSuggestions] = useState({
     lyricists: [],
@@ -170,6 +179,9 @@ export default function AddSong() {
       }
       if (categorySearchRef.current && !categorySearchRef.current.contains(e.target)) {
         setShowCategoryDropdown(false)
+      }
+      if (tagSearchRef.current && !tagSearchRef.current.contains(e.target)) {
+        setShowTagDropdown(false)
       }
       if (lyricistRef.current && !lyricistRef.current.contains(e.target)) {
         setShowLyricistDropdown(false)
@@ -237,6 +249,14 @@ export default function AddSong() {
     }))
   }, [selectedCategories])
 
+  // Sync selectedTags with formData.tagIds
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      tagIds: selectedTags.map(t => t.id)
+    }))
+  }, [selectedTags])
+
   // Update image preview when URL changes
   useEffect(() => {
     if (imageUploadMode === 'url' && formData.coverImage) {
@@ -246,13 +266,14 @@ export default function AddSong() {
 
   const fetchData = async () => {
     try {
-      const [artistsRes, albumsRes, genresRes, categoriesRes, moviesRes, creditsRes] = await Promise.all([
+      const [artistsRes, albumsRes, genresRes, categoriesRes, moviesRes, creditsRes, tagsRes] = await Promise.all([
         fetch('/api/admin/artists'),
         fetch('/api/admin/albums'),
         fetch('/api/admin/genres'),
         fetch('/api/admin/categories'),
         fetch('/api/admin/movies'),
-        fetch('/api/admin/song-credits')
+        fetch('/api/admin/song-credits'),
+        fetch('/api/admin/tags')
       ])
 
       setArtists(await artistsRes.json())
@@ -260,6 +281,7 @@ export default function AddSong() {
       setGenres(await genresRes.json())
       setCategories(await categoriesRes.json())
       setMovies(await moviesRes.json())
+      setAvailableTags(await tagsRes.json())
 
       const creditsData = await creditsRes.json()
       if (!creditsData.message) {
@@ -378,6 +400,38 @@ export default function AddSong() {
     setFormData(prev => ({ ...prev, coverImage: '' }))
     if (fileInputRef.current) {
       fileInputRef.current.value = ''
+    }
+  }
+
+  const handleDownloadFromUrl = async () => {
+    const url = formData.coverImage.trim()
+    if (!url) {
+      alert('Please enter an image URL')
+      return
+    }
+
+    setUploadingImage(true)
+    try {
+      const res = await fetch('/api/admin/upload-from-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setFormData(prev => ({ ...prev, coverImage: data.url }))
+        setImagePreview(data.url)
+        alert('Image downloaded and saved successfully!')
+      } else {
+        alert(data.message || 'Failed to download image')
+      }
+    } catch (error) {
+      console.error('Error downloading image:', error)
+      alert('Something went wrong while downloading')
+    } finally {
+      setUploadingImage(false)
     }
   }
 
@@ -628,6 +682,49 @@ export default function AddSong() {
       setSavingCategory(false)
     }
   }
+
+  // Tag handling functions
+  // Tag handlers - searchable dropdown style
+  const handleSelectTag = (tag) => {
+    if (!selectedTags.some(t => t.id === tag.id)) {
+      setSelectedTags(prev => [...prev, tag])
+      setFormData(prev => ({ ...prev, tagIds: [...prev.tagIds, tag.id] }))
+    }
+    setTagSearch('')
+    setShowTagDropdown(false)
+  }
+
+  const handleRemoveTag = (tagId) => {
+    setSelectedTags(prev => prev.filter(t => t.id !== tagId))
+    setFormData(prev => ({ ...prev, tagIds: prev.tagIds.filter(id => id !== tagId) }))
+  }
+
+  const handleCreateTag = async () => {
+    const tagName = tagSearch.trim()
+    if (!tagName) return
+
+    setSavingTag(true)
+    try {
+      const res = await fetch('/api/admin/tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: tagName })
+      })
+      if (res.ok) {
+        const newTag = await res.json()
+        setAvailableTags(prev => [...prev, newTag])
+        handleSelectTag(newTag)
+      }
+    } catch (error) {
+      console.error('Error creating tag:', error)
+    }
+    setSavingTag(false)
+  }
+
+  const filteredTags = availableTags.filter(tag =>
+    tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+    !selectedTags.some(t => t.id === tag.id)
+  )
 
   const validateForm = () => {
     const newErrors = {}
@@ -916,14 +1013,35 @@ export default function AddSong() {
                 {/* URL Mode */}
                 {imageUploadMode === 'url' && (
                   <div>
-                    <input
-                      type="text"
-                      name="coverImage"
-                      value={formData.coverImage}
-                      onChange={handleChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                      placeholder="https://example.com/image.jpg"
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        name="coverImage"
+                        value={formData.coverImage}
+                        onChange={handleChange}
+                        className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                        placeholder="https://example.com/image.jpg"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleDownloadFromUrl}
+                        disabled={uploadingImage || !formData.coverImage}
+                        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      >
+                        {uploadingImage ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <FiUpload className="w-4 h-4" />
+                            Save
+                          </>
+                        )}
+                      </button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Enter image URL and click Save to download to server</p>
                   </div>
                 )}
 
@@ -1071,70 +1189,6 @@ export default function AddSong() {
                             key={idx}
                             type="button"
                             onClick={() => handleCreditSelect('composer', suggestion, setShowComposerDropdown)}
-                            className="w-full px-4 py-2 text-left hover:bg-emerald-50 text-sm"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Singers */}
-                  <div className="relative" ref={singersRef}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                      <FiMic className="w-4 h-4" />
-                      Additional Singers
-                    </label>
-                    <input
-                      type="text"
-                      name="singers"
-                      value={formData.singers}
-                      onChange={(e) => handleCreditChange(e, setShowSingersDropdown)}
-                      onFocus={() => setShowSingersDropdown(true)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                      placeholder="Type or select singers"
-                      autoComplete="off"
-                    />
-                    {showSingersDropdown && filterSuggestions(creditSuggestions.singers, formData.singers).length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                        {filterSuggestions(creditSuggestions.singers, formData.singers).map((suggestion, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => handleCreditSelect('singers', suggestion, setShowSingersDropdown)}
-                            className="w-full px-4 py-2 text-left hover:bg-emerald-50 text-sm"
-                          >
-                            {suggestion}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                    <p className="text-xs text-gray-400 mt-1">Separate multiple names with commas</p>
-                  </div>
-
-                  {/* Producer */}
-                  <div className="relative" ref={producerRef}>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Music Producer
-                    </label>
-                    <input
-                      type="text"
-                      name="producer"
-                      value={formData.producer}
-                      onChange={(e) => handleCreditChange(e, setShowProducerDropdown)}
-                      onFocus={() => setShowProducerDropdown(true)}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                      placeholder="Type or select producer"
-                      autoComplete="off"
-                    />
-                    {showProducerDropdown && filterSuggestions(creditSuggestions.producers, formData.producer).length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                        {filterSuggestions(creditSuggestions.producers, formData.producer).map((suggestion, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => handleCreditSelect('producer', suggestion, setShowProducerDropdown)}
                             className="w-full px-4 py-2 text-left hover:bg-emerald-50 text-sm"
                           >
                             {suggestion}
@@ -1421,6 +1475,178 @@ export default function AddSong() {
                 {errors.artists && <p className="text-red-500 text-sm mt-2">{errors.artists}</p>}
               </div>
 
+              {/* Categories - Searchable */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <FiFolder className="w-5 h-5 text-primary" />
+                    Categories
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCategoryModal(true)}
+                    className="text-sm text-primary hover:text-primary-hover flex items-center gap-1"
+                  >
+                    <FiPlus className="w-4 h-4" />
+                    Add New
+                  </button>
+                </div>
+
+                {/* Selected Categories Tags */}
+                {selectedCategories.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {selectedCategories.map(category => (
+                      <span
+                        key={category.id}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                      >
+                        {category.name}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveCategory(category.id)}
+                          className="hover:text-red-500"
+                        >
+                          <FiX className="w-4 h-4" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Category Search Input */}
+                <div className="relative" ref={categorySearchRef}>
+                  <div className="relative">
+                    <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={categorySearch}
+                      onChange={(e) => {
+                        setCategorySearch(e.target.value)
+                        setShowCategoryDropdown(true)
+                      }}
+                      onFocus={() => setShowCategoryDropdown(true)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                      placeholder="Search categories..."
+                    />
+                  </div>
+
+                  {/* Dropdown */}
+                  {showCategoryDropdown && (categorySearch || filteredCategories.length > 0) && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filteredCategories.length > 0 ? (
+                        filteredCategories.slice(0, 10).map(category => (
+                          <button
+                            key={category.id}
+                            type="button"
+                            onClick={() => handleSelectCategory(category)}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                          >
+                            <FiFolder className="w-4 h-4 text-gray-400" />
+                            <span>{category.name}</span>
+                          </button>
+                        ))
+                      ) : categorySearch ? (
+                        <div className="px-4 py-3 text-sm text-gray-500">
+                          No categories found.
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewCategoryData({ name: categorySearch })
+                              setShowNewCategoryModal(true)
+                              setShowCategoryDropdown(false)
+                            }}
+                            className="text-primary hover:underline ml-1"
+                          >
+                            Create "{categorySearch}"
+                          </button>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Tags - Searchable */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                  <FiTag className="w-5 h-5 text-primary" />
+                  Tags
+                </h3>
+
+                {/* Selected Tags */}
+                {selectedTags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {selectedTags.map(tag => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-sm capitalize"
+                      >
+                        #{tag.name}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveTag(tag.id)}
+                          className="hover:text-red-500"
+                        >
+                          <FiX className="w-4 h-4" />
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Tag Search Input */}
+                <div className="relative" ref={tagSearchRef}>
+                  <div className="relative">
+                    <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                    <input
+                      type="text"
+                      value={tagSearch}
+                      onChange={(e) => {
+                        setTagSearch(e.target.value)
+                        setShowTagDropdown(true)
+                      }}
+                      onFocus={() => setShowTagDropdown(true)}
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                      placeholder="Search or create tags..."
+                    />
+                  </div>
+
+                  {/* Tag Dropdown */}
+                  {showTagDropdown && (
+                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                      {filteredTags.length > 0 ? (
+                        filteredTags.map(tag => (
+                          <div
+                            key={tag.id}
+                            onClick={() => handleSelectTag(tag)}
+                            className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2"
+                          >
+                            <FiTag className="w-4 h-4 text-gray-400" />
+                            <span className="capitalize">#{tag.name}</span>
+                            {tag._count?.songs > 0 && (
+                              <span className="text-xs text-gray-400">({tag._count.songs} songs)</span>
+                            )}
+                          </div>
+                        ))
+                      ) : tagSearch.trim() ? (
+                        <div
+                          onClick={handleCreateTag}
+                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2 text-primary"
+                        >
+                          <FiPlus className="w-4 h-4" />
+                          <span>{savingTag ? 'Creating...' : `Create tag "${tagSearch.trim()}"`}</span>
+                        </div>
+                      ) : (
+                        <div className="px-4 py-2 text-gray-500 text-sm">
+                          Type to search or create a new tag
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 mt-2">Tags help users find your songs.</p>
+              </div>
+
               {/* Album - Searchable */}
               <div className="bg-white rounded-xl shadow-sm p-6">
                 <div className="flex justify-between items-center mb-4">
@@ -1596,97 +1822,6 @@ export default function AddSong() {
                             className="text-primary hover:underline ml-1"
                           >
                             Create "{genreSearch}"
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Categories - Searchable */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                    <FiFolder className="w-5 h-5 text-primary" />
-                    Categories
-                  </h3>
-                  <button
-                    type="button"
-                    onClick={() => setShowNewCategoryModal(true)}
-                    className="text-sm text-primary hover:text-primary-hover flex items-center gap-1"
-                  >
-                    <FiPlus className="w-4 h-4" />
-                    Add New
-                  </button>
-                </div>
-
-                {/* Selected Categories Tags */}
-                {selectedCategories.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {selectedCategories.map(category => (
-                      <span
-                        key={category.id}
-                        className="inline-flex items-center gap-1 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
-                      >
-                        {category.name}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveCategory(category.id)}
-                          className="hover:text-red-500"
-                        >
-                          <FiX className="w-4 h-4" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                )}
-
-                {/* Category Search Input */}
-                <div className="relative" ref={categorySearchRef}>
-                  <div className="relative">
-                    <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={categorySearch}
-                      onChange={(e) => {
-                        setCategorySearch(e.target.value)
-                        setShowCategoryDropdown(true)
-                      }}
-                      onFocus={() => setShowCategoryDropdown(true)}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                      placeholder="Search categories..."
-                    />
-                  </div>
-
-                  {/* Dropdown */}
-                  {showCategoryDropdown && (categorySearch || filteredCategories.length > 0) && (
-                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      {filteredCategories.length > 0 ? (
-                        filteredCategories.slice(0, 10).map(category => (
-                          <button
-                            key={category.id}
-                            type="button"
-                            onClick={() => handleSelectCategory(category)}
-                            className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                          >
-                            <FiFolder className="w-4 h-4 text-gray-400" />
-                            <span>{category.name}</span>
-                          </button>
-                        ))
-                      ) : categorySearch ? (
-                        <div className="px-4 py-3 text-sm text-gray-500">
-                          No categories found.
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setNewCategoryData({ name: categorySearch })
-                              setShowNewCategoryModal(true)
-                              setShowCategoryDropdown(false)
-                            }}
-                            className="text-primary hover:underline ml-1"
-                          >
-                            Create "{categorySearch}"
                           </button>
                         </div>
                       ) : null}

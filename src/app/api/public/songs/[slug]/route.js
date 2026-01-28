@@ -69,6 +69,17 @@ export async function GET(request, { params }) {
             }
           }
         },
+        tags: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              }
+            }
+          }
+        },
       }
     })
 
