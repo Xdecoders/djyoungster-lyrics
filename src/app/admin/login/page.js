@@ -102,13 +102,6 @@ export default function AdminLogin() {
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-sm text-slate-500 mb-2">Default credentials:</p>
-          <div className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
-            <p className="font-mono text-sm text-slate-600">admin@lyrics.com</p>
-            <p className="font-mono text-sm text-slate-600">admin123</p>
-          </div>
-        </div>
       </div>
     </div>
   )
