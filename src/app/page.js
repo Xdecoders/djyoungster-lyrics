@@ -1,8 +1,13 @@
 import HomePageClient from './HomePageClient'
-import { getSeoSettings } from '@/lib/seo'
+import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('homepage')
+  const siteSettings = await getSiteSettings()
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+  // Use ogImage from settings, or fall back to default og-image.jpg
+  const ogImageUrl = getAbsoluteUrl(siteSettings.ogImage) || `${siteUrl}/og-image.jpg`
 
   return {
     title: seo.metaTitle,
@@ -11,18 +16,29 @@ export async function generateMetadata() {
     openGraph: {
       title: seo.ogTitle,
       description: seo.ogDescription,
-      url: 'https://djyoungster.com',
+      url: siteUrl,
       siteName: 'DJYoungster',
       type: 'website',
       locale: 'en_US',
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: 'DJYoungster - Song Lyrics',
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title: seo.ogTitle,
       description: seo.ogDescription,
+      images: [ogImageUrl],
+      creator: '@djyoungster',
+      site: '@djyoungster',
     },
     alternates: {
-      canonical: 'https://djyoungster.com',
+      canonical: siteUrl,
     },
     robots: {
       index: true,

@@ -36,6 +36,12 @@ export default function SeoSettingsPage() {
   const [globalSaved, setGlobalSaved] = useState(false)
   const faviconInputRef = useRef(null)
 
+  // OG Image states
+  const [ogImageUrl, setOgImageUrl] = useState('')
+  const [ogImagePreview, setOgImagePreview] = useState('')
+  const [uploadingOgImage, setUploadingOgImage] = useState(false)
+  const ogImageInputRef = useRef(null)
+
   // Hero section states
   const [heroHeading, setHeroHeading] = useState('')
   const [heroDescription, setHeroDescription] = useState('')
@@ -53,6 +59,10 @@ export default function SeoSettingsPage() {
         if (data.favicon) {
           setFaviconUrl(data.favicon)
           setFaviconPreview(data.favicon)
+        }
+        if (data.ogImage) {
+          setOgImageUrl(data.ogImage)
+          setOgImagePreview(data.ogImage)
         }
         if (data.heroHeading) setHeroHeading(data.heroHeading)
         if (data.heroDescription) setHeroDescription(data.heroDescription)
@@ -104,6 +114,56 @@ export default function SeoSettingsPage() {
     }
   }
 
+  const handleOgImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      alert('Please upload a PNG, JPEG, or WebP file')
+      return
+    }
+
+    // Validate size (max 5MB for OG image)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('OG Image should be less than 5MB')
+      return
+    }
+
+    setUploadingOgImage(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        setOgImageUrl(data.url)
+        setOgImagePreview(data.url)
+      } else {
+        alert(data.message || 'Failed to upload OG image')
+      }
+    } catch (error) {
+      console.error('Error uploading OG image:', error)
+      alert('Error uploading OG image')
+    } finally {
+      setUploadingOgImage(false)
+    }
+  }
+
+  const clearOgImage = () => {
+    setOgImageUrl('')
+    setOgImagePreview('')
+    if (ogImageInputRef.current) {
+      ogImageInputRef.current.value = ''
+    }
+  }
+
   const handleSaveGlobal = async () => {
     setSavingGlobal(true)
     try {
@@ -112,6 +172,7 @@ export default function SeoSettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           favicon: faviconUrl,
+          ogImage: ogImageUrl,
           heroHeading: heroHeading,
           heroDescription: heroDescription
         })
@@ -324,6 +385,95 @@ export default function SeoSettingsPage() {
                   placeholder="https://example.com/favicon.png"
                   className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition text-sm"
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t border-slate-100 my-6"></div>
+
+          {/* OG Image Section */}
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-slate-700">
+              <FiImage className="inline w-4 h-4 mr-2" />
+              Default OG Image (Social Media Sharing)
+            </label>
+            <p className="text-xs text-slate-400">
+              This image appears when your homepage is shared on social media (Facebook, Twitter, LinkedIn, etc.)
+            </p>
+
+            <div className="flex items-start gap-6">
+              {/* OG Image Preview */}
+              <div className="flex-shrink-0">
+                {ogImagePreview ? (
+                  <div className="relative">
+                    <div className="w-40 h-24 rounded-xl border-2 border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={ogImagePreview}
+                        alt="OG Image preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <button
+                      onClick={clearOgImage}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition"
+                    >
+                      <FiX className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-40 h-24 rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center">
+                    <FiImage className="w-8 h-8 text-slate-300" />
+                  </div>
+                )}
+              </div>
+
+              {/* Upload Section */}
+              <div className="flex-1 space-y-3">
+                <div className="flex gap-3">
+                  <input
+                    ref={ogImageInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.webp"
+                    onChange={handleOgImageUpload}
+                    className="hidden"
+                    id="og-image-upload"
+                  />
+                  <label
+                    htmlFor="og-image-upload"
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium cursor-pointer transition ${
+                      uploadingOgImage
+                        ? 'bg-slate-100 text-slate-400'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {uploadingOgImage ? (
+                      <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <FiUpload className="w-4 h-4" />
+                    )}
+                    {uploadingOgImage ? 'Uploading...' : 'Upload OG Image'}
+                  </label>
+                </div>
+
+                <p className="text-xs text-slate-400">
+                  Recommended: 1200x630 pixels. Supports PNG, JPEG, WebP. Max 5MB.
+                </p>
+
+                {/* URL Input */}
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">Or enter OG image URL</label>
+                  <input
+                    type="text"
+                    value={ogImageUrl}
+                    onChange={(e) => {
+                      setOgImageUrl(e.target.value)
+                      setOgImagePreview(e.target.value)
+                    }}
+                    placeholder="https://example.com/og-image.jpg"
+                    className="w-full px-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition text-sm"
+                  />
+                </div>
               </div>
             </div>
           </div>

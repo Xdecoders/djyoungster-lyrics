@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { unstable_noStore as noStore } from 'next/cache'
 
-// Get global site settings (favicon, etc.)
+// Get global site settings (favicon, ogImage, etc.)
 export async function getSiteSettings() {
   noStore()
 
@@ -14,15 +14,29 @@ export async function getSiteSettings() {
       try {
         return JSON.parse(settings.metaKeywords)
       } catch (e) {
-        return { favicon: null }
+        return { favicon: null, ogImage: null }
       }
     }
 
-    return { favicon: null }
+    return { favicon: null, ogImage: null }
   } catch (error) {
     console.error('Error fetching site settings:', error)
-    return { favicon: null }
+    return { favicon: null, ogImage: null }
   }
+}
+
+// Helper function to convert relative URLs to absolute URLs
+export function getAbsoluteUrl(url) {
+  if (!url) return null
+  // Already absolute URL
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url
+  }
+  // Convert relative URL to absolute
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+  // Remove leading slash if present to avoid double slashes
+  const path = url.startsWith('/') ? url : `/${url}`
+  return `${siteUrl}${path}`
 }
 
 // Default SEO settings for each page

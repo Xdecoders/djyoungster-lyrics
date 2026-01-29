@@ -23,7 +23,7 @@ export async function generateMetadata({ params }) {
     const description = genre.metaDescription ||
       `Explore ${genre._count.songs} ${genre.name} songs with lyrics. ${genre.description || `Find the best ${genre.name} music on DJYoungster.`}`
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/genre/${slug}`
     const imageUrl = `${siteUrl}/og-image.jpg`
 

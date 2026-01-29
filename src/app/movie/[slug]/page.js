@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getAbsoluteUrl } from '@/lib/seo'
 import MoviePageClient from './MoviePageClient'
 
 export async function generateMetadata({ params }) {
@@ -28,11 +29,11 @@ export async function generateMetadata({ params }) {
     const description = movie.metaDescription ||
       `Listen to all ${movie._count.songs} songs from ${movie.title}${movie.year ? ` (${movie.year})` : ''} with lyrics. ${movie.director ? `Directed by ${movie.director}.` : ''} Find complete movie soundtrack on DJYoungster.`
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/movie/${slug}`
-    // Use latest song's cover image or posterUrl or default
+    // Use latest song's cover image or posterUrl or default - convert to absolute URL
     const latestSongImage = movie.songs?.[0]?.coverImage
-    const imageUrl = movie.posterUrl || latestSongImage || `${siteUrl}/og-image.jpg`
+    const imageUrl = getAbsoluteUrl(movie.posterUrl) || getAbsoluteUrl(latestSongImage) || `${siteUrl}/og-image.jpg`
 
     return {
       title,

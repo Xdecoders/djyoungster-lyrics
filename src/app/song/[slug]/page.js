@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getAbsoluteUrl } from '@/lib/seo'
 import SongPageClient from './SongPageClient'
 
 // Generate dynamic metadata for SEO
@@ -60,9 +61,10 @@ export async function generateMetadata({ params }) {
     const metaTitle = song.metaTitle || title
     const metaDescription = song.metaDescription || description
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/song/${slug}`
-    const imageUrl = song.coverImage || `${siteUrl}/og-image.jpg`
+    // Convert relative image URL to absolute URL
+    const imageUrl = getAbsoluteUrl(song.coverImage) || `${siteUrl}/og-image.jpg`
 
     return {
       title: metaTitle,
@@ -134,7 +136,7 @@ export async function generateMetadata({ params }) {
 
 // JSON-LD structured data for rich snippets
 function generateJsonLd(song, artistNames) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
 
   return {
     '@context': 'https://schema.org',
@@ -158,7 +160,7 @@ function generateJsonLd(song, artistNames) {
       author: song.lyricist || artistNames,
     },
     url: `${siteUrl}/song/${song.slug}`,
-    image: song.coverImage,
+    image: getAbsoluteUrl(song.coverImage),
   }
 }
 

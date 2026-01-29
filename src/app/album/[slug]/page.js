@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getAbsoluteUrl } from '@/lib/seo'
 import AlbumPageClient from './AlbumPageClient'
 
 export async function generateMetadata({ params }) {
@@ -27,9 +28,10 @@ export async function generateMetadata({ params }) {
     const description = album.metaDescription ||
       `Listen to ${album.title} by ${artistName}. ${album._count.songs} songs with full lyrics. ${album.label ? `Released by ${album.label}.` : ''} Find all album tracks and lyrics on DJYoungster.`
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/album/${slug}`
-    const imageUrl = album.coverImage || `${siteUrl}/og-image.jpg`
+    // Convert relative image URL to absolute URL
+    const imageUrl = getAbsoluteUrl(album.coverImage) || `${siteUrl}/og-image.jpg`
 
     return {
       title,

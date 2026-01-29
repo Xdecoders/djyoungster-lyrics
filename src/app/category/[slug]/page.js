@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getAbsoluteUrl } from '@/lib/seo'
 import CategoryPageClient from './CategoryPageClient'
 
 export async function generateMetadata({ params }) {
@@ -23,9 +24,10 @@ export async function generateMetadata({ params }) {
     const description = category.metaDescription ||
       `Browse ${category._count.songs} ${category.name} songs with lyrics. Find all ${category.name} language songs, albums, and artists on DJYoungster.`
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/category/${slug}`
-    const imageUrl = category.imageUrl || `${siteUrl}/og-image.jpg`
+    // Convert relative image URL to absolute URL
+    const imageUrl = getAbsoluteUrl(category.imageUrl) || `${siteUrl}/og-image.jpg`
 
     return {
       title,
