@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { writeFile, mkdir, access } from 'fs/promises'
 import path from 'path'
+import sharp from 'sharp'
 
 export async function POST(request) {
   try {
@@ -69,22 +70,9 @@ export async function POST(request) {
       )
     }
 
-    // Determine file extension
-    let extension = '.jpg'
-    if (contentType.includes('png')) extension = '.png'
-    else if (contentType.includes('webp')) extension = '.webp'
-    else if (contentType.includes('gif')) extension = '.gif'
-    else {
-      // Try from URL
-      const urlExt = path.extname(imageUrl.pathname).toLowerCase()
-      if (['.jpg', '.jpeg', '.png', '.webp', '.gif'].includes(urlExt)) {
-        extension = urlExt === '.jpeg' ? '.jpg' : urlExt
-      }
-    }
-
-    // Generate unique filename
+    // Generate unique filename with .webp extension (all images will be converted to WebP)
     const timestamp = Date.now()
-    const filename = `${timestamp}-downloaded${extension}`
+    const filename = `${timestamp}-downloaded.webp`
 
     // Use UPLOAD_DIR env variable if set, otherwise fall back to public/uploads
     const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'public', 'uploads')
@@ -109,9 +97,23 @@ export async function POST(request) {
       )
     }
 
+    // Convert image to WebP format using sharp
+    let webpBuffer
+    try {
+      webpBuffer = await sharp(buffer)
+        .webp({ quality: 85 }) // Good balance between quality and file size
+        .toBuffer()
+      console.log('[UploadFromURL] Image converted to WebP. Original size:', buffer.length, '-> WebP size:', webpBuffer.length)
+    } catch (sharpError) {
+      console.error('[UploadFromURL] Sharp conversion error:', sharpError)
+      // If conversion fails, save the original file
+      webpBuffer = buffer
+      console.log('[UploadFromURL] Falling back to original image format')
+    }
+
     // Write file
     const filepath = path.join(uploadDir, filename)
-    await writeFile(filepath, buffer)
+    await writeFile(filepath, webpBuffer)
     console.log('[UploadFromURL] File saved to:', filepath)
 
     // Return the public URL

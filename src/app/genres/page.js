@@ -1,5 +1,9 @@
 import GenresPageClient from './GenresPageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
+import { generateBreadcrumbSchema } from '@/lib/schema'
+
+// ISR: Revalidate genres list every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('genres')
@@ -41,5 +45,37 @@ export async function generateMetadata() {
 }
 
 export default function GenresPage() {
-  return <GenresPageClient />
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'All Genres', url: '/genres' }
+  ])
+
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'All Genres - Music Genres Collection',
+    url: `${siteUrl}/genres`,
+    description: 'Browse songs by music genre on DJYoungster. Find Pop, Rock, Hip-Hop, Classical, Romantic, Sad songs and more with lyrics.',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DJYoungster',
+      url: siteUrl
+    }
+  }
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+      <GenresPageClient />
+    </>
+  )
 }

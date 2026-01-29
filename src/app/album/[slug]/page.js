@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { getAbsoluteUrl } from '@/lib/seo'
+import { generateAlbumSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import AlbumPageClient from './AlbumPageClient'
+
+// ISR: Revalidate album pages every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -70,8 +74,8 @@ export async function generateMetadata({ params }) {
         title,
         description,
         images: [imageUrl],
-        creator: '@djyoungster',
-        site: '@djyoungster',
+        creator: '@djyoungstercom',
+        site: '@djyoungstercom',
       },
       alternates: {
         canonical: pageUrl,
@@ -95,6 +99,56 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default function AlbumPage() {
-  return <AlbumPageClient />
+export default async function AlbumPage({ params }) {
+  const { slug } = await params
+
+  let albumSchema = null
+  let breadcrumbSchema = null
+
+  try {
+    const album = await prisma.album.findUnique({
+      where: { slug },
+      include: {
+        artist: { select: { name: true, slug: true } },
+        _count: { select: { songs: true } },
+        songs: {
+          take: 50,
+          orderBy: { trackNumber: 'asc' },
+          select: { title: true, slug: true }
+        }
+      }
+    })
+
+    if (album) {
+      albumSchema = generateAlbumSchema(album, album.songs)
+
+      // Generate breadcrumb
+      const breadcrumbs = [
+        { name: 'Home', url: '/' },
+        { name: 'Albums', url: '/albums' },
+        { name: album.title, url: `/album/${album.slug}` }
+      ]
+      breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+    }
+  } catch (error) {
+    console.error('Error generating album schema:', error)
+  }
+
+  return (
+    <>
+      {albumSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(albumSchema) }}
+        />
+      )}
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      <AlbumPageClient />
+    </>
+  )
 }

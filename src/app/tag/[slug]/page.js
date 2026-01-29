@@ -1,7 +1,11 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
+import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import TagPageClient from './TagPageClient'
+
+// ISR: Revalidate tag pages every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -54,6 +58,7 @@ export default async function TagPage({ params }) {
   const tag = await prisma.tag.findUnique({
     where: { slug },
     include: {
+      _count: { select: { songs: true } },
       songs: {
         include: {
           song: {
@@ -83,5 +88,25 @@ export default async function TagPage({ params }) {
     .map(st => st.song)
     .filter(song => song.status === 'published')
 
-  return <TagPageClient initialTag={tag} initialSongs={songs} />
+  // Generate structured data
+  const collectionSchema = generateCollectionPageSchema(tag, 'tag', songs.slice(0, 20))
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Tags', url: '/songs' },
+    { name: tag.name, url: `/tag/${tag.slug}` }
+  ])
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <TagPageClient initialTag={tag} initialSongs={songs} />
+    </>
+  )
 }

@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { getAbsoluteUrl } from '@/lib/seo'
+import { generateArtistSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import ArtistPageClient from './ArtistPageClient'
+
+// ISR: Revalidate artist pages every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -62,8 +66,8 @@ export async function generateMetadata({ params }) {
         title,
         description,
         images: [imageUrl],
-        creator: '@djyoungster',
-        site: '@djyoungster',
+        creator: '@djyoungstercom',
+        site: '@djyoungstercom',
       },
       alternates: {
         canonical: pageUrl,
@@ -82,6 +86,54 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default function ArtistPage() {
-  return <ArtistPageClient />
+export default async function ArtistPage({ params }) {
+  const { slug } = await params
+
+  let artistSchema = null
+  let breadcrumbSchema = null
+
+  try {
+    const artist = await prisma.artist.findUnique({
+      where: { slug },
+      include: {
+        _count: { select: { songs: true, albums: true } },
+        albums: {
+          take: 10,
+          select: { title: true, slug: true }
+        }
+      }
+    })
+
+    if (artist) {
+      artistSchema = generateArtistSchema(artist)
+
+      // Generate breadcrumb
+      const breadcrumbs = [
+        { name: 'Home', url: '/' },
+        { name: 'Artists', url: '/artists' },
+        { name: artist.name, url: `/artist/${artist.slug}` }
+      ]
+      breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+    }
+  } catch (error) {
+    console.error('Error generating artist schema:', error)
+  }
+
+  return (
+    <>
+      {artistSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(artistSchema) }}
+        />
+      )}
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      <ArtistPageClient />
+    </>
+  )
 }

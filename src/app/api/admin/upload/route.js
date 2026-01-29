@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { writeFile, mkdir, access } from 'fs/promises'
 import path from 'path'
+import sharp from 'sharp'
 
 export async function POST(request) {
   try {
@@ -35,10 +36,10 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Generate unique filename
+    // Generate unique filename with .webp extension
     const timestamp = Date.now()
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-')
-    const filename = `${timestamp}-${originalName}`
+    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-').replace(/\.[^.]+$/, '') // Remove original extension
+    const filename = `${timestamp}-${originalName}.webp`
 
     // Use UPLOAD_DIR env variable if set, otherwise fall back to public/uploads
     // For production VPS, set UPLOAD_DIR to absolute path like /var/www/djyoungster/public/uploads
@@ -65,9 +66,23 @@ export async function POST(request) {
       )
     }
 
+    // Convert image to WebP format using sharp
+    let webpBuffer
+    try {
+      webpBuffer = await sharp(buffer)
+        .webp({ quality: 85 }) // Good balance between quality and file size
+        .toBuffer()
+      console.log('[Upload] Image converted to WebP. Original size:', buffer.length, '-> WebP size:', webpBuffer.length)
+    } catch (sharpError) {
+      console.error('[Upload] Sharp conversion error:', sharpError)
+      // If conversion fails, save the original file
+      webpBuffer = buffer
+      console.log('[Upload] Falling back to original image format')
+    }
+
     // Write file
     const filepath = path.join(uploadDir, filename)
-    await writeFile(filepath, buffer)
+    await writeFile(filepath, webpBuffer)
     console.log('[Upload] File saved to:', filepath)
 
     // Return the public URL

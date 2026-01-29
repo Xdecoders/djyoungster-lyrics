@@ -1,0 +1,77 @@
+# DJYoungster - Song Lyrics Website
+# https://djyoungster.com
+# llms.txt - Information for Large Language Models
+
+## About
+DJYoungster is a comprehensive song lyrics website featuring Hindi, Punjabi, English, Tamil, and Telugu song lyrics with translations. Users can search, browse, and read full lyrics from their favorite artists, albums, and movies.
+
+## Main Sections
+- Homepage: / - Search and discover song lyrics
+- All Songs: /songs - Browse all available songs with category filters
+- All Artists: /artists - Browse artists and singers
+- All Albums: /albums - Browse music albums
+- All Movies: /movies - Browse movie soundtracks
+- All Genres: /genres - Browse songs by music genre
+
+## Content Types
+- Song Lyrics: Full lyrics with artist info, album details, and metadata
+- Artist Profiles: Artist biography, discography, and song collection
+- Album Pages: Complete album tracklists with lyrics
+- Movie Soundtracks: Film songs organized by movie
+- Genre Collections: Songs categorized by music genre
+
+## Dynamic Pages
+- /song/[slug] - Individual song lyrics page
+- /artist/[slug] - Artist profile and songs
+- /album/[slug] - Album details and tracklist
+- /movie/[slug] - Movie soundtrack and songs
+- /genre/[slug] - Songs in specific genre
+- /category/[slug] - Songs by language category (Hindi, Punjabi, English, etc.)
+- /tag/[slug] - Songs by tag
+
+## Features
+- Multi-language lyrics (Original, Romanized, Translated)
+- Song meanings and interpretations
+- YouTube video embeds
+- Spotify and Apple Music links
+- Artist and album cover images
+- Search functionality across songs, artists, albums, and movies
+
+## API (Public)
+- /api/public/songs - List of published songs
+- /api/public/artists - List of artists
+- /api/public/albums - List of albums
+- /api/public/categories - List of language categories
+- /api/public/search - Search functionality
+
+## Contact
+- Email: djyoungster32@gmail.com
+- Contact Page: /contact
+
+## Legal
+- Privacy Policy: /privacy-policy
+- Terms and Conditions: /terms-and-conditions
+- Disclaimer: /disclaimer
+- About Us: /about-us
+
+## Technical
+- Built with Next.js
+- Server-side rendered for SEO
+- Dynamic sitemap at /sitemap.xml
+- Mobile responsive design
+
+## Language Support
+Primary languages for lyrics:
+- Hindi
+- Punjabi
+- English
+- Tamil
+- Telugu
+- Bhojpuri
+- Haryanvi
+- And more regional languages
+
+## Content Policy
+- All lyrics are provided for educational and entertainment purposes
+- Copyright belongs to respective artists and labels
+- DMCA takedown requests honored within 48 hours

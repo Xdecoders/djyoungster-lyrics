@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { getAbsoluteUrl } from '@/lib/seo'
+import { generateMovieSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import MoviePageClient from './MoviePageClient'
+
+// ISR: Revalidate movie pages every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -72,8 +76,8 @@ export async function generateMetadata({ params }) {
         title,
         description,
         images: [imageUrl],
-        creator: '@djyoungster',
-        site: '@djyoungster',
+        creator: '@djyoungstercom',
+        site: '@djyoungstercom',
       },
       alternates: {
         canonical: pageUrl,
@@ -96,6 +100,55 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default function MoviePage() {
-  return <MoviePageClient />
+export default async function MoviePage({ params }) {
+  const { slug } = await params
+
+  let movieSchema = null
+  let breadcrumbSchema = null
+
+  try {
+    const movie = await prisma.movie.findUnique({
+      where: { slug },
+      include: {
+        _count: { select: { songs: true } },
+        songs: {
+          take: 50,
+          orderBy: { createdAt: 'desc' },
+          select: { title: true, slug: true }
+        }
+      }
+    })
+
+    if (movie) {
+      movieSchema = generateMovieSchema(movie, movie.songs)
+
+      // Generate breadcrumb
+      const breadcrumbs = [
+        { name: 'Home', url: '/' },
+        { name: 'Movies', url: '/movies' },
+        { name: movie.title, url: `/movie/${movie.slug}` }
+      ]
+      breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+    }
+  } catch (error) {
+    console.error('Error generating movie schema:', error)
+  }
+
+  return (
+    <>
+      {movieSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(movieSchema) }}
+        />
+      )}
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      <MoviePageClient />
+    </>
+  )
 }

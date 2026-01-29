@@ -62,21 +62,41 @@ function SongsContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [songs, setSongs] = useState([])
+  const [categories, setCategories] = useState([])
   const [pagination, setPagination] = useState(null)
   const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState('grid')
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1
+  const currentCategory = searchParams.get('category') || ''
+
+  useEffect(() => {
+    fetchCategories()
+  }, [])
 
   useEffect(() => {
     fetchSongs()
-  }, [currentSort, currentPage])
+  }, [currentSort, currentPage, currentCategory])
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/public/categories')
+      const data = await res.json()
+      setCategories(data)
+    } catch (err) {
+      console.error('Error fetching categories:', err)
+    }
+  }
 
   const fetchSongs = async () => {
     try {
       setLoading(true)
-      const res = await fetch(`/api/public/songs?page=${currentPage}&sort=${currentSort}`)
+      let url = `/api/public/songs?page=${currentPage}&sort=${currentSort}`
+      if (currentCategory) {
+        url += `&category=${currentCategory}`
+      }
+      const res = await fetch(url)
       const data = await res.json()
       setSongs(data.songs)
       setPagination(data.pagination)
@@ -89,7 +109,11 @@ function SongsContent() {
 
   const updateFilters = (key, value) => {
     const params = new URLSearchParams(searchParams.toString())
-    params.set(key, value)
+    if (value) {
+      params.set(key, value)
+    } else {
+      params.delete(key)
+    }
     if (key !== 'page') params.set('page', '1')
     router.push(`/songs?${params.toString()}`)
   }
@@ -105,7 +129,7 @@ function SongsContent() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
           <h1 className="text-3xl font-bold text-slate-800 dark:text-white">All Songs</h1>
           <div className="flex items-center gap-3">
             <select
@@ -129,9 +153,70 @@ function SongsContent() {
           </div>
         </div>
 
+        {/* Category Filter */}
+        {categories.length > 0 && (
+          <div className="mb-8">
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => updateFilters('category', '')}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                  !currentCategory
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary hover:text-primary'
+                }`}
+              >
+                All
+              </button>
+              {categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => updateFilters('category', cat.slug)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                    currentCategory === cat.slug
+                      ? 'bg-primary text-white shadow-md'
+                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:border-primary hover:text-primary'
+                  }`}
+                >
+                  {cat.name}
+                  <span className="ml-1.5 text-xs opacity-70">({cat._count.songs})</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Current filter info */}
+        {currentCategory && (
+          <div className="mb-6 flex items-center gap-2">
+            <span className="text-slate-500 dark:text-slate-400">Showing:</span>
+            <span className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+              {categories.find(c => c.slug === currentCategory)?.name || currentCategory}
+            </span>
+            <span className="text-slate-400 dark:text-slate-500">
+              ({pagination?.total || 0} songs)
+            </span>
+          </div>
+        )}
+
         {loading ? (
           <div className="flex justify-center py-20">
             <div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div>
+          </div>
+        ) : songs.length === 0 ? (
+          <div className="text-center py-20">
+            <FiMusic className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-slate-600 dark:text-slate-400 mb-2">No songs found</h3>
+            <p className="text-slate-500 dark:text-slate-500">
+              {currentCategory ? 'No songs in this category yet.' : 'No songs available.'}
+            </p>
+            {currentCategory && (
+              <button
+                onClick={() => updateFilters('category', '')}
+                className="mt-4 px-4 py-2 bg-primary text-white rounded-xl hover:bg-emerald-600 transition"
+              >
+                View All Songs
+              </button>
+            )}
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">

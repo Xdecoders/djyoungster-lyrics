@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { getAbsoluteUrl } from '@/lib/seo'
+import { generateSongSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import SongPageClient from './SongPageClient'
+
+// ISR: Revalidate song pages every 1 hour
+export const revalidate = 3600
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
@@ -105,8 +109,8 @@ export async function generateMetadata({ params }) {
         title: metaTitle,
         description: metaDescription,
         images: [imageUrl],
-        creator: '@djyoungster',
-        site: '@djyoungster',
+        creator: '@djyoungstercom',
+        site: '@djyoungstercom',
       },
       alternates: {
         canonical: pageUrl,
@@ -134,36 +138,62 @@ export async function generateMetadata({ params }) {
   }
 }
 
-// JSON-LD structured data for rich snippets
-function generateJsonLd(song, artistNames) {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+export default async function SongPage({ params }) {
+  const { slug } = await params
 
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'MusicRecording',
-    name: song.title,
-    byArtist: {
-      '@type': 'MusicGroup',
-      name: artistNames,
-    },
-    duration: song.duration || undefined,
-    inAlbum: song.album ? {
-      '@type': 'MusicAlbum',
-      name: song.album.title,
-    } : undefined,
-    datePublished: song.releaseYear?.toString(),
-    genre: song.genres?.map(sg => sg.genre.name),
-    inLanguage: song.language,
-    lyrics: {
-      '@type': 'CreativeWork',
-      text: song.lyrics?.substring(0, 500) + '...',
-      author: song.lyricist || artistNames,
-    },
-    url: `${siteUrl}/song/${song.slug}`,
-    image: getAbsoluteUrl(song.coverImage),
+  // Fetch song data for structured data
+  let songSchema = null
+  let breadcrumbSchema = null
+
+  try {
+    const song = await prisma.song.findUnique({
+      where: { slug },
+      include: {
+        artists: {
+          include: {
+            artist: { select: { name: true, slug: true } }
+          }
+        },
+        album: { select: { title: true, slug: true } },
+        genres: {
+          include: {
+            genre: { select: { name: true } }
+          }
+        }
+      }
+    })
+
+    if (song) {
+      const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+      songSchema = generateSongSchema(song, artistNames)
+
+      // Generate breadcrumb
+      const breadcrumbs = [
+        { name: 'Home', url: '/' },
+        { name: 'Songs', url: '/songs' },
+        { name: song.title, url: `/song/${song.slug}` }
+      ]
+      breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+    }
+  } catch (error) {
+    console.error('Error generating song schema:', error)
   }
-}
 
-export default function SongPage() {
-  return <SongPageClient />
+  return (
+    <>
+      {songSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(songSchema) }}
+        />
+      )}
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      <SongPageClient />
+    </>
+  )
 }

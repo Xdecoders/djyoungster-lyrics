@@ -45,11 +45,14 @@ export async function sendNewsletter({ subscribers, subject, html }) {
 
     const promises = batch.map(async (subscriber) => {
       try {
+        // Replace {{EMAIL}} placeholder with actual subscriber email for unsubscribe link
+        const personalizedHtml = html.replace(/\{\{EMAIL\}\}/g, encodeURIComponent(subscriber.email))
+
         await transporter.sendMail({
           from: `"DJYoungster" <${process.env.SMTP_USER}>`,
           to: subscriber.email,
           subject,
-          html
+          html: personalizedHtml
         })
         results.sent++
       } catch (error) {

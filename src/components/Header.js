@@ -109,7 +109,7 @@ export default function Header() {
               <div className="bg-gradient-to-br from-primary to-emerald-600 rounded-xl p-2">
                 <FiMusic className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent hidden sm:block">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-emerald-600 bg-clip-text text-transparent">
                 DJYoungster
               </span>
             </Link>

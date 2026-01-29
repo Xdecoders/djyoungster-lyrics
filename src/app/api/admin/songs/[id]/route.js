@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 
 // GET single song
@@ -149,6 +150,15 @@ export async function PUT(request, { params }) {
       }
     })
 
+    // Revalidate cache for the updated song and related pages
+    try {
+      revalidatePath(`/song/${song.slug}`)
+      revalidatePath('/songs')
+      revalidatePath('/')
+    } catch (revalidateError) {
+      console.log('[Song Update] Revalidation note:', revalidateError.message)
+    }
+
     return NextResponse.json(song)
   } catch (error) {
     console.error('Error updating song:', error)
@@ -164,9 +174,26 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = await params
 
+    // Get song slug before deleting for cache revalidation
+    const song = await prisma.song.findUnique({
+      where: { id },
+      select: { slug: true }
+    })
+
     await prisma.song.delete({
       where: { id }
     })
+
+    // Revalidate cache
+    try {
+      if (song?.slug) {
+        revalidatePath(`/song/${song.slug}`)
+      }
+      revalidatePath('/songs')
+      revalidatePath('/')
+    } catch (revalidateError) {
+      console.log('[Song Delete] Revalidation note:', revalidateError.message)
+    }
 
     return NextResponse.json({ message: 'Song deleted successfully' })
   } catch (error) {

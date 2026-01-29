@@ -7,6 +7,7 @@ export async function GET(request) {
     const page = parseInt(searchParams.get('page')) || 1
     const limit = parseInt(searchParams.get('limit')) || 18
     const sort = searchParams.get('sort') || 'latest'
+    const category = searchParams.get('category') || ''
     const skip = (page - 1) * limit
 
     let orderBy = {}
@@ -25,22 +26,37 @@ export async function GET(request) {
         orderBy = { createdAt: 'desc' }
     }
 
+    // Build where clause with optional category filter
+    const where = { status: 'published' }
+    if (category) {
+      where.categories = {
+        some: {
+          category: { slug: category }
+        }
+      }
+    }
+
     const [songs, total] = await Promise.all([
       prisma.song.findMany({
-        where: { status: 'published' },
+        where,
         include: {
           artists: {
             include: {
               artist: { select: { id: true, name: true, slug: true } }
             }
           },
-          album: { select: { id: true, title: true, slug: true, coverImage: true } }
+          album: { select: { id: true, title: true, slug: true, coverImage: true } },
+          categories: {
+            include: {
+              category: { select: { id: true, name: true, slug: true } }
+            }
+          }
         },
         orderBy,
         skip,
         take: limit
       }),
-      prisma.song.count({ where: { status: 'published' } })
+      prisma.song.count({ where })
     ])
 
     return NextResponse.json({

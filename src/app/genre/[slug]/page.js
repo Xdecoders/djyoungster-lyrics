@@ -1,5 +1,9 @@
 import { prisma } from '@/lib/prisma'
+import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import GenrePageClient from './GenrePageClient'
+
+// ISR: Revalidate genre pages every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -60,8 +64,8 @@ export async function generateMetadata({ params }) {
         title,
         description,
         images: [imageUrl],
-        creator: '@djyoungster',
-        site: '@djyoungster',
+        creator: '@djyoungstercom',
+        site: '@djyoungstercom',
       },
       alternates: {
         canonical: pageUrl,
@@ -80,6 +84,56 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default function GenrePage() {
-  return <GenrePageClient />
+export default async function GenrePage({ params }) {
+  const { slug } = await params
+
+  let collectionSchema = null
+  let breadcrumbSchema = null
+
+  try {
+    const genre = await prisma.genre.findUnique({
+      where: { slug },
+      include: {
+        _count: { select: { songs: true } },
+        songs: {
+          take: 20,
+          orderBy: { song: { views: 'desc' } },
+          include: {
+            song: { select: { title: true, slug: true } }
+          }
+        }
+      }
+    })
+
+    if (genre) {
+      const songs = genre.songs.map(sg => sg.song)
+      collectionSchema = generateCollectionPageSchema(genre, 'genre', songs)
+
+      breadcrumbSchema = generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Genres', url: '/genres' },
+        { name: genre.name, url: `/genre/${genre.slug}` }
+      ])
+    }
+  } catch (error) {
+    console.error('Error generating genre schema:', error)
+  }
+
+  return (
+    <>
+      {collectionSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+        />
+      )}
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      <GenrePageClient />
+    </>
+  )
 }

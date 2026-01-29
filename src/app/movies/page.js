@@ -1,5 +1,9 @@
 import MoviesPageClient from './MoviesPageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
+import { generateBreadcrumbSchema } from '@/lib/schema'
+
+// ISR: Revalidate movies list every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('movies')
@@ -41,5 +45,37 @@ export async function generateMetadata() {
 }
 
 export default function MoviesPage() {
-  return <MoviesPageClient />
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'All Movies', url: '/movies' }
+  ])
+
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'All Movies - Movie Soundtracks Collection',
+    url: `${siteUrl}/movies`,
+    description: 'Browse all movie soundtracks on DJYoungster. Find complete movie song lists with lyrics from Bollywood, Hollywood, and regional cinema.',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DJYoungster',
+      url: siteUrl
+    }
+  }
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+      <MoviesPageClient />
+    </>
+  )
 }

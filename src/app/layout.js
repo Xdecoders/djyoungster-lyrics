@@ -1,6 +1,7 @@
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
+import GoogleAnalytics from '@/components/GoogleAnalytics'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { getSiteSettings } from '@/lib/seo'
 
@@ -30,6 +31,7 @@ export default async function RootLayout({ children }) {
         <link rel="apple-touch-icon" href={faviconUrl} />
       </head>
       <body className="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors">
+        <GoogleAnalytics />
         <ThemeProvider>
           <Header />
           <main className="flex-1">{children}</main>

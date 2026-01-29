@@ -1,5 +1,9 @@
 import AlbumsPageClient from './AlbumsPageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
+import { generateBreadcrumbSchema } from '@/lib/schema'
+
+// ISR: Revalidate albums list every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('albums')
@@ -41,5 +45,37 @@ export async function generateMetadata() {
 }
 
 export default function AlbumsPage() {
-  return <AlbumsPageClient />
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'All Albums', url: '/albums' }
+  ])
+
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'All Albums - Music Albums Collection',
+    url: `${siteUrl}/albums`,
+    description: 'Browse all music albums on DJYoungster. Find album tracklists, song lyrics, and release information.',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DJYoungster',
+      url: siteUrl
+    }
+  }
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+      <AlbumsPageClient />
+    </>
+  )
 }

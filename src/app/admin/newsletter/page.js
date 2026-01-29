@@ -114,7 +114,9 @@ export default function NewsletterPage() {
       : ''
 
     const artistNames = song.artists?.map(sa => sa.artist?.name).filter(Boolean).join(', ') || 'Unknown Artist'
-    const coverImage = song.coverImage || `${siteUrl}/default-cover.jpg`
+    // Ensure cover image is an absolute URL for email clients
+    const rawCoverImage = song.coverImage || '/default-cover.jpg'
+    const coverImage = rawCoverImage.startsWith('http') ? rawCoverImage : `${siteUrl}${rawCoverImage.startsWith('/') ? '' : '/'}${rawCoverImage}`
     const songUrl = `${siteUrl}/song/${song.slug}`
 
     return `<!DOCTYPE html>
@@ -182,7 +184,7 @@ export default function NewsletterPage() {
               <p style="margin: 0 0 12px; color: #94a3b8; font-size: 13px;">
                 <a href="${siteUrl}" style="color: #10b981; text-decoration: none;">Visit DJYoungster</a>
                 <span style="margin: 0 8px;">•</span>
-                <a href="${siteUrl}/unsubscribe" style="color: #94a3b8; text-decoration: none;">Unsubscribe</a>
+                <a href="${siteUrl}/unsubscribe?email={{EMAIL}}" style="color: #94a3b8; text-decoration: none;">Unsubscribe</a>
               </p>
               <p style="margin: 0; color: #cbd5e1; font-size: 12px;">© ${new Date().getFullYear()} DJYoungster. All rights reserved.</p>
             </td>

@@ -1,5 +1,9 @@
 import ArtistsPageClient from './ArtistsPageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
+import { generateBreadcrumbSchema } from '@/lib/schema'
+
+// ISR: Revalidate artists list every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('artists')
@@ -41,5 +45,37 @@ export async function generateMetadata() {
 }
 
 export default function ArtistsPage() {
-  return <ArtistsPageClient />
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'All Artists', url: '/artists' }
+  ])
+
+  const collectionSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'All Artists - Music Artists Directory',
+    url: `${siteUrl}/artists`,
+    description: 'Browse all music artists on DJYoungster. Find your favorite singers, bands, and musicians with their complete song lyrics collection.',
+    isPartOf: {
+      '@type': 'WebSite',
+      name: 'DJYoungster',
+      url: siteUrl
+    }
+  }
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+      />
+      <ArtistsPageClient />
+    </>
+  )
 }

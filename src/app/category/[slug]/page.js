@@ -1,6 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { getAbsoluteUrl } from '@/lib/seo'
+import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import CategoryPageClient from './CategoryPageClient'
+
+// ISR: Revalidate category pages every 1 hour
+export const revalidate = 3600
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -62,8 +66,8 @@ export async function generateMetadata({ params }) {
         title,
         description,
         images: [imageUrl],
-        creator: '@djyoungster',
-        site: '@djyoungster',
+        creator: '@djyoungstercom',
+        site: '@djyoungstercom',
       },
       alternates: {
         canonical: pageUrl,
@@ -82,6 +86,56 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default function CategoryPage() {
-  return <CategoryPageClient />
+export default async function CategoryPage({ params }) {
+  const { slug } = await params
+
+  let collectionSchema = null
+  let breadcrumbSchema = null
+
+  try {
+    const category = await prisma.category.findUnique({
+      where: { slug },
+      include: {
+        _count: { select: { songs: true } },
+        songs: {
+          take: 20,
+          orderBy: { song: { views: 'desc' } },
+          include: {
+            song: { select: { title: true, slug: true } }
+          }
+        }
+      }
+    })
+
+    if (category) {
+      const songs = category.songs.map(sc => sc.song)
+      collectionSchema = generateCollectionPageSchema(category, 'category', songs)
+
+      breadcrumbSchema = generateBreadcrumbSchema([
+        { name: 'Home', url: '/' },
+        { name: 'Categories', url: '/songs' },
+        { name: category.name, url: `/category/${category.slug}` }
+      ])
+    }
+  } catch (error) {
+    console.error('Error generating category schema:', error)
+  }
+
+  return (
+    <>
+      {collectionSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
+        />
+      )}
+      {breadcrumbSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      <CategoryPageClient />
+    </>
+  )
 }

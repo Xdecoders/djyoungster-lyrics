@@ -1,0 +1,35 @@
+# robots.txt for DJYoungster
+# https://djyoungster.com
+
+User-agent: *
+Allow: /
+
+# Allow all search engines
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Yandex
+Allow: /
+
+# Disallow admin pages
+Disallow: /admin/
+Disallow: /admin/*
+Disallow: /api/admin/
+
+# Disallow search results with parameters (avoid duplicate content)
+Disallow: /search?*
+
+# Allow API for public data
+Allow: /api/public/
+
+# Sitemap location
+Sitemap: https://djyoungster.com/sitemap.xml
+
+# Crawl delay (optional - be nice to the server)
+Crawl-delay: 1
