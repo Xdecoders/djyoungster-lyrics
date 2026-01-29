@@ -89,6 +89,7 @@ export async function getSeoSettings(pageKey) {
     metaKeywords: DEFAULT_SETTINGS[pageKey]?.metaKeywords,
     ogTitle: DEFAULT_SETTINGS[pageKey]?.metaTitle,
     ogDescription: DEFAULT_SETTINGS[pageKey]?.metaDescription,
+    ogImage: null,
   }
 
   try {
@@ -108,6 +109,7 @@ export async function getSeoSettings(pageKey) {
         metaKeywords: settings.metaKeywords || defaults.metaKeywords,
         ogTitle: settings.ogTitle || settings.metaTitle || defaults.ogTitle,
         ogDescription: settings.ogDescription || settings.metaDescription || defaults.ogDescription,
+        ogImage: settings.ogImage || null,
       }
     }
 

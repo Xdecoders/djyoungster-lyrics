@@ -27,6 +27,7 @@ export default function SeoSettingsPage() {
   const [saving, setSaving] = useState({})
   const [saved, setSaved] = useState({})
   const [editedSettings, setEditedSettings] = useState({})
+  const [uploadingPageOgImage, setUploadingPageOgImage] = useState({})
 
   // Favicon states
   const [faviconUrl, setFaviconUrl] = useState('')
@@ -229,6 +230,51 @@ export default function SeoSettingsPage() {
     }))
     // Clear saved status when editing
     setSaved(prev => ({ ...prev, [pageKey]: false }))
+  }
+
+  const handlePageOgImageUpload = async (e, pageKey) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      alert('Please upload a PNG, JPEG, or WebP file')
+      return
+    }
+
+    // Validate size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('OG Image should be less than 5MB')
+      return
+    }
+
+    setUploadingPageOgImage(prev => ({ ...prev, [pageKey]: true }))
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData
+      })
+
+      const data = await res.json()
+      if (res.ok) {
+        handleChange(pageKey, 'ogImage', data.url)
+      } else {
+        alert(data.message || 'Failed to upload OG image')
+      }
+    } catch (error) {
+      console.error('Error uploading OG image:', error)
+      alert('Error uploading OG image')
+    } finally {
+      setUploadingPageOgImage(prev => ({ ...prev, [pageKey]: false }))
+    }
+  }
+
+  const clearPageOgImage = (pageKey) => {
+    handleChange(pageKey, 'ogImage', '')
   }
 
   const handleSave = async (pageKey) => {
@@ -613,6 +659,76 @@ export default function SeoSettingsPage() {
                       placeholder="Description for social media"
                       className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                     />
+                  </div>
+                </div>
+
+                {/* OG Image for this page */}
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="block text-sm font-medium text-slate-700 mb-3">
+                    <FiImage className="inline w-4 h-4 mr-2" />
+                    OG Image (Social Media Sharing)
+                  </label>
+                  <div className="flex items-start gap-4">
+                    {/* Preview */}
+                    <div className="flex-shrink-0">
+                      {edited.ogImage ? (
+                        <div className="relative">
+                          <div className="w-32 h-20 rounded-lg border-2 border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden">
+                            <img
+                              src={edited.ogImage}
+                              alt="OG Image preview"
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <button
+                            onClick={() => clearPageOgImage(setting.pageKey)}
+                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition"
+                          >
+                            <FiX className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="w-32 h-20 rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 flex items-center justify-center">
+                          <FiImage className="w-6 h-6 text-slate-300" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Upload Section */}
+                    <div className="flex-1 space-y-2">
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          accept=".png,.jpg,.jpeg,.webp"
+                          onChange={(e) => handlePageOgImageUpload(e, setting.pageKey)}
+                          className="hidden"
+                          id={`og-image-${setting.pageKey}`}
+                        />
+                        <label
+                          htmlFor={`og-image-${setting.pageKey}`}
+                          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium cursor-pointer transition ${
+                            uploadingPageOgImage[setting.pageKey]
+                              ? 'bg-slate-100 text-slate-400'
+                              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                          }`}
+                        >
+                          {uploadingPageOgImage[setting.pageKey] ? (
+                            <div className="w-3 h-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <FiUpload className="w-3 h-3" />
+                          )}
+                          {uploadingPageOgImage[setting.pageKey] ? 'Uploading...' : 'Upload'}
+                        </label>
+                      </div>
+                      <input
+                        type="text"
+                        value={edited.ogImage || ''}
+                        onChange={(e) => handleChange(setting.pageKey, 'ogImage', e.target.value)}
+                        placeholder="Or enter image URL"
+                        className="w-full px-3 py-1.5 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                      />
+                      <p className="text-xs text-slate-400">1200x630px recommended. Falls back to global OG image if empty.</p>
+                    </div>
                   </div>
                 </div>
               </div>

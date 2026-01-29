@@ -6,8 +6,8 @@ export async function generateMetadata() {
   const siteSettings = await getSiteSettings()
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
-  // Use ogImage from settings, or fall back to default og-image.jpg
-  const ogImageUrl = getAbsoluteUrl(siteSettings.ogImage) || `${siteUrl}/og-image.jpg`
+  // Use page-specific OG image, fall back to global, then default
+  const ogImageUrl = getAbsoluteUrl(seo.ogImage) || getAbsoluteUrl(siteSettings.ogImage) || `${siteUrl}/og-image.jpg`
 
   return {
     title: seo.metaTitle,

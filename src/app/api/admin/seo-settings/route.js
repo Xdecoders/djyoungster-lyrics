@@ -79,7 +79,7 @@ export async function GET() {
 export async function POST(request) {
   try {
     const data = await request.json()
-    const { pageKey, metaTitle, metaDescription, metaKeywords, ogTitle, ogDescription } = data
+    const { pageKey, metaTitle, metaDescription, metaKeywords, ogTitle, ogDescription, ogImage } = data
 
     if (!pageKey) {
       return NextResponse.json({ error: 'Page key is required' }, { status: 400 })
@@ -95,6 +95,7 @@ export async function POST(request) {
         metaKeywords,
         ogTitle,
         ogDescription,
+        ogImage,
       },
       create: {
         pageKey,
@@ -104,6 +105,7 @@ export async function POST(request) {
         metaKeywords,
         ogTitle,
         ogDescription,
+        ogImage,
       }
     })
 

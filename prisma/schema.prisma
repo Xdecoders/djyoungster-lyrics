@@ -145,6 +145,7 @@ model SiteSeoSettings {
   metaKeywords    String?  @db.Text
   ogTitle         String?
   ogDescription   String?  @db.Text
+  ogImage         String?  // OG image URL for social media sharing
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
