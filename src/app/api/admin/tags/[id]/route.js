@@ -39,7 +39,10 @@ export async function PUT(request, { params }) {
       where: { id },
       data: {
         name: data.name,
-        slug: data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+        slug: data.slug || data.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''),
+        description: data.description || null,
+        metaTitle: data.metaTitle || null,
+        metaDescription: data.metaDescription || null
       }
     })
 
