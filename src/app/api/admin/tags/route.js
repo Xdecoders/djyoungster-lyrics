@@ -63,10 +63,7 @@ export async function POST(request) {
     const tag = await prisma.tag.create({
       data: {
         name,
-        slug,
-        description: data.description || null,
-        metaTitle: data.metaTitle || null,
-        metaDescription: data.metaDescription || null
+        slug
       }
     })
 
