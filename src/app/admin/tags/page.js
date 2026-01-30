@@ -212,7 +212,7 @@ export default function TagsPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleNameChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white text-slate-800"
                     placeholder="Tag name"
                     required
                   />
@@ -224,7 +224,7 @@ export default function TagsPage() {
                     name="slug"
                     value={formData.slug}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white text-slate-800"
                     placeholder="auto-generated"
                   />
                 </div>
@@ -236,7 +236,7 @@ export default function TagsPage() {
                   value={formData.description}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none bg-white text-slate-800"
                   placeholder="Write a description about this tag for SEO..."
                 />
               </div>
@@ -248,7 +248,7 @@ export default function TagsPage() {
                     name="metaTitle"
                     value={formData.metaTitle}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white text-slate-800"
                     placeholder="SEO optimized title"
                   />
                 </div>
@@ -259,7 +259,7 @@ export default function TagsPage() {
                     name="metaDescription"
                     value={formData.metaDescription}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white text-slate-800"
                     placeholder="Brief description for search engines"
                   />
                 </div>
@@ -303,7 +303,7 @@ export default function TagsPage() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search tags..."
-              className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl bg-white focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+              className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl bg-white text-slate-800 focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
             />
           </div>
         </div>

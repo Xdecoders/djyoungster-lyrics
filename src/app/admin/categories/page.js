@@ -207,7 +207,7 @@ export default function CategoriesPage() {
                     name="name"
                     value={formData.name}
                     onChange={handleNameChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white text-slate-800"
                     placeholder="Category name"
                     required
                   />
@@ -219,7 +219,7 @@ export default function CategoriesPage() {
                     name="slug"
                     value={formData.slug}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white text-slate-800"
                     placeholder="auto-generated"
                   />
                 </div>
@@ -231,7 +231,7 @@ export default function CategoriesPage() {
                   value={formData.description}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none bg-white text-slate-800"
                   placeholder="Write a description about this language/category for SEO..."
                 />
               </div>
@@ -243,7 +243,7 @@ export default function CategoriesPage() {
                     name="metaTitle"
                     value={formData.metaTitle}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white text-slate-800"
                     placeholder="SEO optimized title"
                   />
                 </div>
@@ -254,7 +254,7 @@ export default function CategoriesPage() {
                     name="metaDescription"
                     value={formData.metaDescription}
                     onChange={handleChange}
-                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition bg-white text-slate-800"
                     placeholder="Brief description for search engines"
                   />
                 </div>

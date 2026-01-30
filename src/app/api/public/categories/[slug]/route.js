@@ -13,13 +13,7 @@ export async function GET(request, { params }) {
     const skip = (page - 1) * limit
 
     const category = await prisma.category.findUnique({
-      where: { slug },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        description: true
-      }
+      where: { slug }
     })
 
     if (!category) {
