@@ -186,12 +186,12 @@ export default function GenrePageClient() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Header */}
-        <div className="bg-gradient-to-r from-primary to-emerald-600 rounded-2xl p-8 mb-8 text-white">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-2">{genre.name}</h1>
+        <div className="bg-emerald-100 dark:bg-slate-800 rounded-2xl p-8 mb-8 border border-emerald-200/50 dark:border-slate-700">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-2 text-slate-800 dark:text-white">{genre.name}</h1>
           {genre.description && (
-            <p className="text-white/80 mb-4 max-w-2xl">{genre.description}</p>
+            <p className="text-slate-600 dark:text-slate-300 mb-4 max-w-2xl">{genre.description}</p>
           )}
-          <p className="text-white/70">{genre.totalSongs} songs</p>
+          <p className="text-slate-500 dark:text-slate-400">{genre.totalSongs} songs</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

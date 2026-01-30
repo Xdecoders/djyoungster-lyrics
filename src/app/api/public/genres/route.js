@@ -3,12 +3,15 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(request) {
   try {
-    const genres = await prisma.genre.findMany({
+    const allGenres = await prisma.genre.findMany({
       include: {
         _count: { select: { songs: true } }
       },
       orderBy: { name: 'asc' }
     })
+
+    // Only return genres that have at least one song
+    const genres = allGenres.filter(genre => genre._count.songs > 0)
 
     return NextResponse.json({ genres })
   } catch (error) {

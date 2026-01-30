@@ -487,74 +487,154 @@ function AlbumCard({ album, index }) {
   )
 }
 
-// Category Song List Component (3 columns layout)
-function CategorySongList({ category, colorScheme }) {
-  const colors = {
-    orange: { bg: 'bg-orange-50 dark:bg-orange-900/20', border: 'border-orange-100 dark:border-orange-800', header: 'bg-gradient-to-r from-orange-400 to-rose-500', text: 'text-white' },
-    green: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-100 dark:border-emerald-800', header: 'bg-gradient-to-r from-primary to-emerald-600', text: 'text-white' },
-    blue: { bg: 'bg-blue-50 dark:bg-blue-900/20', border: 'border-blue-100 dark:border-blue-800', header: 'bg-gradient-to-r from-blue-500 to-cyan-500', text: 'text-white' },
-    emerald: { bg: 'bg-emerald-50 dark:bg-emerald-900/20', border: 'border-emerald-100 dark:border-emerald-800', header: 'bg-gradient-to-r from-emerald-500 to-teal-500', text: 'text-white' },
-    pink: { bg: 'bg-pink-50 dark:bg-pink-900/20', border: 'border-pink-100 dark:border-pink-800', header: 'bg-gradient-to-r from-pink-500 to-rose-500', text: 'text-white' },
-  }
-  const color = colors[colorScheme] || colors.green
+// Hook to extract dominant color from image
+function useImageColor(imageUrl) {
+  const [color, setColor] = useState(null)
 
-  const songs = category.songs?.slice(0, 10) || []
+  useEffect(() => {
+    if (!imageUrl) return
 
-  const formatViews = (views) => {
-    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'
-    if (views >= 1000) return (views / 1000).toFixed(1) + 'K'
-    return views?.toString() || '0'
-  }
+    const img = new Image()
+    img.crossOrigin = 'Anonymous'
+    img.src = imageUrl
+
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        canvas.width = 50
+        canvas.height = 50
+        ctx.drawImage(img, 0, 0, 50, 50)
+
+        const imageData = ctx.getImageData(0, 0, 50, 50).data
+        let r = 0, g = 0, b = 0, count = 0
+
+        for (let i = 0; i < imageData.length; i += 16) {
+          r += imageData[i]
+          g += imageData[i + 1]
+          b += imageData[i + 2]
+          count++
+        }
+
+        r = Math.round(r / count)
+        g = Math.round(g / count)
+        b = Math.round(b / count)
+
+        // Make it more pastel/lighter for better readability
+        const lighten = (value) => Math.round(value + (255 - value) * 0.6)
+        setColor({
+          bg: `rgb(${lighten(r)}, ${lighten(g)}, ${lighten(b)})`,
+          accent: `rgb(${r}, ${g}, ${b})`,
+          text: `rgb(${Math.round(r * 0.7)}, ${Math.round(g * 0.7)}, ${Math.round(b * 0.7)})`
+        })
+      } catch (e) {
+        // Fallback if CORS fails
+        setColor(null)
+      }
+    }
+  }, [imageUrl])
+
+  return color
+}
+
+// Minimalist Horizontal Song Card Component with Image Color Extraction
+function MinimalistSongCard({ song, colorIndex }) {
+  const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+  const extractedColor = useImageColor(song.coverImage)
+
+  // Fallback color schemes when color extraction fails
+  const fallbackColors = [
+    { bg: '#FEE2E2', accent: '#EF4444', text: '#DC2626' },
+    { bg: '#CCFBF1', accent: '#14B8A6', text: '#0D9488' },
+    { bg: '#D1FAE5', accent: '#10B981', text: '#059669' },
+    { bg: '#FEF3C7', accent: '#F59E0B', text: '#D97706' },
+    { bg: '#FFEDD5', accent: '#F97316', text: '#EA580C' },
+    { bg: '#E9D5FF', accent: '#A855F7', text: '#9333EA' },
+    { bg: '#E2E8F0', accent: '#64748B', text: '#475569' },
+    { bg: '#FCE7F3', accent: '#EC4899', text: '#DB2777' },
+    { bg: '#D1FAE5', accent: '#10B981', text: '#059669' },
+    { bg: '#CFFAFE', accent: '#06B6D4', text: '#0891B2' },
+  ]
+  const fallback = fallbackColors[colorIndex % fallbackColors.length]
+  const colors = extractedColor || fallback
 
   return (
-    <div className={`rounded-2xl ${color.bg} border ${color.border} overflow-hidden shadow-sm hover:shadow-md transition-shadow`}>
-      {/* Header */}
-      <div className={`${color.header} px-5 py-4 flex items-center justify-between`}>
-        <h3 className={`font-bold text-lg ${color.text}`}>{category.name}</h3>
-        <Link
-          href={`/category/${category.slug}`}
-          className={`text-xs font-medium ${color.text} opacity-80 hover:opacity-100 flex items-center gap-1`}
+    <Link
+      href={`/song/${song.slug}`}
+      className="group flex items-center justify-between p-5 rounded-2xl border-l-4 hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
+      style={{
+        backgroundColor: colors.bg,
+        borderLeftColor: colors.accent
+      }}
+    >
+      {/* Left: Text */}
+      <div className="flex-1 min-w-0 pr-4">
+        <p
+          className="text-xs font-semibold uppercase tracking-wide mb-1.5 truncate"
+          style={{ color: colors.text }}
         >
-          View All <FiArrowRight className="w-3 h-3" />
-        </Link>
+          {artistNames}
+        </p>
+        <h4 className="text-slate-800 font-bold text-base sm:text-lg truncate">
+          {song.title}
+        </h4>
       </div>
 
-      {/* Song List */}
-      <div className="divide-y divide-slate-100/80 dark:divide-slate-700/50">
-        {songs.length > 0 ? (
-          songs.map((songCat, index) => {
-            const song = songCat.song
-            const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown'
-            return (
-              <Link
-                key={song.id}
-                href={`/song/${song.slug}`}
-                className="flex items-center justify-between px-5 py-3 hover:bg-white/60 dark:hover:bg-slate-800/60 transition group"
-              >
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <span className="text-xs font-medium text-slate-400 dark:text-slate-500 w-5">{index + 1}</span>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate group-hover:text-primary transition">
-                      {song.title}
-                    </p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{artistNames}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 ml-3">
-                  <FiEye className="w-3 h-3" />
-                  <span className="text-xs font-medium">{formatViews(song.views)}</span>
-                </div>
-              </Link>
-            )
-          })
+      {/* Right: Image */}
+      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
+        {song.coverImage ? (
+          <img
+            src={song.coverImage}
+            alt={song.title}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+          />
         ) : (
-          <div className="px-5 py-10 text-center">
-            <FiMusic className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-            <p className="text-sm text-slate-400 dark:text-slate-500">No songs yet</p>
-            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Check back soon!</p>
+          <div
+            className="w-full h-full flex items-center justify-center"
+            style={{ backgroundColor: colors.accent }}
+          >
+            <FiMusic className="w-8 h-8 text-white/80" />
           </div>
         )}
       </div>
+    </Link>
+  )
+}
+
+// Category Song Grid Component
+function CategorySongGrid({ category }) {
+  const songs = category.songs?.slice(0, 8) || []
+
+  return (
+    <div className="mb-10">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-bold text-lg text-slate-800 dark:text-white">{category.name}</h3>
+        <Link
+          href={`/category/${category.slug}`}
+          className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition flex items-center gap-1"
+        >
+          View All <FiArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* Song Cards Grid */}
+      {songs.length > 0 ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+          {songs.map((songCat, index) => (
+            <MinimalistSongCard
+              key={songCat.song.id}
+              song={songCat.song}
+              colorIndex={index}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="h-32 rounded-2xl bg-slate-100 dark:bg-slate-800 flex flex-col items-center justify-center">
+          <FiMusic className="w-8 h-8 text-slate-300 dark:text-slate-600 mb-2" />
+          <p className="text-sm text-slate-400 dark:text-slate-500">No songs yet</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -680,44 +760,6 @@ export default function HomePageClient() {
           </Carousel>
         )}
 
-        {/* Category-wise Song Lists - 3 Columns */}
-        {data?.categories?.length > 0 && (
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-5">
-              <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-                <FiMusic className="w-5 h-5 text-emerald-600 dark:text-primary" />
-              </div>
-              <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Songs by Language</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {data.categories.slice(0, 3).map((category, index) => {
-                const colorSchemes = ['orange', 'green', 'blue', 'emerald', 'pink']
-                return (
-                  <CategorySongList
-                    key={category.id}
-                    category={category}
-                    colorScheme={colorSchemes[index % colorSchemes.length]}
-                  />
-                )
-              })}
-            </div>
-            {/* Show remaining categories if more than 3 */}
-            {data.categories.length > 3 && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
-                {data.categories.slice(3, 5).map((category, index) => {
-                  const colorSchemes = ['emerald', 'pink']
-                  return (
-                    <CategorySongList
-                      key={category.id}
-                      category={category}
-                      colorScheme={colorSchemes[index % colorSchemes.length]}
-                    />
-                  )
-                })}
-              </div>
-            )}
-          </div>
-        )}
 
 
         {/* Popular Artists */}

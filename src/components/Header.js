@@ -14,7 +14,8 @@ import {
   FiGrid,
   FiChevronDown,
   FiSun,
-  FiMoon
+  FiMoon,
+  FiGlobe
 } from 'react-icons/fi'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -89,6 +90,7 @@ export default function Header() {
   ]
 
   const browseLinks = [
+    { href: '/languages', label: 'Languages', icon: FiGlobe, description: 'Browse by language' },
     { href: '/genres', label: 'Genres', icon: FiGrid, description: 'Browse by genre' },
     { href: '/movies', label: 'Movies', icon: FiFilm, description: 'Movie soundtracks' },
   ]

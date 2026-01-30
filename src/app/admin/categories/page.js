@@ -12,12 +12,16 @@ export default function CategoriesPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [successMessage, setSuccessMessage] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
+    description: '',
     metaTitle: '',
     metaDescription: ''
   })
+  const [submitting, setSubmitting] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -62,7 +66,7 @@ export default function CategoriesPage() {
   }
 
   const resetForm = () => {
-    setFormData({ name: '', slug: '', metaTitle: '', metaDescription: '' })
+    setFormData({ name: '', slug: '', description: '', metaTitle: '', metaDescription: '' })
     setShowForm(false)
     setEditingId(null)
   }
@@ -70,6 +74,9 @@ export default function CategoriesPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!formData.name.trim()) return
+
+    setSubmitting(true)
+    setErrorMessage('')
 
     try {
       const url = editingId
@@ -83,11 +90,22 @@ export default function CategoriesPage() {
       })
 
       if (res.ok) {
-        fetchCategories()
+        await fetchCategories()
+        const message = editingId ? 'Category updated successfully!' : 'Category created successfully!'
+        setSuccessMessage(message)
         resetForm()
+        // Scroll to top to see success message
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        const data = await res.json()
+        setErrorMessage(data.message || 'Failed to save category. Please try again.')
       }
     } catch (error) {
       console.error('Error saving category:', error)
+      setErrorMessage('Network error. Please check your connection and try again.')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -95,6 +113,7 @@ export default function CategoriesPage() {
     setFormData({
       name: category.name,
       slug: category.slug,
+      description: category.description || '',
       metaTitle: category.metaTitle || '',
       metaDescription: category.metaDescription || ''
     })
@@ -149,6 +168,25 @@ export default function CategoriesPage() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Success Message */}
+        {successMessage && (
+          <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 animate-pulse">
+            <FiCheck className="w-5 h-5 text-emerald-600" />
+            <span className="text-emerald-700 font-medium">{successMessage}</span>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+            <FiX className="w-5 h-5 text-red-600" />
+            <span className="text-red-700 font-medium">{errorMessage}</span>
+            <button onClick={() => setErrorMessage('')} className="ml-auto p-1 hover:bg-red-100 rounded">
+              <FiX className="w-4 h-4 text-red-500" />
+            </button>
+          </div>
+        )}
+
         {/* Add/Edit Form */}
         {showForm && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
@@ -186,6 +224,17 @@ export default function CategoriesPage() {
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Description (Shows on category page)</label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  rows={3}
+                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
+                  placeholder="Write a description about this language/category for SEO..."
+                />
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Meta Title (SEO)</label>
@@ -220,10 +269,20 @@ export default function CategoriesPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl hover:from-primary hover:to-emerald-700 transition flex items-center gap-2 shadow-lg shadow-emerald-200 font-medium text-sm"
+                  disabled={submitting}
+                  className="px-6 py-2.5 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl hover:from-primary hover:to-emerald-700 transition flex items-center gap-2 shadow-lg shadow-emerald-200 font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <FiCheck className="w-4 h-4" />
-                  {editingId ? 'Update' : 'Save'}
+                  {submitting ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      {editingId ? 'Updating...' : 'Saving...'}
+                    </>
+                  ) : (
+                    <>
+                      <FiCheck className="w-4 h-4" />
+                      {editingId ? 'Update' : 'Save'}
+                    </>
+                  )}
                 </button>
               </div>
             </form>

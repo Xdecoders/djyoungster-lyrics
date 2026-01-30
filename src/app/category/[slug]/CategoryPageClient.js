@@ -187,13 +187,19 @@ export default function CategoryPageClient() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Header */}
-        <div className="bg-gradient-to-r from-orange-400 to-rose-500 rounded-2xl p-8 mb-8 text-white">
+        <div className="bg-orange-100 dark:bg-slate-800 rounded-2xl p-8 mb-8 border border-orange-200/50 dark:border-slate-700">
           <div className="flex items-center gap-3 mb-2">
-            <FiGlobe className="w-8 h-8" />
-            <h1 className="text-3xl sm:text-4xl font-bold">{category.name} Songs</h1>
+            <div className="p-2 rounded-xl bg-orange-200/50 dark:bg-orange-900/30">
+              <FiGlobe className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 dark:text-white">{category.name} Songs</h1>
           </div>
-          <p className="text-white/80">Browse all {category.name} language songs</p>
-          <p className="text-white/70 mt-2">{category.totalSongs} songs</p>
+          {category.description ? (
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{category.description}</p>
+          ) : (
+            <p className="text-slate-600 dark:text-slate-300">Browse all {category.name} language songs</p>
+          )}
+          <p className="text-slate-500 dark:text-slate-400 mt-2">{category.totalSongs} songs</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

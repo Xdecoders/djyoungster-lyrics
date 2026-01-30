@@ -22,12 +22,15 @@ export async function generateMetadata({ params }) {
   const ogImageUrl = getAbsoluteUrl(siteSettings.ogImage) || `${siteUrl}/og-image.jpg`
   const pageUrl = `${siteUrl}/tag/${slug}`
 
+  const title = tag.metaTitle || `${tag.name} Songs - Song Lyrics | DJYoungster`
+  const description = tag.metaDescription || `Browse all songs tagged with ${tag.name}. Find lyrics for songs in the ${tag.name} category.`
+
   return {
-    title: `${tag.name} Songs - Song Lyrics | DJYoungster`,
-    description: `Browse all songs tagged with ${tag.name}. Find lyrics for songs in the ${tag.name} category.`,
+    title,
+    description,
     openGraph: {
-      title: `${tag.name} Songs - Song Lyrics | DJYoungster`,
-      description: `Browse all songs tagged with ${tag.name}. Find lyrics for songs in the ${tag.name} category.`,
+      title,
+      description,
       url: pageUrl,
       siteName: 'DJYoungster',
       type: 'website',
@@ -42,8 +45,8 @@ export async function generateMetadata({ params }) {
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${tag.name} Songs - Song Lyrics | DJYoungster`,
-      description: `Browse all songs tagged with ${tag.name}. Find lyrics for songs in the ${tag.name} category.`,
+      title,
+      description,
       images: [ogImageUrl],
     },
     alternates: {

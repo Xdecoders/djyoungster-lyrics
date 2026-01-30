@@ -127,6 +127,7 @@ model Category {
   id              String   @id @default(uuid())
   name            String   @unique
   slug            String   @unique
+  description     String?  @db.Text
   metaTitle       String?
   metaDescription String?  @db.Text
   createdAt       DateTime @default(now())
@@ -213,10 +214,13 @@ model SongCategory {
 }
 
 model Tag {
-  id        String    @id @default(uuid())
-  name      String    @unique
-  slug      String    @unique
-  createdAt DateTime  @default(now())
+  id              String    @id @default(uuid())
+  name            String    @unique
+  slug            String    @unique
+  description     String?   @db.Text
+  metaTitle       String?
+  metaDescription String?   @db.Text
+  createdAt       DateTime  @default(now())
 
   songs SongTag[]
 

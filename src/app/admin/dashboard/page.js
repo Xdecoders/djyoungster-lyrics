@@ -17,7 +17,8 @@ import {
   FiHome,
   FiAlertCircle,
   FiEdit2,
-  FiClock
+  FiClock,
+  FiTag
 } from 'react-icons/fi'
 
 export default function AdminDashboard() {
@@ -230,6 +231,7 @@ export default function AdminDashboard() {
             items={[
               { label: 'Manage Genres', href: '/admin/genres', Icon: FiGrid },
               { label: 'Manage Categories', href: '/admin/categories', Icon: FiFolder },
+              { label: 'Manage Tags', href: '/admin/tags', Icon: FiTag },
               { label: 'Manage Movies', href: '/admin/movies', Icon: FiFilm }
             ]}
           />

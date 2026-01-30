@@ -139,13 +139,19 @@ export default function TagPageClient({ initialTag, initialSongs }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         {/* Header */}
-        <div className="bg-gradient-to-r from-slate-600 to-slate-800 rounded-2xl p-8 mb-8 text-white">
+        <div className="bg-blue-100 dark:bg-slate-800 rounded-2xl p-8 mb-8 border border-blue-200/50 dark:border-slate-700">
           <div className="flex items-center gap-3 mb-2">
-            <FiTag className="w-8 h-8" />
-            <h1 className="text-3xl sm:text-4xl font-bold capitalize">#{tag.name}</h1>
+            <div className="p-2 rounded-xl bg-blue-200/50 dark:bg-blue-900/30">
+              <FiTag className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 dark:text-white capitalize">#{tag.name}</h1>
           </div>
-          <p className="text-white/80">Browse all songs tagged with <span className="capitalize">{tag.name}</span></p>
-          <p className="text-white/70 mt-2">{songs.length} songs</p>
+          {tag.description ? (
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{tag.description}</p>
+          ) : (
+            <p className="text-slate-600 dark:text-slate-300">Browse all songs tagged with <span className="capitalize">{tag.name}</span></p>
+          )}
+          <p className="text-slate-500 dark:text-slate-400 mt-2">{songs.length} songs</p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
