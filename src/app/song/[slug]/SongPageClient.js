@@ -1041,6 +1041,29 @@ export default function SongPageClient() {
               {/* Auto-generated Description */}
               <SongDescription song={song} />
 
+              {/* WhatsApp Channel Banner */}
+              <a
+                href="https://whatsapp.com/channel/0029Vb7A52PEAKW8b0wxfV03"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block mb-6 p-4 sm:p-5 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20BD5A] hover:to-[#0d7d6e] rounded-2xl shadow-lg shadow-[#25D366]/30 transition-all hover:scale-[1.01] group"
+              >
+                <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+                  <div className="p-4 bg-white/20 rounded-2xl">
+                    <FaWhatsapp className="w-10 h-10 sm:w-8 sm:h-8 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-bold text-lg sm:text-xl">Join Our WhatsApp Channel</p>
+                    <p className="text-white/90 text-sm mt-1">Get latest lyrics updates & new song alerts instantly!</p>
+                  </div>
+                  <div className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#25D366] font-bold rounded-xl group-hover:bg-white/90 transition shadow-md mt-2 sm:mt-0">
+                    <FaWhatsapp className="w-5 h-5" />
+                    <span>Follow Now</span>
+                    <FiChevronRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </a>
+
               {/* Lyrics Section */}
               <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8 mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
