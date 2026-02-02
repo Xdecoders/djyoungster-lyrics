@@ -422,29 +422,22 @@ function FAQSection({ song }) {
   )
 }
 
-// Related Song Card Component
+// Related Song Card Component - Simple List Style
 function RelatedSongCard({ song }) {
   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
 
   return (
     <Link
       href={`/song/${song.slug}`}
-      className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-700 transition group"
+      className="flex items-center gap-2 py-2 px-1 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition group"
     >
-      <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
-        {song.coverImage ? (
-          <img src={song.coverImage} alt={song.title} className="w-full h-full object-cover" />
-        ) : (
-          <FiMusic className="w-5 h-5 text-primary" />
-        )}
-      </div>
+      <FiMusic className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 flex-shrink-0" />
       <div className="flex-1 min-w-0">
-        <h4 className="font-medium text-slate-800 dark:text-white truncate text-sm group-hover:text-primary transition">
+        <span className="text-sm text-slate-700 dark:text-slate-200 group-hover:text-primary transition truncate block">
           {song.title}
-        </h4>
-        <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{artistNames}</p>
+        </span>
+        <span className="text-xs text-slate-400 dark:text-slate-500 truncate block">{artistNames}</span>
       </div>
-      <FiPlay className="w-4 h-4 text-slate-300 dark:text-slate-500 group-hover:text-primary transition" />
     </Link>
   )
 }
