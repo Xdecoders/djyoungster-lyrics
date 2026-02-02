@@ -5,7 +5,7 @@ import { generateSongSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import SongPageClient from './SongPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds for fresh data
-export const revalidate = 60
+export const revalidate = false
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {

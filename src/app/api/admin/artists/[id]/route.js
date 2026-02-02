@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 
 // GET single artist
@@ -52,6 +53,15 @@ export async function PUT(request, { params }) {
       }
     })
 
+    // Revalidate artist page cache
+    try {
+      revalidatePath(`/artist/${artist.slug}`)
+      revalidatePath('/artists')
+      console.log('[Artist Update] Cache revalidated')
+    } catch (e) {
+      console.log('[Artist Update] Revalidation note:', e.message)
+    }
+
     return NextResponse.json(artist)
   } catch (error) {
     console.error('Error updating artist:', error)
@@ -91,9 +101,20 @@ export async function DELETE(request, { params }) {
       )
     }
 
+    const artistSlug = artist.slug
+
     await prisma.artist.delete({
       where: { id }
     })
+
+    // Revalidate cache
+    try {
+      revalidatePath(`/artist/${artistSlug}`)
+      revalidatePath('/artists')
+      console.log('[Artist Delete] Cache revalidated')
+    } catch (e) {
+      console.log('[Artist Delete] Revalidation note:', e.message)
+    }
 
     return NextResponse.json({ message: 'Artist deleted successfully' })
   } catch (error) {

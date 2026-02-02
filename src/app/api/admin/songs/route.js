@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { revalidatePath } from 'next/cache'
 import { submitUrlForIndexing } from '@/lib/googleIndexing'
 
 // GET all songs
@@ -127,6 +128,22 @@ export async function POST(request) {
         }
       }
     })
+
+    // Revalidate caches for new song
+    try {
+      // Revalidate the new song page
+      revalidatePath(`/song/${song.slug}`)
+      // Revalidate all artist pages for this song
+      for (const sa of song.artists) {
+        revalidatePath(`/artist/${sa.artist.slug}`)
+      }
+      // Revalidate homepage and songs list
+      revalidatePath('/')
+      revalidatePath('/songs')
+      console.log('[Song Create] Cache revalidated for song and artists')
+    } catch (revalidateError) {
+      console.log('[Song Create] Revalidation note:', revalidateError.message)
+    }
 
     // Submit to Google Search Console for indexing
     const siteUrl = process.env.SITE_URL || 'https://djyoungster.com'

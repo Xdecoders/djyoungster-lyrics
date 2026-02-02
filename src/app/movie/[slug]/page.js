@@ -6,7 +6,7 @@ import MoviePageClient from './MoviePageClient'
 
 // Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
-export const revalidate = 60
+export const revalidate = false
 
 export async function generateMetadata({ params }) {
   const { slug } = await params

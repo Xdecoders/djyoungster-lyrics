@@ -5,7 +5,7 @@ import { generateBreadcrumbSchema } from '@/lib/schema'
 
 // Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
-export const revalidate = 60
+export const revalidate = false
 
 // Fetch initial data for SSR
 async function getLanguagesPageData() {

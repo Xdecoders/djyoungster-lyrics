@@ -153,8 +153,13 @@ export async function PUT(request, { params }) {
     // Revalidate cache for the updated song and related pages
     try {
       revalidatePath(`/song/${song.slug}`)
+      // Revalidate all artist pages for this song
+      for (const sa of song.artists) {
+        revalidatePath(`/artist/${sa.artist.slug}`)
+      }
       revalidatePath('/songs')
       revalidatePath('/')
+      console.log('[Song Update] Cache revalidated for song and artists')
     } catch (revalidateError) {
       console.log('[Song Update] Revalidation note:', revalidateError.message)
     }
@@ -174,10 +179,17 @@ export async function DELETE(request, { params }) {
   try {
     const { id } = await params
 
-    // Get song slug before deleting for cache revalidation
+    // Get song with artists before deleting for cache revalidation
     const song = await prisma.song.findUnique({
       where: { id },
-      select: { slug: true }
+      select: {
+        slug: true,
+        artists: {
+          include: {
+            artist: { select: { slug: true } }
+          }
+        }
+      }
     })
 
     await prisma.song.delete({
@@ -189,8 +201,15 @@ export async function DELETE(request, { params }) {
       if (song?.slug) {
         revalidatePath(`/song/${song.slug}`)
       }
+      // Revalidate all artist pages for this song
+      if (song?.artists) {
+        for (const sa of song.artists) {
+          revalidatePath(`/artist/${sa.artist.slug}`)
+        }
+      }
       revalidatePath('/songs')
       revalidatePath('/')
+      console.log('[Song Delete] Cache revalidated for song and artists')
     } catch (revalidateError) {
       console.log('[Song Delete] Revalidation note:', revalidateError.message)
     }
