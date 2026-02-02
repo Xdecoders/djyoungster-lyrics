@@ -102,8 +102,7 @@ async function getCategoryData(slug, searchParams) {
         id: true,
         name: true,
         slug: true,
-        description: true,
-        imageUrl: true
+        description: true
       }
     })
 
