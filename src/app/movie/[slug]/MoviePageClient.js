@@ -165,61 +165,45 @@ export default function MoviePageClient({ initialMovie }) {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        {/* Movie Header */}
-        <div className="relative rounded-2xl overflow-hidden mb-8">
-          {/* Background Image with Blur */}
-          <div className="absolute inset-0">
-            {movie.posterUrl || movie.songs?.[0]?.coverImage ? (
-              <img
-                src={movie.posterUrl || movie.songs?.[0]?.coverImage}
-                alt=""
-                className="w-full h-full object-cover scale-110 blur-xl"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-slate-800 to-slate-900" />
-            )}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          </div>
-
-          {/* Content */}
-          <div className="relative z-10 p-8 text-white">
-            <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-              <div className="w-32 h-44 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-2xl ring-1 ring-white/20">
-                {movie.posterUrl || movie.songs?.[0]?.coverImage ? (
-                  <img
-                    src={movie.posterUrl || movie.songs?.[0]?.coverImage}
-                    alt={movie.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <FiFilm className="w-16 h-16 text-white/80" />
+        {/* Movie Header - Clean Minimalist Design */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8 mb-8">
+          <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+            {/* Poster Image - Larger Size */}
+            <div className="w-36 h-48 sm:w-44 sm:h-60 rounded-xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg">
+              {movie.posterUrl || movie.songs?.[0]?.coverImage ? (
+                <img
+                  src={movie.posterUrl || movie.songs?.[0]?.coverImage}
+                  alt={movie.title}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <FiFilm className="w-16 h-16 text-rose-400" />
+              )}
+            </div>
+            <div className="text-center sm:text-left flex-1">
+              <p className="text-rose-600 dark:text-rose-400 text-sm font-medium mb-1">Movie Soundtrack</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 dark:text-white mb-4">{movie.title}</h1>
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-slate-500 dark:text-slate-400">
+                {movie.year && (
+                  <span className="flex items-center gap-1.5">
+                    <FiCalendar className="w-4 h-4" />
+                    {movie.year}
+                  </span>
                 )}
-              </div>
-              <div className="text-center sm:text-left flex-1">
-                <p className="text-white/60 text-sm mb-1">Movie Soundtrack</p>
-                <h1 className="text-3xl sm:text-4xl font-bold mb-4 drop-shadow-lg">{movie.title}</h1>
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-white/80">
-                  {movie.year && (
-                    <span className="flex items-center gap-1.5">
-                      <FiCalendar className="w-4 h-4" />
-                      {movie.year}
-                    </span>
-                  )}
-                  {movie.director && (
-                    <span className="flex items-center gap-1.5">
-                      <FiUser className="w-4 h-4" />
-                      {movie.director}
-                    </span>
-                  )}
+                {movie.director && (
                   <span className="flex items-center gap-1.5">
-                    <FiMusic className="w-4 h-4" />
-                    {movie.totalSongs} songs
+                    <FiUser className="w-4 h-4" />
+                    {movie.director}
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <FiEye className="w-4 h-4" />
-                    {formatViews(movie.totalViews)} views
-                  </span>
-                </div>
+                )}
+                <span className="flex items-center gap-1.5">
+                  <FiMusic className="w-4 h-4" />
+                  {movie.totalSongs} songs
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <FiEye className="w-4 h-4" />
+                  {formatViews(movie.totalViews)} views
+                </span>
               </div>
             </div>
           </div>

@@ -22,7 +22,16 @@ async function getMoviesPageData(searchParams) {
 
     const [movies, total] = await Promise.all([
       prisma.movie.findMany({
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          year: true,
+          posterUrl: true,
+          songs: {
+            select: { coverImage: true },
+            take: 1
+          },
           _count: { select: { songs: true } }
         },
         orderBy,

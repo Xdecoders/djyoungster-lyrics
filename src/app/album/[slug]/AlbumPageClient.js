@@ -205,91 +205,74 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        {/* Album Header */}
-        <div className="relative rounded-2xl overflow-hidden mb-8">
-          {/* Background Image with Blur */}
-          <div className="absolute inset-0">
-            {album.coverImage ? (
-              <img
-                src={album.coverImage}
-                alt=""
-                className="w-full h-full object-cover scale-110 blur-xl"
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-r from-slate-800 to-slate-900" />
-            )}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          </div>
+        {/* Album Header - Clean Minimalist Design */}
+        <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8 mb-8">
+          <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
+            {/* Cover Image - Larger Size */}
+            <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden shadow-lg mx-auto sm:mx-0 flex-shrink-0">
+              {album.coverImage ? (
+                <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+              ) : (
+                <FiDisc className="w-20 h-20 text-emerald-400" />
+              )}
+            </div>
 
-          {/* Content */}
-          <div className="relative z-10 p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
-              {/* Cover Image */}
-              <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-2xl bg-white/10 flex items-center justify-center overflow-hidden shadow-2xl ring-1 ring-white/20 mx-auto sm:mx-0 flex-shrink-0">
-                {album.coverImage ? (
-                  <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
-                ) : (
-                  <FiDisc className="w-20 h-20 text-white/80" />
+            {/* Album Info */}
+            <div className="flex-1 text-center sm:text-left">
+              <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-2">Album</p>
+              <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 dark:text-white mb-4">{album.title}</h1>
+
+              {/* Artist */}
+              <Link
+                href={`/artist/${album.artist?.slug}`}
+                className="inline-flex items-center gap-3 mb-4 group"
+              >
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
+                  {album.artist?.imageUrl ? (
+                    <img src={album.artist.imageUrl} alt={album.artist.name} className="w-full h-full object-cover" />
+                  ) : (
+                    <FiUser className="w-5 h-5 text-slate-400" />
+                  )}
+                </div>
+                <span className="font-medium text-slate-700 dark:text-slate-200 group-hover:text-primary transition">
+                  {album.artist?.name}
+                </span>
+              </Link>
+
+              {/* Stats */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400 mb-6">
+                {album.releaseDate && (
+                  <span className="flex items-center gap-1.5">
+                    <FiCalendar className="w-4 h-4" />
+                    {formatDate(album.releaseDate)}
+                  </span>
                 )}
+                <span className="flex items-center gap-1.5">
+                  <FiMusic className="w-4 h-4" />
+                  {album.totalSongs} songs
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <FiEye className="w-4 h-4" />
+                  {formatViews(album.totalViews)} views
+                </span>
               </div>
 
-              {/* Album Info */}
-              <div className="flex-1 text-center sm:text-left">
-                <p className="text-sm text-white/60 font-medium mb-2">Album</p>
-                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-4 drop-shadow-lg">{album.title}</h1>
+              {/* Label */}
+              {album.label && (
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-4">
+                  <span className="font-medium text-slate-600 dark:text-slate-300">Label:</span> {album.label}
+                </p>
+              )}
 
-                {/* Artist */}
-                <Link
-                  href={`/artist/${album.artist?.slug}`}
-                  className="inline-flex items-center gap-3 mb-4 group"
+              {/* Actions */}
+              <div className="flex items-center justify-center sm:justify-start gap-3">
+                <button
+                  onClick={() => setShowShareModal(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
                 >
-                  <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center overflow-hidden ring-1 ring-white/20">
-                    {album.artist?.imageUrl ? (
-                      <img src={album.artist.imageUrl} alt={album.artist.name} className="w-full h-full object-cover" />
-                    ) : (
-                      <FiUser className="w-5 h-5 text-white/80" />
-                    )}
-                  </div>
-                  <span className="font-medium text-white/80 group-hover:text-white transition">
-                    {album.artist?.name}
-                  </span>
-                </Link>
-
-                {/* Stats */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-white/70 mb-6">
-                  {album.releaseDate && (
-                    <span className="flex items-center gap-1.5">
-                      <FiCalendar className="w-4 h-4" />
-                      {formatDate(album.releaseDate)}
-                    </span>
-                  )}
-                  <span className="flex items-center gap-1.5">
-                    <FiMusic className="w-4 h-4" />
-                    {album.totalSongs} songs
-                  </span>
-                  <span className="flex items-center gap-1.5">
-                    <FiEye className="w-4 h-4" />
-                    {formatViews(album.totalViews)} views
-                  </span>
-                </div>
-
-                {/* Label */}
-                {album.label && (
-                  <p className="text-sm text-white/60 mb-4">
-                    <span className="font-medium">Label:</span> {album.label}
-                  </p>
-                )}
-
-                {/* Actions */}
-                <div className="flex items-center justify-center sm:justify-start gap-3">
-                  <button
-                    onClick={() => setShowShareModal(true)}
-                    className="flex items-center gap-2 px-5 py-2.5 bg-white/10 text-white/80 rounded-xl font-medium hover:bg-white/20 transition"
-                  >
-                    <FiShare2 className="w-4 h-4" />
-                    Share
-                  </button>
-                </div>
+                  <FiShare2 className="w-4 h-4" />
+                  Share
+                </button>
               </div>
             </div>
           </div>

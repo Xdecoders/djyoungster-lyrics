@@ -5,11 +5,14 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilm, FiChevronRight } from 'react-icons/fi'
 
 function MovieCard({ movie }) {
+  // Get poster image - use posterUrl, or fallback to first song's cover
+  const posterImage = movie.posterUrl || movie.songs?.[0]?.coverImage || null
+
   return (
     <Link href={`/movie/${movie.slug || movie.id}`} className="group">
       <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
-        {movie.thumbnail ? (
-          <img src={movie.thumbnail} alt={movie.title} className="w-full h-full object-cover" />
+        {posterImage ? (
+          <img src={posterImage} alt={movie.title} className="w-full h-full object-cover" />
         ) : (
           <FiFilm className="w-16 h-16 text-rose-400" />
         )}
