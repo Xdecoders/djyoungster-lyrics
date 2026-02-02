@@ -4,8 +4,8 @@ import { getAbsoluteUrl } from '@/lib/seo'
 import { generateSongSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import SongPageClient from './SongPageClient'
 
-// Dynamic SSR - always fetch fresh data on each request
-export const dynamic = 'force-dynamic'
+// ISR - Cache pages and revalidate every 60 seconds for fresh data
+export const revalidate = 60
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {

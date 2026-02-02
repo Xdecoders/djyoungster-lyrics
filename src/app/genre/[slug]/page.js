@@ -4,7 +4,8 @@ import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/sc
 import GenrePageClient from './GenrePageClient'
 
 // Dynamic SSR - always fetch fresh data on each request
-export const dynamic = 'force-dynamic'
+// ISR - Cache pages and revalidate every 60 seconds
+export const revalidate = 60
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
