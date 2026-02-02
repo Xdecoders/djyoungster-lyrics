@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
+import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateSongSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import SongPageClient from './SongPageClient'
 
-// ISR: Revalidate song pages every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
@@ -138,46 +139,154 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default async function SongPage({ params }) {
-  const { slug } = await params
-
-  // Fetch song data for structured data
-  let songSchema = null
-  let breadcrumbSchema = null
-
+// Fetch song data for SSR
+async function getSongData(slug) {
   try {
     const song = await prisma.song.findUnique({
       where: { slug },
       include: {
         artists: {
           include: {
-            artist: { select: { name: true, slug: true } }
+            artist: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                imageUrl: true,
+              }
+            }
           }
         },
-        album: { select: { title: true, slug: true } },
+        album: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverImage: true,
+            releaseDate: true,
+            artist: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              }
+            }
+          }
+        },
+        movie: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            year: true,
+            director: true,
+          }
+        },
         genres: {
           include: {
-            genre: { select: { name: true } }
+            genre: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              }
+            }
           }
-        }
+        },
+        categories: {
+          include: {
+            category: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              }
+            }
+          }
+        },
+        tags: {
+          include: {
+            tag: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              }
+            }
+          }
+        },
       }
     })
 
-    if (song) {
-      const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
-      songSchema = generateSongSchema(song, artistNames)
+    if (!song) return null
 
-      // Generate breadcrumb
-      const breadcrumbs = [
-        { name: 'Home', url: '/' },
-        { name: 'Songs', url: '/songs' },
-        { name: song.title, url: `/song/${song.slug}` }
-      ]
-      breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
-    }
+    // Fetch related songs
+    const artistIds = song.artists.map(sa => sa.artist.id)
+    const genreIds = song.genres.map(sg => sg.genre.id)
+
+    const relatedSongs = await prisma.song.findMany({
+      where: {
+        AND: [
+          { id: { not: song.id } },
+          { status: 'published' },
+          {
+            OR: [
+              { artists: { some: { artistId: { in: artistIds } } } },
+              { genres: { some: { genreId: { in: genreIds } } } },
+              { albumId: song.albumId },
+            ]
+          }
+        ]
+      },
+      include: {
+        artists: {
+          include: {
+            artist: {
+              select: { name: true, slug: true }
+            }
+          }
+        }
+      },
+      take: 8,
+      orderBy: { views: 'desc' }
+    })
+
+    return { song, relatedSongs }
   } catch (error) {
-    console.error('Error generating song schema:', error)
+    console.error('Error fetching song data:', error)
+    return null
   }
+}
+
+export default async function SongPage({ params }) {
+  const { slug } = await params
+
+  // Fetch song data on server
+  const data = await getSongData(slug)
+
+  if (!data || !data.song) {
+    notFound()
+  }
+
+  const { song, relatedSongs } = data
+
+  // Increment view count (fire and forget) - don't await
+  prisma.song.update({
+    where: { id: song.id },
+    data: { views: { increment: 1 } }
+  }).catch(console.error)
+
+  // Generate structured data
+  const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+  const songSchema = generateSongSchema(song, artistNames)
+
+  // Generate breadcrumb
+  const breadcrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Songs', url: '/songs' },
+    { name: song.title, url: `/song/${song.slug}` }
+  ]
+  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
 
   return (
     <>
@@ -193,7 +302,10 @@ export default async function SongPage({ params }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
-      <SongPageClient />
+      <SongPageClient
+        initialSong={JSON.parse(JSON.stringify(song))}
+        initialRelatedSongs={JSON.parse(JSON.stringify(relatedSongs))}
+      />
     </>
   )
 }

@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
+import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import CategoryPageClient from './CategoryPageClient'
 
-// ISR: Revalidate category pages every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -86,40 +87,137 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default async function CategoryPage({ params }) {
-  const { slug } = await params
-
-  let collectionSchema = null
-  let breadcrumbSchema = null
+// Fetch category data for SSR with searchParams
+async function getCategoryData(slug, searchParams) {
+  const page = parseInt(searchParams?.page) || 1
+  const sort = searchParams?.sort || 'latest'
+  const genreSlug = searchParams?.genre || ''
+  const limit = 20
+  const skip = (page - 1) * limit
 
   try {
     const category = await prisma.category.findUnique({
       where: { slug },
-      include: {
-        _count: { select: { songs: true } },
-        songs: {
-          take: 20,
-          orderBy: { song: { views: 'desc' } },
-          include: {
-            song: { select: { title: true, slug: true } }
-          }
-        }
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        imageUrl: true
       }
     })
 
-    if (category) {
-      const songs = category.songs.map(sc => sc.song)
-      collectionSchema = generateCollectionPageSchema(category, 'category', songs)
+    if (!category) return null
 
-      breadcrumbSchema = generateBreadcrumbSchema([
-        { name: 'Home', url: '/' },
-        { name: 'Categories', url: '/songs' },
-        { name: category.name, url: `/category/${category.slug}` }
-      ])
+    // Build where clause
+    let songWhere = {
+      categories: { some: { categoryId: category.id } },
+      status: 'published'
+    }
+
+    // Filter by genre if provided
+    if (genreSlug) {
+      const genre = await prisma.genre.findUnique({
+        where: { slug: genreSlug },
+        select: { id: true }
+      })
+      if (genre) {
+        songWhere.genres = { some: { genreId: genre.id } }
+      }
+    }
+
+    // Build orderBy
+    let orderBy = { createdAt: 'desc' }
+    if (sort === 'popular') orderBy = { views: 'desc' }
+    else if (sort === 'alphabetical') orderBy = { title: 'asc' }
+    else if (sort === 'oldest') orderBy = { createdAt: 'asc' }
+
+    const [songs, totalSongs, genres] = await Promise.all([
+      prisma.song.findMany({
+        where: songWhere,
+        include: {
+          artists: {
+            include: {
+              artist: { select: { id: true, name: true, slug: true } }
+            }
+          },
+          album: { select: { id: true, title: true, slug: true, coverImage: true } }
+        },
+        orderBy,
+        skip,
+        take: limit
+      }),
+      prisma.song.count({ where: songWhere }),
+      prisma.genre.findMany({
+        where: {
+          songs: {
+            some: {
+              song: {
+                categories: { some: { categoryId: category.id } },
+                status: 'published'
+              }
+            }
+          }
+        },
+        select: { id: true, name: true, slug: true }
+      })
+    ])
+
+    // Get featured songs
+    const featuredSongs = await prisma.song.findMany({
+      where: {
+        categories: { some: { categoryId: category.id } },
+        status: 'published'
+      },
+      include: {
+        artists: {
+          include: {
+            artist: { select: { name: true, slug: true } }
+          }
+        }
+      },
+      orderBy: { views: 'desc' },
+      take: 5
+    })
+
+    return {
+      category: { ...category, totalSongs },
+      songs,
+      featuredSongs,
+      genres,
+      pagination: {
+        page,
+        limit,
+        total: totalSongs,
+        totalPages: Math.ceil(totalSongs / limit)
+      }
     }
   } catch (error) {
-    console.error('Error generating category schema:', error)
+    console.error('Error fetching category data:', error)
+    return null
   }
+}
+
+export default async function CategoryPage({ params, searchParams }) {
+  const { slug } = await params
+  const searchParamsResolved = await searchParams
+
+  // Fetch category data on server
+  const data = await getCategoryData(slug, searchParamsResolved)
+
+  if (!data || !data.category) {
+    notFound()
+  }
+
+  const { category, songs } = data
+
+  const collectionSchema = generateCollectionPageSchema(category, 'category', songs.slice(0, 20))
+
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: '/' },
+    { name: 'Categories', url: '/songs' },
+    { name: category.name, url: `/category/${category.slug}` }
+  ])
 
   return (
     <>
@@ -135,7 +233,7 @@ export default async function CategoryPage({ params }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
-      <CategoryPageClient />
+      <CategoryPageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
   )
 }

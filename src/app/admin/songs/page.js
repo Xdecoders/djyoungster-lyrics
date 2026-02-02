@@ -122,6 +122,7 @@ export default function SongsList() {
                     <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Album</th>
                     <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
                     <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Verified</th>
+                    <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Views</th>
                     <th className="text-right px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -168,6 +169,12 @@ export default function SongsList() {
                             <FiX className="w-4 h-4 text-slate-300" />
                           </div>
                         )}
+                      </td>
+                      <td className="px-4 sm:px-6 py-4 text-sm text-slate-600 hidden md:table-cell">
+                        <span className="inline-flex items-center gap-1">
+                          <FiEye className="w-3.5 h-3.5 text-slate-400" />
+                          {song.views?.toLocaleString() || '0'}
+                        </span>
                       </td>
                       <td className="px-4 sm:px-6 py-4">
                         <div className="flex justify-end gap-1">

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { FiMusic, FiSearch, FiChevronLeft, FiChevronRight, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiEye, FiArrowRight, FiFilm, FiX, FiTag, FiInfo, FiHelpCircle, FiChevronDown } from 'react-icons/fi'
+import { FiMusic, FiSearch, FiChevronLeft, FiChevronRight, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiArrowRight, FiFilm, FiX, FiTag, FiInfo, FiHelpCircle, FiChevronDown } from 'react-icons/fi'
 
 // Debounce hook
 function useDebounce(value, delay) {
@@ -661,53 +661,12 @@ function FAQItem({ question, answer }) {
   )
 }
 
-export default function HomePageClient() {
-  const [data, setData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [siteSettings, setSiteSettings] = useState({
+export default function HomePageClient({ initialData }) {
+  // Use initial data from server - no loading state needed
+  const data = initialData
+  const siteSettings = initialData?.siteSettings || {
     heroHeading: 'Discover Your Favorite Song Lyrics',
     heroDescription: 'Explore thousands of song lyrics from your favorite artists. Search, discover, and sing along!'
-  })
-
-  useEffect(() => {
-    fetchData()
-    fetchSiteSettings()
-  }, [])
-
-  const fetchData = async () => {
-    try {
-      const res = await fetch('/api/public/homepage')
-      const result = await res.json()
-      setData(result)
-    } catch (error) {
-      console.error('Error fetching data:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const fetchSiteSettings = async () => {
-    try {
-      const res = await fetch('/api/public/site-settings')
-      if (res.ok) {
-        const data = await res.json()
-        if (data.heroHeading) setSiteSettings(prev => ({ ...prev, heroHeading: data.heroHeading }))
-        if (data.heroDescription) setSiteSettings(prev => ({ ...prev, heroDescription: data.heroDescription }))
-      }
-    } catch (error) {
-      console.error('Error fetching site settings:', error)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400">Loading...</p>
-        </div>
-      </div>
-    )
   }
 
   return (

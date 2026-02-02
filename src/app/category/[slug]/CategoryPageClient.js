@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   FiMusic,
@@ -74,62 +74,23 @@ function SongRow({ song, index }) {
   )
 }
 
-export default function CategoryPageClient() {
-  const params = useParams()
+export default function CategoryPageClient({ initialData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-
-  const [category, setCategory] = useState(null)
-  const [songs, setSongs] = useState([])
-  const [featuredSongs, setFeaturedSongs] = useState([])
-  const [genres, setGenres] = useState([])
-  const [pagination, setPagination] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [viewMode, setViewMode] = useState('grid')
+
+  // Get data from server (no client-side state)
+  const category = initialData?.category || null
+  const songs = initialData?.songs || []
+  const featuredSongs = initialData?.featuredSongs || []
+  const genres = initialData?.genres || []
+  const pagination = initialData?.pagination || null
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentGenre = searchParams.get('genre') || ''
   const currentPage = parseInt(searchParams.get('page')) || 1
 
-  useEffect(() => {
-    fetchCategory()
-  }, [params.slug, currentSort, currentGenre, currentPage])
-
-  const fetchCategory = async () => {
-    try {
-      setLoading(true)
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        sort: currentSort
-      })
-      if (currentGenre) queryParams.set('genre', currentGenre)
-
-      const res = await fetch(`/api/public/categories/${params.slug}?${queryParams}`)
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError('Category not found')
-        } else {
-          setError('Failed to load category')
-        }
-        return
-      }
-
-      const data = await res.json()
-      setCategory(data.category)
-      setSongs(data.songs)
-      setFeaturedSongs(data.featuredSongs)
-      setGenres(data.genres)
-      setPagination(data.pagination)
-    } catch (err) {
-      console.error('Error fetching category:', err)
-      setError('Failed to load category')
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Navigate to new URL (triggers SSR)
   const updateFilters = (key, value) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value) {
@@ -141,18 +102,7 @@ export default function CategoryPageClient() {
     router.push(`/category/${category.slug}?${params.toString()}`)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-orange-200 dark:border-orange-900 border-t-orange-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
+  if (!category) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
         <div className="text-center">

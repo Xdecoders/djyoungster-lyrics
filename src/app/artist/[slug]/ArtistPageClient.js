@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   FiMusic,
@@ -10,16 +10,12 @@ import {
   FiPlay,
   FiEye,
   FiChevronRight,
-  FiChevronDown,
   FiFilter,
   FiGrid,
   FiList,
   FiGlobe,
   FiShare2,
-  FiHeart,
-  FiCalendar,
   FiTrendingUp,
-  FiClock,
   FiX,
   FiCopy,
   FiCheck,
@@ -158,20 +154,12 @@ function ShareButton({ artist }) {
   )
 }
 
-// Hero Section Component with image fallback handling
+// Hero Section Component - Clean Minimalist Design
 function HeroSection({ artist, featuredSongs, songs, socialLinks }) {
-  const [imageError, setImageError] = useState(false)
   const [profileImageError, setProfileImageError] = useState(false)
 
   // Get fallback image from songs
   const songCoverImage = featuredSongs?.[0]?.coverImage || songs?.[0]?.coverImage || songs?.[0]?.album?.coverImage
-
-  // Determine which image to display
-  const getDisplayImage = () => {
-    if (artist?.imageUrl && !imageError) return artist.imageUrl
-    if (songCoverImage) return songCoverImage
-    return null
-  }
 
   const getProfileImage = () => {
     if (artist?.imageUrl && !profileImageError) return artist.imageUrl
@@ -179,112 +167,104 @@ function HeroSection({ artist, featuredSongs, songs, socialLinks }) {
     return null
   }
 
-  const displayImage = getDisplayImage()
   const profileImage = getProfileImage()
 
   return (
-    <div className="relative rounded-2xl overflow-hidden">
-      {/* Background Image with Blur */}
-      <div className="absolute inset-0">
-        {displayImage ? (
-          <img
-            src={displayImage}
-            alt=""
-            className="w-full h-full object-cover scale-110 blur-xl"
-            onError={() => setImageError(true)}
-          />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-r from-emerald-800 to-teal-900" />
-        )}
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-      </div>
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8">
+      <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+        {/* Profile Image - Larger Size */}
+        <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg">
+          {profileImage ? (
+            <img
+              src={profileImage}
+              alt={artist?.name}
+              className="w-full h-full object-cover"
+              onError={() => setProfileImageError(true)}
+            />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center">
+              <FiUser className="w-20 h-20 text-emerald-400 dark:text-emerald-500" />
+            </div>
+          )}
+        </div>
 
-      {/* Content */}
-      <div className="relative z-10 p-8 text-white">
-        <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
-          {/* Profile Image */}
-          <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-2xl ring-1 ring-white/20">
-            {profileImage ? (
-              <img
-                src={profileImage}
-                alt={artist?.name}
-                className="w-full h-full object-cover"
-                onError={() => setProfileImageError(true)}
-              />
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <FiUser className="w-16 h-16 text-white/80" />
-              </div>
+        {/* Info */}
+        <div className="flex-1 text-center sm:text-left">
+          <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+            <span className="px-2.5 py-1 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs font-medium rounded-full">Artist</span>
+            {artist?.verified && (
+              <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">Verified</span>
             )}
           </div>
-
-          {/* Info */}
-          <div className="flex-1 text-center sm:text-left">
-            <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
-              <span className="px-2 py-0.5 bg-white/20 text-white/90 text-xs font-medium rounded-full">Artist</span>
-              {artist?.verified && (
-                <span className="px-2 py-0.5 bg-blue-500/30 text-blue-200 text-xs font-medium rounded-full">Verified</span>
-              )}
-            </div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 drop-shadow-lg">{artist?.name}</h1>
-            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-white/80">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 dark:text-white mb-4">{artist?.name}</h1>
+          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400">
+            <span className="flex items-center gap-1.5">
+              <FiMusic className="w-4 h-4" />
+              {artist?.totalSongs || artist?._count?.songs || 0} Songs
+            </span>
+            {artist?.albums?.length > 0 && (
               <span className="flex items-center gap-1.5">
-                <FiMusic className="w-4 h-4" />
-                {artist?.totalSongs || artist?._count?.songs || 0} Songs
+                <FiDisc className="w-4 h-4" />
+                {artist.albums.length} Albums
               </span>
-              {artist?.albums?.length > 0 && (
-                <span className="flex items-center gap-1.5">
-                  <FiDisc className="w-4 h-4" />
-                  {artist.albums.length} Albums
-                </span>
-              )}
-              {artist?.country && (
-                <span className="flex items-center gap-1.5">
-                  <FiGlobe className="w-4 h-4" />
-                  {artist.country}
-                </span>
-              )}
-            </div>
-
-            {/* Bio */}
-            {artist?.bio && (
-              <p className="mt-4 text-white/70 leading-relaxed max-w-2xl">{artist.bio}</p>
             )}
-
-            {/* Social Links */}
-            {socialLinks && Object.keys(socialLinks).length > 0 && (
-              <div className="mt-4 flex items-center justify-center sm:justify-start gap-3">
-                {socialLinks.spotify && (
-                  <a href={socialLinks.spotify} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/10 text-green-400 hover:bg-white/20 transition">
-                    <FaSpotify className="w-5 h-5" />
-                  </a>
-                )}
-                {socialLinks.youtube && (
-                  <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/10 text-red-400 hover:bg-white/20 transition">
-                    <FaYoutube className="w-5 h-5" />
-                  </a>
-                )}
-                {socialLinks.instagram && (
-                  <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/10 text-pink-400 hover:bg-white/20 transition">
-                    <FaInstagram className="w-5 h-5" />
-                  </a>
-                )}
-                {socialLinks.twitter && (
-                  <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/10 text-sky-400 hover:bg-white/20 transition">
-                    <FaTwitter className="w-5 h-5" />
-                  </a>
-                )}
-              </div>
+            {artist?.country && (
+              <span className="flex items-center gap-1.5">
+                <FiGlobe className="w-4 h-4" />
+                {artist.country}
+              </span>
             )}
           </div>
 
-          {/* Actions */}
-          <div className="flex items-center gap-3">
-            <ShareButton artist={artist} />
+          {/* Bio */}
+          {artist?.bio && (
+            <p className="mt-4 text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">{artist.bio}</p>
+          )}
+
+          {/* Social Links & Share */}
+          <div className="mt-5 flex items-center justify-center sm:justify-start gap-3">
+            {socialLinks?.spotify && (
+              <a href={socialLinks.spotify} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/50 transition">
+                <FaSpotify className="w-5 h-5" />
+              </a>
+            )}
+            {socialLinks?.youtube && (
+              <a href={socialLinks.youtube} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-red-50 dark:bg-red-900/30 text-red-500 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 transition">
+                <FaYoutube className="w-5 h-5" />
+              </a>
+            )}
+            {socialLinks?.instagram && (
+              <a href={socialLinks.instagram} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-pink-50 dark:bg-pink-900/30 text-pink-500 dark:text-pink-400 hover:bg-pink-100 dark:hover:bg-pink-900/50 transition">
+                <FaInstagram className="w-5 h-5" />
+              </a>
+            )}
+            {socialLinks?.twitter && (
+              <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-sky-50 dark:bg-sky-900/30 text-sky-500 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-sky-900/50 transition">
+                <FaTwitterBrand className="w-5 h-5" />
+              </a>
+            )}
+            <ShareButtonClean artist={artist} />
           </div>
         </div>
       </div>
     </div>
+  )
+}
+
+// Clean Share Button for light background
+function ShareButtonClean({ artist }) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      <button
+        onClick={() => setIsOpen(true)}
+        className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+      >
+        <FiShare2 className="w-5 h-5" />
+      </button>
+      <ShareModal isOpen={isOpen} onClose={() => setIsOpen(false)} artist={artist} />
+    </>
   )
 }
 
@@ -409,81 +389,40 @@ function AlbumCard({ album }) {
   )
 }
 
-export default function ArtistPageClient() {
-  const params = useParams()
+export default function ArtistPageClient({ initialData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
-  const [artist, setArtist] = useState(null)
-  const [songs, setSongs] = useState([])
-  const [featuredSongs, setFeaturedSongs] = useState([])
-  const [genres, setGenres] = useState([])
-  const [pagination, setPagination] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  // Get data from server (no client-side state)
+  const artist = initialData?.artist || null
+  const songs = initialData?.songs || []
+  const featuredSongs = initialData?.featuredSongs || []
+  const genres = initialData?.genres || []
+  const pagination = initialData?.pagination || null
 
-  // Filters
-  const [view, setView] = useState('list') // grid or list
-  const [sort, setSort] = useState(searchParams.get('sort') || 'latest')
-  const [selectedGenre, setSelectedGenre] = useState(searchParams.get('genre') || '')
+  // UI state only
+  const [view, setView] = useState('list')
   const [showFilters, setShowFilters] = useState(false)
-  const [page, setPage] = useState(parseInt(searchParams.get('page')) || 1)
 
-  const [shareModalOpen, setShareModalOpen] = useState(false)
+  const currentSort = searchParams.get('sort') || 'latest'
+  const selectedGenre = searchParams.get('genre') || ''
+  const currentPage = parseInt(searchParams.get('page')) || 1
 
-  useEffect(() => {
-    fetchArtist()
-  }, [params.slug, sort, selectedGenre, page])
-
-  const fetchArtist = async () => {
-    try {
-      setLoading(true)
-      const queryParams = new URLSearchParams({
-        page: page.toString(),
-        sort,
-        ...(selectedGenre && { genre: selectedGenre })
-      })
-
-      const res = await fetch(`/api/public/artists/${params.slug}?${queryParams}`)
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError('Artist not found')
-        } else {
-          setError('Failed to load artist')
-        }
-        return
-      }
-
-      const data = await res.json()
-      setArtist(data.artist)
-      setSongs(data.songs)
-      setFeaturedSongs(data.featuredSongs)
-      setGenres(data.genres)
-      setPagination(data.pagination)
-    } catch (err) {
-      console.error('Error fetching artist:', err)
-      setError('Failed to load artist')
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Navigate to new URL (triggers SSR)
   const updateFilters = (newSort, newGenre) => {
-    setSort(newSort)
-    setSelectedGenre(newGenre)
-    setPage(1)
-
     const params = new URLSearchParams()
-    if (newSort !== 'latest') params.set('sort', newSort)
+    if (newSort && newSort !== 'latest') params.set('sort', newSort)
     if (newGenre) params.set('genre', newGenre)
+    params.set('page', '1')
 
     const query = params.toString()
-    router.push(`/artist/${artist.slug}${query ? `?${query}` : ''}`, { scroll: false })
+    router.push(`/artist/${artist.slug}${query ? `?${query}` : ''}`)
   }
 
   const handlePageChange = (newPage) => {
-    setPage(newPage)
+    const params = new URLSearchParams(searchParams.toString())
+    params.set('page', newPage.toString())
+    router.push(`/artist/${artist.slug}?${params.toString()}`)
     window.scrollTo({ top: 400, behavior: 'smooth' })
   }
 
@@ -497,36 +436,8 @@ export default function ArtistPageClient() {
     }
   }
 
-  if (loading && !artist) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400">Loading artist...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FiUser className="w-10 h-10 text-rose-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Artist Not Found</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">The artist you're looking for doesn't exist.</p>
-          <Link
-            href="/artists"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition"
-          >
-            Browse Artists
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  // If no artist data (should not happen with SSR), show nothing
+  if (!artist) return null
 
   const socialLinks = parseSocialLinks(artist?.socialLinks)
 
@@ -585,7 +496,7 @@ export default function ArtistPageClient() {
 
                   {/* Sort Dropdown */}
                   <select
-                    value={sort}
+                    value={currentSort}
                     onChange={(e) => updateFilters(e.target.value, selectedGenre)}
                     className="px-4 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg text-sm text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-primary border-0"
                   >
@@ -615,7 +526,7 @@ export default function ArtistPageClient() {
                 <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
                   <div className="flex flex-wrap gap-2">
                     <button
-                      onClick={() => updateFilters(sort, '')}
+                      onClick={() => updateFilters(currentSort, '')}
                       className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                         !selectedGenre ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                       }`}
@@ -625,7 +536,7 @@ export default function ArtistPageClient() {
                     {genres.map((genre) => (
                       <button
                         key={genre.id}
-                        onClick={() => updateFilters(sort, genre.slug)}
+                        onClick={() => updateFilters(currentSort, genre.slug)}
                         className={`px-3 py-1.5 rounded-lg text-sm font-medium transition ${
                           selectedGenre === genre.slug ? 'bg-primary text-white' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600'
                         }`}
@@ -642,7 +553,7 @@ export default function ArtistPageClient() {
                 <div className="mt-3 flex items-center gap-2">
                   <span className="text-sm text-slate-500 dark:text-slate-400">Filtered by:</span>
                   <button
-                    onClick={() => updateFilters(sort, '')}
+                    onClick={() => updateFilters(currentSort, '')}
                     className="flex items-center gap-1 px-2 py-1 bg-primary/10 dark:bg-primary/20 text-primary text-sm rounded-lg hover:bg-primary/20 dark:hover:bg-primary/30 transition"
                   >
                     {genres.find(g => g.slug === selectedGenre)?.name}
@@ -653,12 +564,7 @@ export default function ArtistPageClient() {
             </div>
 
             {/* Songs List/Grid */}
-            {loading ? (
-              <div className="text-center py-12">
-                <div className="w-10 h-10 border-3 border-emerald-200 border-t-primary rounded-full animate-spin mx-auto mb-3"></div>
-                <p className="text-slate-500 text-sm">Loading songs...</p>
-              </div>
-            ) : songs.length > 0 ? (
+            {songs.length > 0 ? (
               <>
                 <div className={view === 'grid' ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4' : 'space-y-3'}>
                   {songs.map((song) => (
@@ -670,8 +576,8 @@ export default function ArtistPageClient() {
                 {pagination && pagination.totalPages > 1 && (
                   <div className="flex items-center justify-center gap-2 mt-8">
                     <button
-                      onClick={() => handlePageChange(page - 1)}
-                      disabled={page === 1}
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
                       className="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
                       Previous
@@ -681,19 +587,19 @@ export default function ArtistPageClient() {
                         let pageNum
                         if (pagination.totalPages <= 5) {
                           pageNum = i + 1
-                        } else if (page <= 3) {
+                        } else if (currentPage <= 3) {
                           pageNum = i + 1
-                        } else if (page >= pagination.totalPages - 2) {
+                        } else if (currentPage >= pagination.totalPages - 2) {
                           pageNum = pagination.totalPages - 4 + i
                         } else {
-                          pageNum = page - 2 + i
+                          pageNum = currentPage - 2 + i
                         }
                         return (
                           <button
                             key={pageNum}
                             onClick={() => handlePageChange(pageNum)}
                             className={`w-10 h-10 rounded-lg font-medium transition ${
-                              page === pageNum
+                              currentPage === pageNum
                                 ? 'bg-primary text-white'
                                 : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                             }`}
@@ -704,8 +610,8 @@ export default function ArtistPageClient() {
                       })}
                     </div>
                     <button
-                      onClick={() => handlePageChange(page + 1)}
-                      disabled={page === pagination.totalPages}
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === pagination.totalPages}
                       className="px-4 py-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition"
                     >
                       Next
@@ -719,7 +625,7 @@ export default function ArtistPageClient() {
                 <p className="text-slate-500 dark:text-slate-400">No songs found</p>
                 {selectedGenre && (
                   <button
-                    onClick={() => updateFilters(sort, '')}
+                    onClick={() => updateFilters(currentSort, '')}
                     className="mt-3 text-primary hover:text-primary-hover font-medium text-sm"
                   >
                     Clear filter

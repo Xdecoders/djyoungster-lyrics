@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiFilm, FiChevronRight, FiMusic } from 'react-icons/fi'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { FiFilm, FiChevronRight } from 'react-icons/fi'
 
 function MovieCard({ movie }) {
   return (
@@ -24,34 +23,18 @@ function MovieCard({ movie }) {
   )
 }
 
-function MoviesContent() {
+export default function MoviesPageClient({ initialData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [movies, setMovies] = useState([])
-  const [pagination, setPagination] = useState(null)
-  const [loading, setLoading] = useState(true)
+
+  // Get data from server (no client-side state)
+  const movies = initialData?.movies || []
+  const pagination = initialData?.pagination || null
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1
 
-  useEffect(() => {
-    fetchMovies()
-  }, [currentSort, currentPage])
-
-  const fetchMovies = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/public/movies?page=${currentPage}&sort=${currentSort}`)
-      const data = await res.json()
-      setMovies(data.movies)
-      setPagination(data.pagination)
-    } catch (err) {
-      console.error('Error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Navigate to new URL (triggers SSR)
   const updateFilters = (key, value) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set(key, value)
@@ -86,11 +69,7 @@ function MoviesContent() {
           </select>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-rose-200 dark:border-rose-900 border-t-rose-500 rounded-full animate-spin"></div>
-          </div>
-        ) : movies.length === 0 ? (
+        {movies.length === 0 ? (
           <div className="text-center py-20">
             <FiFilm className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
             <p className="text-slate-500 dark:text-slate-400">No movies found</p>
@@ -116,13 +95,5 @@ function MoviesContent() {
         )}
       </div>
     </div>
-  )
-}
-
-export default function MoviesPageClient() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center"><div className="w-12 h-12 border-4 border-rose-200 dark:border-rose-900 border-t-rose-500 rounded-full animate-spin"></div></div>}>
-      <MoviesContent />
-    </Suspense>
   )
 }

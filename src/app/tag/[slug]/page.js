@@ -4,8 +4,8 @@ import { getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import TagPageClient from './TagPageClient'
 
-// ISR: Revalidate tag pages every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -109,7 +109,7 @@ export default async function TagPage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <TagPageClient initialTag={tag} initialSongs={songs} />
+      <TagPageClient initialTag={JSON.parse(JSON.stringify(tag))} initialSongs={JSON.parse(JSON.stringify(songs))} />
     </>
   )
 }

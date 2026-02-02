@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useState, useMemo } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   FiMusic,
@@ -75,44 +75,43 @@ function SongRow({ song, index }) {
 }
 
 export default function TagPageClient({ initialTag, initialSongs }) {
-  const params = useParams()
   const router = useRouter()
   const searchParams = useSearchParams()
-
-  const [tag, setTag] = useState(initialTag)
-  const [songs, setSongs] = useState(initialSongs)
-  const [featuredSongs, setFeaturedSongs] = useState([])
-  const [loading, setLoading] = useState(false)
   const [viewMode, setViewMode] = useState('grid')
+
+  const tag = initialTag
+  const songs = initialSongs || []
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1
   const songsPerPage = 20
 
-  // Sort songs based on current filter
-  const sortedSongs = [...songs].sort((a, b) => {
-    switch (currentSort) {
-      case 'popular':
-        return (b.views || 0) - (a.views || 0)
-      case 'alphabetical':
-        return a.title.localeCompare(b.title)
-      case 'oldest':
-        return new Date(a.createdAt) - new Date(b.createdAt)
-      default: // latest
-        return new Date(b.createdAt) - new Date(a.createdAt)
-    }
-  })
+  // Sort songs based on current filter - memoized to avoid recalculation
+  const sortedSongs = useMemo(() => {
+    return [...songs].sort((a, b) => {
+      switch (currentSort) {
+        case 'popular':
+          return (b.views || 0) - (a.views || 0)
+        case 'alphabetical':
+          return a.title.localeCompare(b.title)
+        case 'oldest':
+          return new Date(a.createdAt) - new Date(b.createdAt)
+        default: // latest
+          return new Date(b.createdAt) - new Date(a.createdAt)
+      }
+    })
+  }, [songs, currentSort])
+
+  // Featured songs (top by views) - memoized
+  const featuredSongs = useMemo(() => {
+    return [...songs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5)
+  }, [songs])
 
   // Paginate songs
   const totalPages = Math.ceil(sortedSongs.length / songsPerPage)
   const paginatedSongs = sortedSongs.slice((currentPage - 1) * songsPerPage, currentPage * songsPerPage)
 
-  // Get featured songs (top by views)
-  useEffect(() => {
-    const topSongs = [...songs].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 5)
-    setFeaturedSongs(topSongs)
-  }, [songs])
-
+  // Navigate to new URL
   const updateFilters = (key, value) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value) {

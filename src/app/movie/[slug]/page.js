@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
+import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateMovieSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import MoviePageClient from './MoviePageClient'
 
-// ISR: Revalidate movie pages every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -100,39 +101,70 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default async function MoviePage({ params }) {
-  const { slug } = await params
-
-  let movieSchema = null
-  let breadcrumbSchema = null
-
+// Fetch movie data for SSR
+async function getMovieData(slug) {
   try {
     const movie = await prisma.movie.findUnique({
       where: { slug },
       include: {
-        _count: { select: { songs: true } },
         songs: {
-          take: 50,
-          orderBy: { createdAt: 'desc' },
-          select: { title: true, slug: true }
+          where: { status: 'published' },
+          include: {
+            artists: {
+              include: {
+                artist: { select: { id: true, name: true, slug: true } }
+              }
+            },
+            genres: {
+              include: {
+                genre: { select: { id: true, name: true, slug: true } }
+              }
+            }
+          },
+          orderBy: { createdAt: 'desc' }
         }
       }
     })
 
-    if (movie) {
-      movieSchema = generateMovieSchema(movie, movie.songs)
+    if (!movie) return null
 
-      // Generate breadcrumb
-      const breadcrumbs = [
-        { name: 'Home', url: '/' },
-        { name: 'Movies', url: '/movies' },
-        { name: movie.title, url: `/movie/${movie.slug}` }
-      ]
-      breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+    const totalViews = movie.songs.reduce((sum, song) => sum + (song.views || 0), 0)
+
+    return {
+      movie: {
+        ...movie,
+        totalSongs: movie.songs.length,
+        totalViews
+      }
     }
   } catch (error) {
-    console.error('Error generating movie schema:', error)
+    console.error('Error fetching movie data:', error)
+    return null
   }
+}
+
+export default async function MoviePage({ params }) {
+  const { slug } = await params
+
+  // Fetch movie data on server
+  const data = await getMovieData(slug)
+
+  if (!data || !data.movie) {
+    notFound()
+  }
+
+  const { movie } = data
+
+  // Generate structured data
+  const movieSchema = generateMovieSchema(movie, movie.songs)
+
+  // Generate breadcrumb
+  const breadcrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Movies', url: '/movies' },
+    { name: movie.title, url: `/movie/${movie.slug}` }
+  ]
+  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
 
   return (
     <>
@@ -148,7 +180,7 @@ export default async function MoviePage({ params }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
-      <MoviePageClient />
+      <MoviePageClient initialMovie={JSON.parse(JSON.stringify(movie))} />
     </>
   )
 }

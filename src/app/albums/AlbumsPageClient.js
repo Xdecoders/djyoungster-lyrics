@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FiDisc, FiChevronRight } from 'react-icons/fi'
 
 function AlbumCard({ album }) {
@@ -22,34 +21,18 @@ function AlbumCard({ album }) {
   )
 }
 
-function AlbumsContent() {
+export default function AlbumsPageClient({ initialData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [albums, setAlbums] = useState([])
-  const [pagination, setPagination] = useState(null)
-  const [loading, setLoading] = useState(true)
+
+  // Get data from server (no client-side state)
+  const albums = initialData?.albums || []
+  const pagination = initialData?.pagination || null
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1
 
-  useEffect(() => {
-    fetchAlbums()
-  }, [currentSort, currentPage])
-
-  const fetchAlbums = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/public/albums?page=${currentPage}&sort=${currentSort}`)
-      const data = await res.json()
-      setAlbums(data.albums)
-      setPagination(data.pagination)
-    } catch (err) {
-      console.error('Error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Navigate to new URL (triggers SSR)
   const updateFilters = (key, value) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set(key, value)
@@ -81,9 +64,10 @@ function AlbumsContent() {
           </select>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div>
+        {albums.length === 0 ? (
+          <div className="text-center py-20">
+            <FiDisc className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+            <p className="text-slate-500 dark:text-slate-400">No albums found</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
@@ -106,13 +90,5 @@ function AlbumsContent() {
         )}
       </div>
     </div>
-  )
-}
-
-export default function AlbumsPageClient() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center"><div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div></div>}>
-      <AlbumsContent />
-    </Suspense>
   )
 }

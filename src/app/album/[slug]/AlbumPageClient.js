@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useState } from 'react'
 import Link from 'next/link'
 import {
   FiMusic,
@@ -167,42 +166,11 @@ function AlbumCard({ album }) {
   )
 }
 
-export default function AlbumPageClient() {
-  const params = useParams()
-  const [album, setAlbum] = useState(null)
-  const [moreAlbums, setMoreAlbums] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }) {
+  // Use initial data from server - no loading state needed
+  const [album] = useState(initialAlbum)
+  const [moreAlbums] = useState(initialMoreAlbums)
   const [showShareModal, setShowShareModal] = useState(false)
-
-  useEffect(() => {
-    fetchAlbum()
-  }, [params.slug])
-
-  const fetchAlbum = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/public/albums/${params.slug}`)
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError('Album not found')
-        } else {
-          setError('Failed to load album')
-        }
-        return
-      }
-
-      const data = await res.json()
-      setAlbum(data.album)
-      setMoreAlbums(data.moreAlbums || [])
-    } catch (err) {
-      console.error('Error fetching album:', err)
-      setError('Failed to load album')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const formatViews = (views) => {
     if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'
@@ -216,36 +184,8 @@ export default function AlbumPageClient() {
     return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400">Loading album...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FiDisc className="w-10 h-10 text-rose-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Album Not Found</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">The album you're looking for doesn't exist.</p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition"
-          >
-            Go Home
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  // If no album data (should not happen with SSR), show nothing
+  if (!album) return null
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">

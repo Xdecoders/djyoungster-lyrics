@@ -136,6 +136,8 @@ export default function Header() {
               <div ref={browseRef} className="relative">
                 <button
                   onClick={() => setIsBrowseOpen(!isBrowseOpen)}
+                  aria-label="Browse menu"
+                  aria-expanded={isBrowseOpen}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-1 ${
                     isBrowseOpen || browseLinks.some(l => isActive(l.href))
                       ? 'text-primary bg-emerald-50 dark:bg-emerald-900/30'
@@ -202,6 +204,7 @@ export default function Header() {
                     <button
                       type="button"
                       onClick={() => setIsSearchOpen(false)}
+                      aria-label="Close search"
                       className="ml-2 p-2 text-slate-400 hover:text-slate-600 dark:text-slate-500 dark:hover:text-slate-300"
                     >
                       <FiX className="w-5 h-5" />
@@ -210,6 +213,7 @@ export default function Header() {
                 ) : (
                   <button
                     onClick={() => setIsSearchOpen(true)}
+                    aria-label="Open search"
                     className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
                   >
                     <FiSearch className="w-5 h-5" />
@@ -220,6 +224,7 @@ export default function Header() {
               {/* Mobile Search Button */}
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
+                aria-label={isSearchOpen ? 'Close search' : 'Open search'}
                 className="md:hidden p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
               >
                 <FiSearch className="w-5 h-5" />
@@ -228,6 +233,8 @@ export default function Header() {
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
+                aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={isMenuOpen}
                 className="md:hidden p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
               >
                 {isMenuOpen ? <FiX className="w-5 h-5" /> : <FiMenu className="w-5 h-5" />}

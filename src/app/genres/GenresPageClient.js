@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { FiTag, FiChevronRight, FiMusic } from 'react-icons/fi'
 
@@ -30,25 +30,9 @@ function GenreCard({ genre, index }) {
   )
 }
 
-export default function GenresPageClient() {
-  const [genres, setGenres] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchGenres()
-  }, [])
-
-  const fetchGenres = async () => {
-    try {
-      const res = await fetch('/api/public/genres')
-      const data = await res.json()
-      setGenres(data.genres)
-    } catch (err) {
-      console.error('Error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+export default function GenresPageClient({ initialData }) {
+  // Use initial data from server - no loading state needed
+  const [genres] = useState(initialData?.genres || [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
@@ -69,17 +53,11 @@ export default function GenresPageClient() {
           <p className="text-slate-500 dark:text-slate-400 mt-2">Explore songs by your favorite genres</p>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
-            {genres.map((genre, index) => (
-              <GenreCard key={genre.id} genre={genre} index={index} />
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+          {genres.map((genre, index) => (
+            <GenreCard key={genre.id} genre={genre} index={index} />
+          ))}
+        </div>
       </div>
     </div>
   )

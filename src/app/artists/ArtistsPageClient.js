@@ -1,8 +1,7 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FiUser, FiChevronRight } from 'react-icons/fi'
 
 function ArtistCard({ artist }) {
@@ -22,34 +21,18 @@ function ArtistCard({ artist }) {
   )
 }
 
-function ArtistsContent() {
+export default function ArtistsPageClient({ initialData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [artists, setArtists] = useState([])
-  const [pagination, setPagination] = useState(null)
-  const [loading, setLoading] = useState(true)
+
+  // Get data from server (no client-side state)
+  const artists = initialData?.artists || []
+  const pagination = initialData?.pagination || null
 
   const currentSort = searchParams.get('sort') || 'popular'
   const currentPage = parseInt(searchParams.get('page')) || 1
 
-  useEffect(() => {
-    fetchArtists()
-  }, [currentSort, currentPage])
-
-  const fetchArtists = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/public/artists?page=${currentPage}&sort=${currentSort}`)
-      const data = await res.json()
-      setArtists(data.artists)
-      setPagination(data.pagination)
-    } catch (err) {
-      console.error('Error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Navigate to new URL (triggers SSR)
   const updateFilters = (key, value) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set(key, value)
@@ -81,15 +64,9 @@ function ArtistsContent() {
           </select>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {artists.map((artist) => <ArtistCard key={artist.id} artist={artist} />)}
-          </div>
-        )}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
+          {artists.map((artist) => <ArtistCard key={artist.id} artist={artist} />)}
+        </div>
 
         {pagination && pagination.totalPages > 1 && (
           <div className="flex justify-center gap-2 mt-8">
@@ -106,13 +83,5 @@ function ArtistsContent() {
         )}
       </div>
     </div>
-  )
-}
-
-export default function ArtistsPageClient() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center"><div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div></div>}>
-      <ArtistsContent />
-    </Suspense>
   )
 }

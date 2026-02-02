@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -32,7 +32,8 @@ import {
   FiType,
   FiPlus,
   FiMinus,
-  FiTag
+  FiTag,
+  FiGrid
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
 import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube } from 'react-icons/fa'
@@ -194,7 +195,7 @@ function SongCredits({ song }) {
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
       <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
         <FiUsers className="w-4 h-4 text-primary" />
-        {song.title} - Song Credits
+        {song.title} Song Credits
       </h3>
       <div className="space-y-3">
         {credits.map((item, index) => (
@@ -229,7 +230,7 @@ function SongMeaning({ song }) {
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
       <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
         <FiBookOpen className="w-4 h-4 text-primary" />
-        {song.title} - Song Meaning
+        {song.title} Song Meaning
       </h3>
       <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
         <p className="whitespace-pre-line">{displayText}</p>
@@ -247,73 +248,132 @@ function SongMeaning({ song }) {
   )
 }
 
-// FAQ Section Component
+// FAQ Section Component - Dynamic & Unique Answers
 function FAQSection({ song }) {
   const [openIndex, setOpenIndex] = useState(0)
   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+  const artistCount = song.artists?.length || 1
   const genres = song.genres?.map(sg => sg.genre.name).join(', ')
+  const firstArtist = song.artists?.[0]?.artist?.name || artistNames
+
+  // Randomized answer variations for uniqueness
+  const getVoiceAnswer = () => {
+    const baseInfo = artistCount > 1
+      ? `This track features the combined talents of ${artistNames}`
+      : `${firstArtist} lends ${artistCount > 1 ? 'their' : 'their'} voice to this track`
+
+    let extra = ''
+    if (song.releaseYear && song.label) {
+      extra = `, dropping in ${song.releaseYear} via ${song.label}.`
+    } else if (song.releaseYear) {
+      extra = `, released back in ${song.releaseYear}.`
+    } else if (song.label) {
+      extra = `, released under the ${song.label} label.`
+    } else {
+      extra = '.'
+    }
+    return baseInfo + extra
+  }
+
+  const getLyricistAnswer = () => {
+    if (song.lyricist) {
+      const phrases = [
+        `${song.lyricist} crafted the words for "${song.title}," bringing depth and emotion to every line.`,
+        `The pen behind "${song.title}" belongs to ${song.lyricist}, whose lyrics give the song its soul.`,
+        `Credit for the memorable lyrics goes to ${song.lyricist}, who wrote the words that fans love to sing along to.`
+      ]
+      return phrases[song.title.length % phrases.length]
+    }
+    return `${firstArtist} wrote the lyrics, adding a personal touch that resonates throughout the track.`
+  }
+
+  const getComposerAnswer = () => {
+    if (song.composer) {
+      const phrases = [
+        `${song.composer} is the musical genius behind the composition, creating the melody that makes this song memorable.`,
+        `The music was composed by ${song.composer}, whose arrangement perfectly complements the vocals.`,
+        `${song.composer} crafted the musical arrangement, blending instruments and beats into something special.`
+      ]
+      return phrases[song.title.length % phrases.length]
+    }
+    return `${firstArtist} composed the music, showcasing versatility as both vocalist and musician.`
+  }
+
+  const getSourceAnswer = () => {
+    if (song.movie) {
+      return `You'll hear "${song.title}" in the ${song.movie.year ? song.movie.year + ' ' : ''}film "${song.movie.title}"${song.movie.director ? `, directed by ${song.movie.director}` : ''}. The song plays a key role in the movie's soundtrack and gained massive popularity through the film.`
+    }
+    if (song.album) {
+      return `"${song.title}" is part of the album "${song.album.title}"${song.album.artist?.name ? ` by ${song.album.artist.name}` : ''}. It stands out as one of the notable tracks from this collection.`
+    }
+    return `"${song.title}" was released as an independent single by ${artistNames}, standing strong on its own without being tied to any film or album.`
+  }
 
   const faqs = []
 
+  // Q1: Singer/Voice
   faqs.push({
-    question: `Who sang "${song.title}"?`,
-    answer: `"${song.title}" is sung by ${artistNames}.${song.releaseYear ? ` It was released in ${song.releaseYear}.` : ''}${song.label ? ` The song is released under ${song.label}.` : ''}`
+    question: `Who is the singer of "${song.title}"?`,
+    answer: getVoiceAnswer()
   })
 
+  // Q2: Lyricist
   faqs.push({
-    question: `Who wrote the lyrics of "${song.title}"?`,
-    answer: song.lyricist
-      ? `The lyrics of "${song.title}" are penned by ${song.lyricist}. The beautiful words capture the essence of the song perfectly.`
-      : `The lyrics of "${song.title}" are written by ${artistNames}. The song showcases their lyrical talent.`
+    question: `Who wrote the lyrics for "${song.title}"?`,
+    answer: getLyricistAnswer()
   })
 
+  // Q3: Composer
   faqs.push({
     question: `Who composed the music of "${song.title}"?`,
-    answer: song.composer
-      ? `The music of "${song.title}" is composed by ${song.composer}. The composition beautifully complements the vocals.`
-      : `The music of "${song.title}" is composed by ${artistNames}. The melody and arrangement create an unforgettable listening experience.`
+    answer: getComposerAnswer()
   })
 
+  // Q4: Movie/Album Source
   if (song.movie) {
     faqs.push({
-      question: `Which movie features the song "${song.title}"?`,
-      answer: `"${song.title}" is featured in the movie "${song.movie.title}"${song.movie.year ? ` released in ${song.movie.year}` : ''}.${song.movie.director ? ` The movie is directed by ${song.movie.director}.` : ''} The song became extremely popular after the movie's release.`
+      question: `Which movie is "${song.title}" from?`,
+      answer: getSourceAnswer()
     })
   } else if (song.album) {
     faqs.push({
-      question: `Which album is "${song.title}" from?`,
-      answer: `"${song.title}" is from the album "${song.album.title}"${song.album.artist?.name ? ` by ${song.album.artist.name}` : ''}. The album features several hit tracks including this one.`
+      question: `Which album features "${song.title}"?`,
+      answer: getSourceAnswer()
     })
   } else {
     faqs.push({
-      question: `Is "${song.title}" from any movie or album?`,
-      answer: `"${song.title}" is a single track by ${artistNames}. It was released as an independent single and has garnered a lot of appreciation from music lovers.`
+      question: `Is "${song.title}" from a movie or album?`,
+      answer: getSourceAnswer()
     })
   }
 
-  faqs.push({
-    question: `What genre is "${song.title}"?`,
-    answer: genres
-      ? `"${song.title}" belongs to the ${genres} genre${song.genres?.length > 1 ? 's' : ''}. ${song.language ? `It is a ${song.language} language song that` : 'The song'} appeals to a wide audience with its unique style and catchy tune.`
-      : `"${song.title}" is a popular ${song.language || ''} song that combines various musical elements to create a unique sound loved by fans worldwide.`
-  })
-
-  faqs.push({
-    question: `Where can I listen to "${song.title}"?`,
-    answer: `You can listen to "${song.title}" by ${artistNames} on various music streaming platforms like Spotify, Apple Music, YouTube Music, and JioSaavn.${song.youtubeUrl ? ' You can also watch the official music video on YouTube.' : ''} The complete lyrics are available right here on DJYoungster.`
-  })
-
-  if (song.starring) {
+  // Q5: Genre (conditional)
+  if (genres) {
     faqs.push({
-      question: `Who stars in the "${song.title}" music video?`,
-      answer: `The music video of "${song.title}" features ${song.starring}. The video has been well-received by fans and adds a visual dimension to the beautiful song.`
+      question: `What type of song is "${song.title}"?`,
+      answer: `"${song.title}" falls under ${genres}${song.language ? ` and is performed in ${song.language}` : ''}. The track blends these influences to create its distinctive sound.`
     })
   }
 
+  // Q6: Streaming
+  faqs.push({
+    question: `Where can I stream "${song.title}"?`,
+    answer: `"${song.title}" is available on major platforms including Spotify, Apple Music, YouTube Music, Gaana, and JioSaavn.${song.youtubeUrl ? ' The official video is on YouTube.' : ''} For the complete lyrics, you're already in the right place!`
+  })
+
+  // Q7: Producer (if available)
   if (song.producer) {
     faqs.push({
       question: `Who produced "${song.title}"?`,
-      answer: `"${song.title}" is produced by ${song.producer}. The production quality of the song showcases professional expertise and attention to detail.`
+      answer: `${song.producer} handled the production, shaping the final sound you hear. Their work on mixing and arrangement gives the track its polished quality.`
+    })
+  }
+
+  // Q8: Music Video Cast (if available)
+  if (song.starring) {
+    faqs.push({
+      question: `Who appears in the "${song.title}" music video?`,
+      answer: `The visual story features ${song.starring}, bringing the song's narrative to life on screen.`
     })
   }
 
@@ -324,7 +384,7 @@ function FAQSection({ song }) {
         Frequently Asked Questions about {song.title}
       </h2>
       <div className="space-y-3" itemScope itemType="https://schema.org/FAQPage">
-        {faqs.slice(0, 6).map((faq, index) => (
+        {faqs.slice(0, 4).map((faq, index) => (
           <div
             key={index}
             itemScope
@@ -676,42 +736,28 @@ function LyricsToggle({ lyricsMode, setLyricsMode, hasRomanized, hasTranslated, 
   )
 }
 
-// Lyrics Display Component
+// Lyrics Display Component - All versions rendered in HTML for SEO, CSS controls visibility
 function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize }) {
-  const getLyricsContent = () => {
-    switch (lyricsMode) {
-      case 'romanized':
-        return song.lyricsRomanized || song.lyrics
-      case 'translated':
-        return song.lyricsTranslated || song.lyrics
-      case 'hindi':
-        return song.lyricsHindi || song.lyrics
-      case 'punjabi':
-        return song.lyricsPunjabi || song.lyrics
-      default:
-        return song.lyrics
-    }
+  const modeLabels = {
+    romanized: { icon: FiType, text: 'Showing Romanized/Transliterated lyrics for easier reading' },
+    translated: { icon: MdTranslate, text: 'Showing English Translation of the lyrics' },
+    hindi: { icon: FiGlobe, text: 'Showing Hindi version of the lyrics' },
+    punjabi: { icon: FiGlobe, text: 'Showing Punjabi version of the lyrics' }
   }
 
-  const getLyricsModeLabel = () => {
-    switch (lyricsMode) {
-      case 'romanized':
-        return { icon: FiType, text: 'Showing Romanized/Transliterated lyrics for easier reading' }
-      case 'translated':
-        return { icon: MdTranslate, text: 'Showing English Translation of the lyrics' }
-      case 'hindi':
-        return { icon: FiGlobe, text: 'Showing Hindi version of the lyrics' }
-      case 'punjabi':
-        return { icon: FiGlobe, text: 'Showing Punjabi version of the lyrics' }
-      default:
-        return null
-    }
-  }
+  const modeLabel = modeLabels[lyricsMode]
 
-  const modeLabel = getLyricsModeLabel()
+  // Build all lyrics versions that exist
+  const lyricsVersions = [
+    { id: 'original', label: 'Original Lyrics', content: song.lyrics },
+    song.lyricsRomanized && { id: 'romanized', label: 'Romanized Lyrics', content: song.lyricsRomanized },
+    song.lyricsTranslated && { id: 'translated', label: 'English Translation', content: song.lyricsTranslated },
+    song.lyricsHindi && { id: 'hindi', label: 'Hindi Lyrics', content: song.lyricsHindi },
+    song.lyricsPunjabi && { id: 'punjabi', label: 'Punjabi Lyrics', content: song.lyricsPunjabi }
+  ].filter(Boolean)
 
   return (
-    <div ref={lyricsRef} className="lyrics-content" itemProp="lyrics">
+    <div ref={lyricsRef} className="lyrics-content">
       {lyricsMode !== 'original' && modeLabel && (
         <div className="mb-4 px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/50">
           <p className="text-sm text-primary font-medium flex items-center gap-2">
@@ -720,77 +766,49 @@ function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize }) {
           </p>
         </div>
       )}
-      <pre
-        className="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200 leading-relaxed transition-all duration-200"
-        style={{ fontSize: `${fontSize}px`, lineHeight: '1.8' }}
-      >
-        {getLyricsContent()}
-      </pre>
+
+      {/* All lyrics versions rendered in HTML for SEO - only selected version visible to users */}
+      {lyricsVersions.map((version) => {
+        const isActive = lyricsMode === version.id
+        return (
+          <section
+            key={version.id}
+            className={isActive ? 'block' : 'sr-only'}
+            aria-hidden={!isActive}
+            itemProp={version.id === 'original' ? 'lyrics' : undefined}
+          >
+            {/* Semantic heading for each lyrics version - helps SEO understand content */}
+            <h3 className={isActive && version.id !== 'original' ? 'sr-only' : version.id === 'original' ? 'sr-only' : 'text-lg font-semibold text-slate-700 dark:text-slate-300 mb-3'}>
+              {version.label}
+            </h3>
+            <p
+              className="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200 leading-relaxed transition-all duration-200"
+              style={{ fontSize: isActive ? `${fontSize}px` : '16px', lineHeight: '1.8' }}
+            >
+              {version.content}
+            </p>
+          </section>
+        )
+      })}
     </div>
   )
 }
 
-export default function SongPageClient() {
+export default function SongPageClient({ initialSong, initialRelatedSongs = [] }) {
   const params = useParams()
-  const [song, setSong] = useState(null)
-  const [relatedSongs, setRelatedSongs] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  // Use initial data from server - no loading state needed
+  const [song] = useState(initialSong)
+  const [relatedSongs] = useState(initialRelatedSongs)
   const [copied, setCopied] = useState(false)
   const [isLiked, setIsLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(0)
-  const [viewCount, setViewCount] = useState(0)
+  const [likeCount, setLikeCount] = useState(initialSong?.likes || 0)
+  const [viewCount, setViewCount] = useState(initialSong?.views || 0)
   const [isLikeLoading, setIsLikeLoading] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
   const [lyricsMode, setLyricsMode] = useState('original')
   const [lyricsFontSize, setLyricsFontSize] = useState(18)
   const lyricsRef = useRef(null)
-
-  useEffect(() => {
-    fetchSong()
-  }, [params.slug])
-
-  const fetchSong = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/public/songs/${params.slug}`)
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError('Song not found')
-        } else {
-          setError('Failed to load song')
-        }
-        return
-      }
-
-      const data = await res.json()
-      setSong(data.song)
-      setRelatedSongs(data.relatedSongs || [])
-      setLikeCount(data.song.likes || 0)
-      setViewCount(data.song.views || 0)
-
-      try {
-        const interactRes = await fetch(`/api/public/songs/${params.slug}/interact`, {
-          method: 'POST'
-        })
-        if (interactRes.ok) {
-          const interactData = await interactRes.json()
-          setViewCount(interactData.views)
-          setLikeCount(interactData.likes)
-          setIsLiked(interactData.hasLiked)
-        }
-      } catch (err) {
-        console.error('Error updating interaction:', err)
-      }
-    } catch (err) {
-      console.error('Error fetching song:', err)
-      setError('Failed to load song')
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const copyLyrics = () => {
     let textToCopy = song.lyrics
@@ -814,36 +832,8 @@ export default function SongPageClient() {
     return views?.toString() || '0'
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400">Loading song...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FiMusic className="w-10 h-10 text-rose-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Song Not Found</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">The song you're looking for doesn't exist or has been removed.</p>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition"
-          >
-            Go Home
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  // If no song data (should not happen with SSR), show nothing
+  if (!song) return null
 
   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
   const genres = song.genres?.map(sg => sg.genre) || []
@@ -882,187 +872,133 @@ export default function SongPageClient() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              {/* Song Header */}
-              <header className="relative rounded-2xl overflow-hidden mb-6">
-                {/* Background Image with Blur */}
-                <div className="absolute inset-0">
-                  {song.coverImage ? (
-                    <img
-                      src={song.coverImage}
-                      alt=""
-                      className="w-full h-full object-cover scale-110 blur-xl"
-                    />
-                  ) : (
-                    <div className="w-full h-full bg-gradient-to-r from-slate-800 to-slate-900" />
-                  )}
-                  <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-                </div>
+              {/* Song Header - Clean Minimalist Design */}
+              <header className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
+                <div className="flex flex-col sm:flex-row gap-6">
+                  {/* Cover Image - Larger Size */}
+                  <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg mx-auto sm:mx-0">
+                    {song.coverImage ? (
+                      <img src={song.coverImage} alt={`${song.title} Song Cover`} className="w-full h-full object-cover" itemProp="image" />
+                    ) : (
+                      <FiMusic className="w-20 h-20 text-slate-400 dark:text-slate-500" />
+                    )}
+                  </div>
 
-                {/* Content */}
-                <div className="relative z-10 p-6">
-                  <div className="flex flex-col sm:flex-row gap-6">
-                    {/* Cover Image */}
-                    <div className="w-32 h-32 sm:w-40 sm:h-40 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-2xl ring-1 ring-white/20 mx-auto sm:mx-0">
-                      {song.coverImage ? (
-                        <img src={song.coverImage} alt={`${song.title} Song Cover`} className="w-full h-full object-cover" itemProp="image" />
-                      ) : (
-                        <FiMusic className="w-16 h-16 text-white/80" />
-                      )}
+                  {/* Song Info */}
+                  <div className="flex-1 text-center sm:text-left">
+                    <h1 itemProp="name" className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-3">
+                      {song.title} Lyrics
+                    </h1>
+
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4">
+                      {song.artists?.map(({ artist }) => (
+                        <Link
+                          key={artist.id}
+                          href={`/artist/${artist.slug}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-full text-sm font-medium hover:bg-primary/10 hover:text-primary transition"
+                        >
+                          <FiUser className="w-3.5 h-3.5" />
+                          <span itemProp="byArtist" itemScope itemType="https://schema.org/MusicGroup">
+                            <span itemProp="name">{artist.name}</span>
+                          </span>
+                        </Link>
+                      ))}
                     </div>
 
-                    {/* Song Info */}
-                    <div className="flex-1 text-center sm:text-left">
-                      <h1 itemProp="name" className="text-2xl sm:text-3xl font-bold text-white mb-2 drop-shadow-lg">
-                        {song.title} Lyrics
-                      </h1>
-
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4">
-                        {song.artists?.map(({ artist }) => (
-                          <Link
-                            key={artist.id}
-                            href={`/artist/${artist.slug}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/20 text-white rounded-full text-sm font-medium hover:bg-white/30 transition"
-                          >
-                            <FiUser className="w-3.5 h-3.5" />
-                            <span itemProp="byArtist" itemScope itemType="https://schema.org/MusicGroup">
-                              <span itemProp="name">{artist.name}</span>
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-
-                      {/* Meta Info */}
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-white/70">
-                        {song.album && (
-                          <Link href={`/album/${song.album.slug}`} className="flex items-center gap-1.5 hover:text-white transition">
-                            <FiDisc className="w-4 h-4" />
-                            <span itemProp="inAlbum" itemScope itemType="https://schema.org/MusicAlbum">
-                              <span itemProp="name">{song.album.title}</span>
-                            </span>
-                          </Link>
-                        )}
-                        {song.movie && (
-                          <Link href={`/movie/${song.movie.slug}`} className="flex items-center gap-1.5 hover:text-white transition">
-                            <FiFilm className="w-4 h-4" />
-                            <span>{song.movie.title}</span>
-                          </Link>
-                        )}
+                    {/* Meta Info */}
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400 mb-6">
+                      {song.album && (
+                        <Link href={`/album/${song.album.slug}`} className="flex items-center gap-1.5 hover:text-primary transition">
+                          <FiDisc className="w-4 h-4" />
+                          <span itemProp="inAlbum" itemScope itemType="https://schema.org/MusicAlbum">
+                            <span itemProp="name">{song.album.title}</span>
+                          </span>
+                        </Link>
+                      )}
+                      {song.movie && (
+                        <Link href={`/movie/${song.movie.slug}`} className="flex items-center gap-1.5 hover:text-primary transition">
+                          <FiFilm className="w-4 h-4" />
+                          <span>{song.movie.title}</span>
+                        </Link>
+                      )}
+                      {viewCount >= 1000 && (
                         <span className="flex items-center gap-1.5">
                           <FiEye className="w-4 h-4" />
                           <span>{formatViews(viewCount)} views</span>
                         </span>
-                        {/* Categories/Languages */}
-                        {categories.length > 0 && categories.map((category) => (
-                          <Link
-                            key={category.id}
-                            href={`/category/${category.slug}`}
-                            className="px-3 py-1 bg-gradient-to-r from-orange-400 to-rose-500 text-white rounded-full text-xs font-medium hover:from-orange-500 hover:to-rose-600 transition"
-                          >
-                            {category.name}
-                          </Link>
-                        ))}
-                      </div>
-
-                      {/* Genres */}
-                      {genres.length > 0 && (
-                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-4" itemProp="genre">
-                          {genres.map((genre) => (
-                            <Link
-                              key={genre.id}
-                              href={`/genre/${genre.slug}`}
-                              className="px-3 py-1 bg-white/10 text-white/80 rounded-full text-xs font-medium hover:bg-white/20 transition"
-                            >
-                              {genre.name}
-                            </Link>
-                          ))}
-                        </div>
                       )}
+                    </div>
 
+                    {/* Action Buttons */}
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                      <button
+                        onClick={async () => {
+                          if (isLikeLoading) return
+                          setIsLikeLoading(true)
+                          try {
+                            const res = await fetch(`/api/public/songs/${params.slug}/interact`, {
+                              method: 'PUT'
+                            })
+                            if (res.ok) {
+                              const data = await res.json()
+                              setIsLiked(data.hasLiked)
+                              setLikeCount(data.likes)
+                            }
+                          } catch (err) {
+                            console.error('Error toggling like:', err)
+                          } finally {
+                            setIsLikeLoading(false)
+                          }
+                        }}
+                        disabled={isLikeLoading}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition ${
+                          isLiked
+                            ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white'
+                            : 'bg-gradient-to-r from-rose-500 to-pink-600 text-white hover:from-rose-600 hover:to-pink-700'
+                        } ${isLikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      >
+                        <FiHeart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+                        <span>{likeCount}</span>
+                        <span className="hidden sm:inline">{isLiked ? 'Liked' : 'Like'}</span>
+                      </button>
+                      <button
+                        onClick={() => setShowShareModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                      >
+                        <FiShare2 className="w-4 h-4" />
+                        Share
+                      </button>
+                      <button
+                        onClick={copyLyrics}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                      >
+                        {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
+                        {copied ? 'Copied!' : 'Copy Lyrics'}
+                      </button>
+                      <button
+                        onClick={() => setShowReportModal(true)}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                      >
+                        <FiAlertCircle className="w-4 h-4" />
+                        Report
+                      </button>
                     </div>
                   </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 mt-6 pt-6 border-t border-white/10">
-                  <button
-                    onClick={async () => {
-                      if (isLikeLoading) return
-                      setIsLikeLoading(true)
-                      try {
-                        const res = await fetch(`/api/public/songs/${params.slug}/interact`, {
-                          method: 'PUT'
-                        })
-                        if (res.ok) {
-                          const data = await res.json()
-                          setIsLiked(data.hasLiked)
-                          setLikeCount(data.likes)
-                        }
-                      } catch (err) {
-                        console.error('Error toggling like:', err)
-                      } finally {
-                        setIsLikeLoading(false)
-                      }
-                    }}
-                    disabled={isLikeLoading}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition ${
-                      isLiked
-                        ? 'bg-rose-500/30 text-rose-300'
-                        : 'bg-white/10 text-white/80 hover:bg-white/20'
-                    } ${isLikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <FiHeart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                    <span>{likeCount}</span>
-                    <span className="hidden sm:inline">{isLiked ? 'Liked' : 'Like'}</span>
-                  </button>
-                  <button
-                    onClick={() => setShowShareModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white/80 rounded-xl font-medium hover:bg-white/20 transition"
-                  >
-                    <FiShare2 className="w-4 h-4" />
-                    Share
-                  </button>
-                  <button
-                    onClick={copyLyrics}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white/80 rounded-xl font-medium hover:bg-white/20 transition"
-                  >
-                    {copied ? <FiCheck className="w-4 h-4 text-green-400" /> : <FiCopy className="w-4 h-4" />}
-                    {copied ? 'Copied!' : 'Copy Lyrics'}
-                  </button>
-                  <button
-                    onClick={() => setShowReportModal(true)}
-                    className="flex items-center gap-2 px-4 py-2 bg-white/10 text-white/80 rounded-xl font-medium hover:bg-white/20 transition"
-                  >
-                    <FiAlertCircle className="w-4 h-4" />
-                    Report
-                  </button>
-                </div>
                 </div>
               </header>
 
-              {/* Auto-generated Description */}
-              <SongDescription song={song} />
-
-              {/* WhatsApp Channel Banner */}
-              <a
-                href="https://whatsapp.com/channel/0029Vb7A52PEAKW8b0wxfV03"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block mb-6 p-4 sm:p-5 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20BD5A] hover:to-[#0d7d6e] rounded-2xl shadow-lg shadow-[#25D366]/30 transition-all hover:scale-[1.01] group"
-              >
-                <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
-                  <div className="p-4 bg-white/20 rounded-2xl">
-                    <FaWhatsapp className="w-10 h-10 sm:w-8 sm:h-8 text-white" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-white font-bold text-lg sm:text-xl">Join Our WhatsApp Channel</p>
-                    <p className="text-white/90 text-sm mt-1">Get latest lyrics updates & new song alerts instantly!</p>
-                  </div>
-                  <div className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#25D366] font-bold rounded-xl group-hover:bg-white/90 transition shadow-md mt-2 sm:mt-0">
-                    <FaWhatsapp className="w-5 h-5" />
-                    <span>Follow Now</span>
-                    <FiChevronRight className="w-4 h-4" />
+              {/* Song Meaning - Before Lyrics */}
+              {song.meaning && (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
+                  <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                    <FiBookOpen className="w-5 h-5 text-primary" />
+                    {song.title} Song Meaning
+                  </h2>
+                  <div className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <p className="whitespace-pre-line">{song.meaning}</p>
                   </div>
                 </div>
-              </a>
+              )}
 
               {/* Lyrics Section */}
               <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8 mb-6">
@@ -1095,6 +1031,39 @@ export default function SongPageClient() {
                 />
               </section>
 
+              {/* WhatsApp Channel Banner */}
+              <a
+                href="https://whatsapp.com/channel/0029Vb7A52PEAKW8b0wxfV03"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block mb-6 p-4 sm:p-5 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#20BD5A] hover:to-[#0d7d6e] rounded-2xl shadow-lg shadow-[#25D366]/30 transition-all hover:scale-[1.01] group"
+              >
+                <div className="flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
+                  <div className="p-4 bg-white/20 rounded-2xl">
+                    <FaWhatsapp className="w-10 h-10 sm:w-8 sm:h-8 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-white font-bold text-lg sm:text-xl">Join Our WhatsApp Channel</p>
+                    <p className="text-white/90 text-sm mt-1">Get latest lyrics updates & new song alerts instantly!</p>
+                  </div>
+                  <div className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#25D366] font-bold rounded-xl group-hover:bg-white/90 transition shadow-md mt-2 sm:mt-0">
+                    <FaWhatsapp className="w-5 h-5" />
+                    <span>Follow Now</span>
+                    <FiChevronRight className="w-4 h-4" />
+                  </div>
+                </div>
+              </a>
+
+              {/* Disclaimer Note */}
+              <div className="mb-6 px-4 py-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-200 dark:border-slate-700">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  <span className="font-medium text-slate-600 dark:text-slate-300">Note:</span> Lyrics are provided for educational and personal use. Ownership belongs to the respective artists and labels.
+                </p>
+              </div>
+
+              {/* Auto-generated Description - After Lyrics */}
+              <SongDescription song={song} />
+
               {/* YouTube Player */}
               <YouTubePlayer url={song.youtubeUrl} title={song.title} />
 
@@ -1104,8 +1073,28 @@ export default function SongPageClient() {
 
             {/* Sidebar */}
             <aside className="lg:col-span-1">
+              {/* Categories/Languages */}
+              {categories.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+                  <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                    <FiGrid className="w-4 h-4 text-primary" />
+                    Category
+                  </h3>
+                  <div className="flex flex-wrap gap-2">
+                    {categories.map((category) => (
+                      <Link
+                        key={category.id}
+                        href={`/category/${category.slug}`}
+                        className="px-3 py-1.5 bg-gradient-to-r from-orange-400 to-rose-500 text-white rounded-lg text-sm font-medium hover:from-orange-500 hover:to-rose-600 transition"
+                      >
+                        {category.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <SongCredits song={song} />
-              <SongMeaning song={song} />
 
               {/* Listen On */}
               <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
@@ -1204,6 +1193,27 @@ export default function SongPageClient() {
                         className="px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg text-sm hover:bg-primary/10 hover:text-primary dark:hover:bg-primary/20 transition capitalize"
                       >
                         #{tag.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Genres */}
+              {genres.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+                  <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                    <FiMusic className="w-4 h-4 text-primary" />
+                    Genre
+                  </h3>
+                  <div className="flex flex-wrap gap-2" itemProp="genre">
+                    {genres.map((genre) => (
+                      <Link
+                        key={genre.id}
+                        href={`/genre/${genre.slug}`}
+                        className="px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 rounded-lg text-sm font-medium hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition"
+                      >
+                        {genre.name}
                       </Link>
                     ))}
                   </div>

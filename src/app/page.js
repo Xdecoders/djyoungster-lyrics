@@ -1,9 +1,10 @@
+import { prisma } from '@/lib/prisma'
 import HomePageClient from './HomePageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema } from '@/lib/schema'
 
-// ISR: Revalidate homepage every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('homepage')
@@ -82,10 +83,138 @@ const homepageFAQs = [
   }
 ]
 
-export default function Home() {
+// Fetch homepage data on server
+async function getHomepageData() {
+  try {
+    // Fetch latest songs
+    const latestSongs = await prisma.song.findMany({
+      where: { status: 'published' },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      include: {
+        artists: {
+          include: { artist: true }
+        },
+        album: true
+      }
+    })
+
+    // Fetch trending songs (most viewed)
+    const trendingSongs = await prisma.song.findMany({
+      where: { status: 'published' },
+      orderBy: { views: 'desc' },
+      take: 10,
+      include: {
+        artists: {
+          include: { artist: true }
+        },
+        album: true
+      }
+    })
+
+    // Fetch categories with their songs
+    const categories = await prisma.category.findMany({
+      include: {
+        songs: {
+          include: {
+            song: {
+              include: {
+                artists: {
+                  include: { artist: true }
+                },
+                album: true
+              }
+            }
+          },
+          take: 10
+        },
+        _count: {
+          select: { songs: true }
+        }
+      }
+    })
+
+    // Fetch popular artists
+    const artists = await prisma.artist.findMany({
+      take: 10,
+      include: {
+        _count: {
+          select: { songs: true }
+        }
+      },
+      orderBy: {
+        songs: {
+          _count: 'desc'
+        }
+      }
+    })
+
+    // Fetch recent albums
+    const albums = await prisma.album.findMany({
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        artist: true,
+        _count: {
+          select: { songs: true }
+        }
+      }
+    })
+
+    // Fetch popular tags
+    const tags = await prisma.tag.findMany({
+      take: 14,
+      include: {
+        _count: {
+          select: { songs: true }
+        }
+      },
+      orderBy: {
+        songs: {
+          _count: 'desc'
+        }
+      }
+    })
+
+    // Fetch site settings for hero
+    const siteSettings = await getSiteSettings()
+
+    return {
+      latestSongs,
+      trendingSongs,
+      categories,
+      artists,
+      albums,
+      tags,
+      siteSettings: {
+        heroHeading: siteSettings.heroHeading || 'Discover Your Favorite Song Lyrics',
+        heroDescription: siteSettings.heroDescription || 'Explore thousands of song lyrics from your favorite artists. Search, discover, and sing along!'
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching homepage data:', error)
+    return {
+      latestSongs: [],
+      trendingSongs: [],
+      categories: [],
+      artists: [],
+      albums: [],
+      tags: [],
+      siteSettings: {
+        heroHeading: 'Discover Your Favorite Song Lyrics',
+        heroDescription: 'Explore thousands of song lyrics from your favorite artists. Search, discover, and sing along!'
+      }
+    }
+  }
+}
+
+export default async function Home() {
   const websiteSchema = generateWebSiteSchema()
   const organizationSchema = generateOrganizationSchema()
   const faqSchema = generateFAQSchema(homepageFAQs)
+
+  // Fetch data on server
+  const data = await getHomepageData()
 
   return (
     <>
@@ -101,7 +230,7 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <HomePageClient />
+      <HomePageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
   )
 }

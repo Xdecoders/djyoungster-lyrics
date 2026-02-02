@@ -1,9 +1,53 @@
+import { prisma } from '@/lib/prisma'
 import ArtistsPageClient from './ArtistsPageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateBreadcrumbSchema } from '@/lib/schema'
 
-// ISR: Revalidate artists list every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
+
+// Fetch data for SSR based on search params
+async function getArtistsPageData(searchParams) {
+  const page = parseInt(searchParams?.page) || 1
+  const sort = searchParams?.sort || 'popular'
+  const limit = 24
+  const skip = (page - 1) * limit
+
+  try {
+    // Build orderBy based on sort
+    let orderBy = { songs: { _count: 'desc' } }
+    if (sort === 'alphabetical') orderBy = { name: 'asc' }
+    else if (sort === 'latest') orderBy = { createdAt: 'desc' }
+
+    const [artists, total] = await Promise.all([
+      prisma.artist.findMany({
+        include: {
+          _count: { select: { songs: true } }
+        },
+        orderBy,
+        skip,
+        take: limit
+      }),
+      prisma.artist.count()
+    ])
+
+    return {
+      artists,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching artists page data:', error)
+    return {
+      artists: [],
+      pagination: { page: 1, limit: 24, total: 0, totalPages: 0 }
+    }
+  }
+}
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('artists')
@@ -44,8 +88,12 @@ export async function generateMetadata() {
   }
 }
 
-export default function ArtistsPage() {
+export default async function ArtistsPage({ searchParams }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+  const params = await searchParams
+
+  // Fetch data on server with search params
+  const data = await getArtistsPageData(params)
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
@@ -75,7 +123,7 @@ export default function ArtistsPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
       />
-      <ArtistsPageClient />
+      <ArtistsPageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
   )
 }

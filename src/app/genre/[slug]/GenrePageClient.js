@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams, useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   FiMusic,
@@ -73,58 +73,21 @@ function SongRow({ song, index }) {
   )
 }
 
-export default function GenrePageClient() {
-  const params = useParams()
+export default function GenrePageClient({ initialData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-
-  const [genre, setGenre] = useState(null)
-  const [songs, setSongs] = useState([])
-  const [featuredSongs, setFeaturedSongs] = useState([])
-  const [pagination, setPagination] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [viewMode, setViewMode] = useState('grid')
+
+  // Get data from server (no client-side state)
+  const genre = initialData?.genre || null
+  const songs = initialData?.songs || []
+  const featuredSongs = initialData?.featuredSongs || []
+  const pagination = initialData?.pagination || null
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1
 
-  useEffect(() => {
-    fetchGenre()
-  }, [params.slug, currentSort, currentPage])
-
-  const fetchGenre = async () => {
-    try {
-      setLoading(true)
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        sort: currentSort
-      })
-
-      const res = await fetch(`/api/public/genres/${params.slug}?${queryParams}`)
-
-      if (!res.ok) {
-        if (res.status === 404) {
-          setError('Genre not found')
-        } else {
-          setError('Failed to load genre')
-        }
-        return
-      }
-
-      const data = await res.json()
-      setGenre(data.genre)
-      setSongs(data.songs)
-      setFeaturedSongs(data.featuredSongs)
-      setPagination(data.pagination)
-    } catch (err) {
-      console.error('Error fetching genre:', err)
-      setError('Failed to load genre')
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Navigate to new URL (triggers SSR)
   const updateFilters = (key, value) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value) {
@@ -136,36 +99,8 @@ export default function GenrePageClient() {
     router.push(`/genre/${genre.slug}?${params.toString()}`)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FiMusic className="w-10 h-10 text-rose-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Genre Not Found</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">The genre you're looking for doesn't exist.</p>
-          <Link
-            href="/genres"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium"
-          >
-            Browse Genres
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  // If no genre data (should not happen with SSR), show nothing
+  if (!genre) return null
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
@@ -243,10 +178,17 @@ export default function GenrePageClient() {
               </div>
             )}
 
+            {songs.length === 0 && (
+              <div className="bg-white dark:bg-slate-800 rounded-2xl p-12 text-center">
+                <FiMusic className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
+                <p className="text-slate-500 dark:text-slate-400">No songs found</p>
+              </div>
+            )}
+
             {/* Pagination */}
             {pagination && pagination.totalPages > 1 && (
               <div className="flex justify-center gap-2 mt-8">
-                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map((page) => (
+                {Array.from({ length: Math.min(pagination.totalPages, 10) }, (_, i) => i + 1).map((page) => (
                   <button
                     key={page}
                     onClick={() => updateFilters('page', page.toString())}

@@ -1,9 +1,27 @@
+import { prisma } from '@/lib/prisma'
 import LanguagesPageClient from './LanguagesPageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateBreadcrumbSchema } from '@/lib/schema'
 
-// ISR: Revalidate languages list every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
+
+// Fetch initial data for SSR
+async function getLanguagesPageData() {
+  try {
+    const categories = await prisma.category.findMany({
+      include: {
+        _count: { select: { songs: true } }
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    return { categories }
+  } catch (error) {
+    console.error('Error fetching languages page data:', error)
+    return { categories: [] }
+  }
+}
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('languages')
@@ -43,8 +61,11 @@ export async function generateMetadata() {
   }
 }
 
-export default function LanguagesPage() {
+export default async function LanguagesPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+
+  // Fetch data on server
+  const data = await getLanguagesPageData()
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
@@ -74,7 +95,7 @@ export default function LanguagesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
       />
-      <LanguagesPageClient />
+      <LanguagesPageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
   )
 }

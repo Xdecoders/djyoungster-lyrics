@@ -1,9 +1,27 @@
+import { prisma } from '@/lib/prisma'
 import GenresPageClient from './GenresPageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateBreadcrumbSchema } from '@/lib/schema'
 
-// ISR: Revalidate genres list every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
+
+// Fetch initial data for SSR
+async function getGenresPageData() {
+  try {
+    const genres = await prisma.genre.findMany({
+      include: {
+        _count: { select: { songs: true } }
+      },
+      orderBy: { name: 'asc' }
+    })
+
+    return { genres }
+  } catch (error) {
+    console.error('Error fetching genres page data:', error)
+    return { genres: [] }
+  }
+}
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('genres')
@@ -44,8 +62,11 @@ export async function generateMetadata() {
   }
 }
 
-export default function GenresPage() {
+export default async function GenresPage() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+
+  // Fetch data on server
+  const data = await getGenresPageData()
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
@@ -75,7 +96,7 @@ export default function GenresPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
       />
-      <GenresPageClient />
+      <GenresPageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
   )
 }

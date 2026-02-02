@@ -3,33 +3,25 @@
 
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/admin/
+Disallow: /search?
 
-# Allow all search engines
+# Googlebot specific
 User-agent: Googlebot
 Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: Yandex
-Allow: /
-
-# Disallow admin pages
 Disallow: /admin/
-Disallow: /admin/*
 Disallow: /api/admin/
 
-# Disallow search results with parameters (avoid duplicate content)
-Disallow: /search?*
+# Bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Disallow: /api/admin/
 
-# Allow API for public data
-Allow: /api/public/
-
-# Sitemap location
+# Sitemap
 Sitemap: https://djyoungster.com/sitemap.xml
-
-# Crawl delay (optional - be nice to the server)
-Crawl-delay: 1
+Sitemap: https://djyoungster.com/sitemap-songs.xml
+Sitemap: https://djyoungster.com/sitemap-artists.xml
+Sitemap: https://djyoungster.com/sitemap-albums.xml
+Sitemap: https://djyoungster.com/sitemap-movies.xml

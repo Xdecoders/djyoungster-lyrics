@@ -1,9 +1,54 @@
+import { prisma } from '@/lib/prisma'
 import MoviesPageClient from './MoviesPageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateBreadcrumbSchema } from '@/lib/schema'
 
-// ISR: Revalidate movies list every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
+
+// Fetch data for SSR based on search params
+async function getMoviesPageData(searchParams) {
+  const page = parseInt(searchParams?.page) || 1
+  const sort = searchParams?.sort || 'latest'
+  const limit = 24
+  const skip = (page - 1) * limit
+
+  try {
+    // Build orderBy based on sort
+    let orderBy = { createdAt: 'desc' }
+    if (sort === 'alphabetical') orderBy = { title: 'asc' }
+    else if (sort === 'oldest') orderBy = { createdAt: 'asc' }
+    else if (sort === 'year') orderBy = { year: 'desc' }
+
+    const [movies, total] = await Promise.all([
+      prisma.movie.findMany({
+        include: {
+          _count: { select: { songs: true } }
+        },
+        orderBy,
+        skip,
+        take: limit
+      }),
+      prisma.movie.count()
+    ])
+
+    return {
+      movies,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit)
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching movies page data:', error)
+    return {
+      movies: [],
+      pagination: { page: 1, limit: 24, total: 0, totalPages: 0 }
+    }
+  }
+}
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('movies')
@@ -44,8 +89,12 @@ export async function generateMetadata() {
   }
 }
 
-export default function MoviesPage() {
+export default async function MoviesPage({ searchParams }) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+  const params = await searchParams
+
+  // Fetch data on server with search params
+  const data = await getMoviesPageData(params)
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
@@ -75,7 +124,7 @@ export default function MoviesPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
       />
-      <MoviesPageClient />
+      <MoviesPageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
   )
 }

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { FiMusic, FiPlay, FiGrid, FiList, FiEye, FiChevronRight } from 'react-icons/fi'
 
 function SongCard({ song }) {
@@ -58,55 +58,21 @@ function SongRow({ song, index }) {
   )
 }
 
-function SongsContent() {
+export default function SongsPageClient({ initialData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [songs, setSongs] = useState([])
-  const [categories, setCategories] = useState([])
-  const [pagination, setPagination] = useState(null)
-  const [loading, setLoading] = useState(true)
   const [viewMode, setViewMode] = useState('grid')
+
+  // Get data from server (no client-side state management for data)
+  const songs = initialData?.songs || []
+  const categories = initialData?.categories || []
+  const pagination = initialData?.pagination || null
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1
   const currentCategory = searchParams.get('category') || ''
 
-  useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  useEffect(() => {
-    fetchSongs()
-  }, [currentSort, currentPage, currentCategory])
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch('/api/public/categories')
-      const data = await res.json()
-      setCategories(data)
-    } catch (err) {
-      console.error('Error fetching categories:', err)
-    }
-  }
-
-  const fetchSongs = async () => {
-    try {
-      setLoading(true)
-      let url = `/api/public/songs?page=${currentPage}&sort=${currentSort}`
-      if (currentCategory) {
-        url += `&category=${currentCategory}`
-      }
-      const res = await fetch(url)
-      const data = await res.json()
-      setSongs(data.songs)
-      setPagination(data.pagination)
-    } catch (err) {
-      console.error('Error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
+  // Navigate to new URL (triggers SSR)
   const updateFilters = (key, value) => {
     const params = new URLSearchParams(searchParams.toString())
     if (value) {
@@ -178,7 +144,7 @@ function SongsContent() {
                   }`}
                 >
                   {cat.name}
-                  <span className="ml-1.5 text-xs opacity-70">({cat._count.songs})</span>
+                  <span className="ml-1.5 text-xs opacity-70">({cat._count?.songs || 0})</span>
                 </button>
               ))}
             </div>
@@ -198,11 +164,7 @@ function SongsContent() {
           </div>
         )}
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div>
-          </div>
-        ) : songs.length === 0 ? (
+        {songs.length === 0 ? (
           <div className="text-center py-20">
             <FiMusic className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-slate-600 dark:text-slate-400 mb-2">No songs found</h3>
@@ -243,13 +205,5 @@ function SongsContent() {
         )}
       </div>
     </div>
-  )
-}
-
-export default function SongsPageClient() {
-  return (
-    <Suspense fallback={<div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center"><div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div></div>}>
-      <SongsContent />
-    </Suspense>
   )
 }

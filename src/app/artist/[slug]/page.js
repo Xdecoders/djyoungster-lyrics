@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
+import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateArtistSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import ArtistPageClient from './ArtistPageClient'
 
-// ISR: Revalidate artist pages every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -86,38 +87,166 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default async function ArtistPage({ params }) {
-  const { slug } = await params
-
-  let artistSchema = null
-  let breadcrumbSchema = null
+// Fetch artist data for SSR with searchParams
+async function getArtistData(slug, searchParams) {
+  const page = parseInt(searchParams?.page) || 1
+  const sort = searchParams?.sort || 'latest'
+  const genreSlug = searchParams?.genre || ''
+  const limit = 20
+  const skip = (page - 1) * limit
 
   try {
+    // Fetch the artist with basic info
     const artist = await prisma.artist.findUnique({
       where: { slug },
       include: {
-        _count: { select: { songs: true, albums: true } },
         albums: {
-          take: 10,
-          select: { title: true, slug: true }
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverImage: true,
+            releaseDate: true,
+          },
+          orderBy: { releaseDate: 'desc' }
+        },
+        _count: {
+          select: { songs: true }
         }
       }
     })
 
-    if (artist) {
-      artistSchema = generateArtistSchema(artist)
+    if (!artist) return null
 
-      // Generate breadcrumb
-      const breadcrumbs = [
-        { name: 'Home', url: '/' },
-        { name: 'Artists', url: '/artists' },
-        { name: artist.name, url: `/artist/${artist.slug}` }
-      ]
-      breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+    // Build where clause
+    let songWhere = {
+      artists: { some: { artistId: artist.id } },
+      status: 'published'
+    }
+
+    // Filter by genre if provided
+    if (genreSlug) {
+      const genre = await prisma.genre.findUnique({
+        where: { slug: genreSlug },
+        select: { id: true }
+      })
+      if (genre) {
+        songWhere.genres = { some: { genreId: genre.id } }
+      }
+    }
+
+    // Build orderBy
+    let orderBy = { createdAt: 'desc' }
+    if (sort === 'popular') orderBy = { views: 'desc' }
+    else if (sort === 'alphabetical') orderBy = { title: 'asc' }
+    else if (sort === 'oldest') orderBy = { createdAt: 'asc' }
+
+    // Fetch songs (with pagination)
+    const [songs, totalSongs] = await Promise.all([
+      prisma.song.findMany({
+        where: songWhere,
+        include: {
+          artists: {
+            include: {
+              artist: { select: { id: true, name: true, slug: true } }
+            }
+          },
+          genres: {
+            include: {
+              genre: { select: { id: true, name: true, slug: true } }
+            }
+          },
+          album: { select: { id: true, title: true, slug: true, coverImage: true } }
+        },
+        orderBy,
+        skip,
+        take: limit
+      }),
+      prisma.song.count({ where: songWhere })
+    ])
+
+    // Get all genres for this artist's songs (for filter dropdown)
+    const artistGenres = await prisma.genre.findMany({
+      where: {
+        songs: {
+          some: {
+            song: {
+              artists: { some: { artistId: artist.id } }
+            }
+          }
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        _count: { select: { songs: true } }
+      }
+    })
+
+    // Get featured/popular songs (top 5 by views)
+    const featuredSongs = await prisma.song.findMany({
+      where: {
+        artists: { some: { artistId: artist.id } },
+        status: 'published'
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        views: true,
+        artists: {
+          include: {
+            artist: { select: { name: true, slug: true } }
+          }
+        }
+      },
+      orderBy: { views: 'desc' },
+      take: 5
+    })
+
+    return {
+      artist: { ...artist, totalSongs },
+      songs,
+      featuredSongs,
+      genres: artistGenres,
+      pagination: {
+        page,
+        limit,
+        totalSongs,
+        totalPages: Math.ceil(totalSongs / limit)
+      }
     }
   } catch (error) {
-    console.error('Error generating artist schema:', error)
+    console.error('Error fetching artist data:', error)
+    return null
   }
+}
+
+export default async function ArtistPage({ params, searchParams }) {
+  const { slug } = await params
+  const searchParamsResolved = await searchParams
+
+  // Fetch artist data on server
+  const data = await getArtistData(slug, searchParamsResolved)
+
+  if (!data || !data.artist) {
+    notFound()
+  }
+
+  const { artist } = data
+
+  // Generate structured data
+  const artistSchema = generateArtistSchema(artist)
+
+  // Generate breadcrumb
+  const breadcrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Artists', url: '/artists' },
+    { name: artist.name, url: `/artist/${artist.slug}` }
+  ]
+  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
 
   return (
     <>
@@ -133,7 +262,7 @@ export default async function ArtistPage({ params }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
-      <ArtistPageClient />
+      <ArtistPageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
   )
 }

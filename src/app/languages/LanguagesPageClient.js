@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Link from 'next/link'
 import { FiGlobe, FiChevronRight, FiMusic } from 'react-icons/fi'
 
@@ -37,26 +37,9 @@ function LanguageCard({ category, index }) {
   )
 }
 
-export default function LanguagesPageClient() {
-  const [categories, setCategories] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchCategories()
-  }, [])
-
-  const fetchCategories = async () => {
-    try {
-      const res = await fetch('/api/public/categories')
-      const data = await res.json()
-      // API returns array directly, not { categories: [...] }
-      setCategories(Array.isArray(data) ? data : [])
-    } catch (err) {
-      console.error('Error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+export default function LanguagesPageClient({ initialData }) {
+  // Use initial data from server - no loading state needed
+  const [categories] = useState(initialData?.categories || [])
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
@@ -77,11 +60,7 @@ export default function LanguagesPageClient() {
           <p className="text-slate-500 dark:text-slate-400 mt-2">Explore songs in your favorite language</p>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div>
-          </div>
-        ) : categories.length > 0 ? (
+        {categories.length > 0 ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {categories.map((category, index) => (
               <LanguageCard key={category.id} category={category} index={index} />

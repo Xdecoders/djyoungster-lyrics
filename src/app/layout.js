@@ -17,6 +17,14 @@ export async function generateMetadata() {
       icon: faviconUrl,
       apple: faviconUrl,
     },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+      },
+    },
   }
 }
 

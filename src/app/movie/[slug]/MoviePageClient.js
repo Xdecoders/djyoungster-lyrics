@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useParams } from 'next/navigation'
+import { useState } from 'react'
 import Link from 'next/link'
 import { FiFilm, FiMusic, FiPlay, FiEye, FiChevronRight, FiCalendar, FiUser, FiUsers, FiVideo, FiGlobe, FiAward, FiEdit3, FiHeadphones } from 'react-icons/fi'
 
@@ -140,33 +139,9 @@ function SongRow({ song, index }) {
   )
 }
 
-export default function MoviePageClient() {
-  const params = useParams()
-  const [movie, setMovie] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-
-  useEffect(() => {
-    fetchMovie()
-  }, [params.slug])
-
-  const fetchMovie = async () => {
-    try {
-      setLoading(true)
-      const res = await fetch(`/api/public/movies/${params.slug}`)
-      if (!res.ok) {
-        setError('Movie not found')
-        return
-      }
-      const data = await res.json()
-      setMovie(data.movie)
-    } catch (err) {
-      console.error('Error:', err)
-      setError('Failed to load movie')
-    } finally {
-      setLoading(false)
-    }
-  }
+export default function MoviePageClient({ initialMovie }) {
+  // Use initial data from server - no loading state needed
+  const [movie] = useState(initialMovie)
 
   const formatViews = (views) => {
     if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'
@@ -174,36 +149,8 @@ export default function MoviePageClient() {
     return views?.toString() || '0'
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 border-4 border-rose-200 dark:border-rose-900 border-t-rose-500 rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-slate-500 dark:text-slate-400">Loading movie...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FiFilm className="w-10 h-10 text-rose-400" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800 dark:text-white mb-2">Movie Not Found</h1>
-          <p className="text-slate-500 dark:text-slate-400 mb-6">The movie you're looking for doesn't exist.</p>
-          <Link
-            href="/movies"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-500 text-white rounded-xl font-medium hover:from-rose-600 hover:to-pink-600 transition"
-          >
-            Browse Movies
-          </Link>
-        </div>
-      </div>
-    )
-  }
+  // If no movie data (should not happen with SSR), show nothing
+  if (!movie) return null
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-rose-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">

@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/prisma'
+import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateAlbumSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import AlbumPageClient from './AlbumPageClient'
 
-// ISR: Revalidate album pages every 1 hour
-export const revalidate = 3600
+// Dynamic SSR - always fetch fresh data on each request
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -99,40 +100,102 @@ export async function generateMetadata({ params }) {
   }
 }
 
-export default async function AlbumPage({ params }) {
-  const { slug } = await params
-
-  let albumSchema = null
-  let breadcrumbSchema = null
-
+// Fetch album data for SSR
+async function getAlbumData(slug) {
   try {
     const album = await prisma.album.findUnique({
       where: { slug },
       include: {
-        artist: { select: { name: true, slug: true } },
-        _count: { select: { songs: true } },
+        artist: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            imageUrl: true
+          }
+        },
         songs: {
-          take: 50,
-          orderBy: { trackNumber: 'asc' },
-          select: { title: true, slug: true }
+          where: { status: 'published' },
+          include: {
+            artists: {
+              include: {
+                artist: {
+                  select: { id: true, name: true, slug: true }
+                }
+              }
+            },
+            genres: {
+              include: {
+                genre: {
+                  select: { id: true, name: true, slug: true }
+                }
+              }
+            }
+          },
+          orderBy: { createdAt: 'asc' }
         }
       }
     })
 
-    if (album) {
-      albumSchema = generateAlbumSchema(album, album.songs)
+    if (!album) return null
 
-      // Generate breadcrumb
-      const breadcrumbs = [
-        { name: 'Home', url: '/' },
-        { name: 'Albums', url: '/albums' },
-        { name: album.title, url: `/album/${album.slug}` }
-      ]
-      breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+    // Get more albums from same artist
+    const moreAlbums = await prisma.album.findMany({
+      where: {
+        artistId: album.artistId,
+        slug: { not: slug }
+      },
+      include: {
+        artist: {
+          select: { name: true, slug: true }
+        },
+        _count: {
+          select: { songs: true }
+        }
+      },
+      take: 6,
+      orderBy: { releaseDate: 'desc' }
+    })
+
+    // Calculate total views
+    const totalViews = album.songs.reduce((sum, song) => sum + (song.views || 0), 0)
+
+    return {
+      album: {
+        ...album,
+        totalSongs: album.songs.length,
+        totalViews
+      },
+      moreAlbums
     }
   } catch (error) {
-    console.error('Error generating album schema:', error)
+    console.error('Error fetching album data:', error)
+    return null
   }
+}
+
+export default async function AlbumPage({ params }) {
+  const { slug } = await params
+
+  // Fetch album data on server
+  const data = await getAlbumData(slug)
+
+  if (!data || !data.album) {
+    notFound()
+  }
+
+  const { album, moreAlbums } = data
+
+  // Generate structured data
+  const albumSchema = generateAlbumSchema(album, album.songs)
+
+  // Generate breadcrumb
+  const breadcrumbs = [
+    { name: 'Home', url: '/' },
+    { name: 'Albums', url: '/albums' },
+    { name: album.title, url: `/album/${album.slug}` }
+  ]
+  const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
 
   return (
     <>
@@ -148,7 +211,10 @@ export default async function AlbumPage({ params }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
-      <AlbumPageClient />
+      <AlbumPageClient
+        initialAlbum={JSON.parse(JSON.stringify(album))}
+        initialMoreAlbums={JSON.parse(JSON.stringify(moreAlbums))}
+      />
     </>
   )
 }

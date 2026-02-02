@@ -51,23 +51,52 @@ export function generateOrganizationSchema() {
 }
 
 /**
+ * Extract first verse or chorus from lyrics (for schema - keep it short)
+ */
+function getFirstVerseOrChorus(lyrics) {
+  if (!lyrics) return ''
+
+  // Split by double newlines (verse separators)
+  const parts = lyrics.split(/\n\n+/)
+
+  // Get first part (usually first verse or chorus)
+  const firstPart = parts[0]?.trim() || ''
+
+  // Limit to ~300 characters for schema
+  if (firstPart.length > 300) {
+    return firstPart.substring(0, 300) + '...'
+  }
+
+  return firstPart
+}
+
+/**
  * Generate MusicRecording schema for song pages
  */
 export function generateSongSchema(song, artistNames) {
+  // Use createdAt date if available, fallback to releaseYear
+  let datePublished
+  if (song.createdAt) {
+    datePublished = new Date(song.createdAt).toISOString().split('T')[0]
+  } else if (song.releaseYear) {
+    datePublished = `${song.releaseYear}-01-01`
+  }
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'MusicRecording',
     '@id': `${SITE_URL}/song/${song.slug}`,
     name: song.title,
     url: `${SITE_URL}/song/${song.slug}`,
-    datePublished: song.releaseYear?.toString() || undefined,
+    datePublished,
     inLanguage: song.language || undefined,
+    // Use Person type for individual artists (not MusicGroup)
     byArtist: song.artists?.length > 0 ? song.artists.map(sa => ({
-      '@type': 'MusicGroup',
+      '@type': 'Person',
       name: sa.artist.name,
       url: sa.artist.slug ? `${SITE_URL}/artist/${sa.artist.slug}` : undefined
     })) : {
-      '@type': 'MusicGroup',
+      '@type': 'Person',
       name: artistNames
     }
   }
@@ -96,11 +125,11 @@ export function generateSongSchema(song, artistNames) {
     schema.image = getAbsoluteUrl(song.coverImage)
   }
 
-  // Add lyrics
+  // Add only first verse/chorus in schema (full lyrics in HTML)
   if (song.lyrics) {
     schema.lyrics = {
       '@type': 'CreativeWork',
-      text: song.lyrics.substring(0, 1000),
+      text: getFirstVerseOrChorus(song.lyrics),
       inLanguage: song.language || 'en'
     }
     if (song.lyricist) {
