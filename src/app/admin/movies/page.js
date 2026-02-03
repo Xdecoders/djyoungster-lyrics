@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiFilm, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiCalendar, FiX } from 'react-icons/fi'
+import { FiFilm, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiCalendar, FiX, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+
+const ITEMS_PER_PAGE = 10
 
 export default function MoviesPage() {
   const router = useRouter()
@@ -12,6 +14,7 @@ export default function MoviesPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
   const [formData, setFormData] = useState({
     title: '',
     year: '',
@@ -125,6 +128,11 @@ export default function MoviesPage() {
       console.error('Error deleting movie:', error)
     }
   }
+
+  // Pagination logic
+  const totalPages = Math.ceil(movies.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedMovies = movies.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -339,7 +347,7 @@ export default function MoviesPage() {
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
-              {movies.map((movie) => (
+              {paginatedMovies.map((movie) => (
                 <div key={movie.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center">
@@ -386,8 +394,48 @@ export default function MoviesPage() {
           )}
         </div>
 
-        <div className="mt-4 text-sm text-slate-500">
-          Total: {movies.length} movies
+        {/* Pagination */}
+        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-sm text-slate-500">
+            Showing {movies.length > 0 ? startIndex + 1 : 0}-{Math.min(startIndex + ITEMS_PER_PAGE, movies.length)} of {movies.length} movies
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg transition ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                <FiChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                  .map((page, idx, arr) => (
+                    <span key={page} className="flex items-center">
+                      {idx > 0 && arr[idx - 1] !== page - 1 && <span className="px-2 text-slate-400">...</span>}
+                      <button
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                          currentPage === page
+                            ? 'bg-primary text-white'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </span>
+                  ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg transition ${currentPage === totalPages ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                <FiChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
       </main>
 

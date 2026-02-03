@@ -3,7 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiUser, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic } from 'react-icons/fi'
+import { FiUser, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+
+const ITEMS_PER_PAGE = 10
 
 export default function ArtistsList() {
   const router = useRouter()
@@ -11,6 +13,7 @@ export default function ArtistsList() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -50,6 +53,16 @@ export default function ArtistsList() {
   const filteredArtists = artists.filter(artist =>
     artist.name.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredArtists.length / ITEMS_PER_PAGE)
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+  const paginatedArtists = filteredArtists.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -112,7 +125,7 @@ export default function ArtistsList() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {filteredArtists.map((artist) => (
+            {paginatedArtists.map((artist) => (
               <div key={artist.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
                 <div className="p-5">
                   <div className="flex items-start gap-4">
@@ -162,9 +175,48 @@ export default function ArtistsList() {
           </div>
         )}
 
-        {/* Stats */}
-        <div className="mt-4 text-sm text-slate-500">
-          Showing {filteredArtists.length} of {artists.length} artists
+        {/* Pagination */}
+        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-sm text-slate-500">
+            Showing {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredArtists.length)} of {filteredArtists.length} artists
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg transition ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                <FiChevronLeft className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-1">
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => page === 1 || page === totalPages || Math.abs(page - currentPage) <= 1)
+                  .map((page, idx, arr) => (
+                    <span key={page} className="flex items-center">
+                      {idx > 0 && arr[idx - 1] !== page - 1 && <span className="px-2 text-slate-400">...</span>}
+                      <button
+                        onClick={() => setCurrentPage(page)}
+                        className={`w-8 h-8 rounded-lg text-sm font-medium transition ${
+                          currentPage === page
+                            ? 'bg-primary text-white'
+                            : 'text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </span>
+                  ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg transition ${currentPage === totalPages ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`}
+              >
+                <FiChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
         </div>
       </main>
 
