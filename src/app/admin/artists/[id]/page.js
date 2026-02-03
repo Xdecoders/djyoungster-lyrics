@@ -23,6 +23,8 @@ export default function EditArtist() {
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
+    if (!params.id) return // Wait for params to be available
+
     const token = localStorage.getItem('adminToken')
     if (!token) {
       router.push('/admin/login')
