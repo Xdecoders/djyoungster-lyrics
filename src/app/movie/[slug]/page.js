@@ -31,9 +31,9 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const title = movie.metaTitle || `${movie.title}${movie.year ? ` (${movie.year})` : ''} Songs & Lyrics | DJYoungster`
+    const title = movie.metaTitle || `${movie.title}${movie.year ? ` (${movie.year})` : ''} Songs Lyrics with English Translation - DJYoungster`
     const description = movie.metaDescription ||
-      `Listen to all ${movie._count.songs} songs from ${movie.title}${movie.year ? ` (${movie.year})` : ''} with lyrics. ${movie.director ? `Directed by ${movie.director}.` : ''} Find complete movie soundtrack on DJYoungster.`
+      `Explore ${movie.title} movie song lyrics and meanings. Djyoungster provides ${movie.title} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/movie/${slug}`

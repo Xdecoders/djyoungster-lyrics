@@ -23,8 +23,10 @@ export async function generateMetadata({ params }) {
   const ogImageUrl = getAbsoluteUrl(siteSettings.ogImage) || `${siteUrl}/og-image.jpg`
   const pageUrl = `${siteUrl}/tag/${slug}`
 
-  const title = tag.metaTitle || `${tag.name} Songs - Song Lyrics | DJYoungster`
-  const description = tag.metaDescription || `Browse all songs tagged with ${tag.name}. Find lyrics for songs in the ${tag.name} category.`
+  // Capitalize tag name for display
+  const capitalizedName = tag.name.charAt(0).toUpperCase() + tag.name.slice(1)
+  const title = tag.metaTitle || `${capitalizedName} Songs Lyrics with English Translation - DJYoungster`
+  const description = tag.metaDescription || `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
   return {
     title,

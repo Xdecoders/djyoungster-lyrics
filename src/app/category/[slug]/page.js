@@ -26,9 +26,9 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const title = category.metaTitle || `${category.name} Songs & Lyrics | DJYoungster`
+    const title = category.metaTitle || `${category.name} Songs Lyrics with English Translation - DJYoungster`
     const description = category.metaDescription ||
-      `Browse ${category._count.songs} ${category.name} songs with lyrics. Find all ${category.name} language songs, albums, and artists on DJYoungster.`
+      `Explore ${category.name} song lyrics and meanings. Djyoungster provides ${category.name} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/category/${slug}`
@@ -103,7 +103,8 @@ async function getCategoryData(slug, searchParams) {
         id: true,
         name: true,
         slug: true,
-        description: true
+        description: true,
+        metaDescription: true
       }
     })
 

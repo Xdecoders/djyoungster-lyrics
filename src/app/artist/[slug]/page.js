@@ -26,9 +26,9 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const title = artist.metaTitle || `${artist.name} Songs & Lyrics | DJYoungster`
+    const title = artist.metaTitle || `${artist.name} Songs Lyrics with English Translation - DJYoungster`
     const description = artist.metaDescription ||
-      `Explore ${artist.name}'s complete collection of ${artist._count.songs} songs with lyrics. ${artist.bio ? artist.bio.substring(0, 100) + '...' : `Find all ${artist.name} songs, albums, and lyrics on DJYoungster.`}`
+      `${artist.name} through his song lyrics and meanings. Djyoungster provides ${artist.name} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/artist/${slug}`

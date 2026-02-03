@@ -6,46 +6,13 @@ import { FiFilm, FiMusic, FiPlay, FiEye, FiChevronRight, FiCalendar, FiUser, FiU
 
 // Auto-generated Movie Description Component
 function MovieDescription({ movie }) {
-  // Use custom description if available, otherwise auto-generate
-  if (movie.description) {
-    return (
-      <div className="mb-6 p-5 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/50">
-        <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm sm:text-base">
-          {movie.description}
-        </p>
-      </div>
-    )
-  }
-
-  // Auto-generate description
-  let description = `"${movie.title}" is a ${movie.language || ''} ${movie.genre || 'film'}`
-
-  if (movie.year) {
-    description += ` released in ${movie.year}`
-  }
-  description += '.'
-
-  if (movie.director) {
-    description += ` The movie is directed by ${movie.director}.`
-  }
-
-  if (movie.cast) {
-    description += ` It stars ${movie.cast}.`
-  }
-
-  if (movie.musicDirector) {
-    description += ` The music is composed by ${movie.musicDirector}.`
-  }
-
-  if (movie.totalSongs > 0) {
-    description += ` The movie features ${movie.totalSongs} song${movie.totalSongs > 1 ? 's' : ''} in its soundtrack.`
-  }
-
-  description += ` Find all the songs from ${movie.title} with complete lyrics on DJYoungster.`
+  // Use custom metaDescription if available, otherwise auto-generate consistent format
+  const description = movie.metaDescription ||
+    `Explore ${movie.title} movie song lyrics and meanings. Djyoungster provides ${movie.title} lyrics in English Translation, Hindi and Punjabi language variations.`
 
   return (
-    <div className="mb-6 p-5 bg-gradient-to-r from-rose-50 to-pink-50 dark:from-rose-900/20 dark:to-pink-900/20 rounded-2xl border border-rose-100 dark:border-rose-900/50">
-      <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm sm:text-base">
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+      <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
         {description}
       </p>
     </div>

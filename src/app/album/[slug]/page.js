@@ -30,9 +30,9 @@ export async function generateMetadata({ params }) {
     const artistName = album.artist?.name || 'Various Artists'
     const releaseYear = album.releaseDate ? new Date(album.releaseDate).getFullYear() : ''
 
-    const title = album.metaTitle || `${album.title} - ${artistName} Album${releaseYear ? ` (${releaseYear})` : ''} | DJYoungster`
+    const title = album.metaTitle || `${album.title} Songs Lyrics with English Translation - DJYoungster`
     const description = album.metaDescription ||
-      `Listen to ${album.title} by ${artistName}. ${album._count.songs} songs with full lyrics. ${album.label ? `Released by ${album.label}.` : ''} Find all album tracks and lyrics on DJYoungster.`
+      `Explore ${album.title} by ${artistName} song lyrics and meanings. Djyoungster provides ${album.title} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/album/${slug}`
@@ -106,7 +106,15 @@ async function getAlbumData(slug) {
   try {
     const album = await prisma.album.findUnique({
       where: { slug },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        releaseDate: true,
+        label: true,
+        metaDescription: true,
+        artistId: true,
         artist: {
           select: {
             id: true,
@@ -134,8 +142,8 @@ async function getAlbumData(slug) {
             }
           },
           orderBy: { createdAt: 'asc' }
-        }
-      }
+        },
+      },
     })
 
     if (!album) return null

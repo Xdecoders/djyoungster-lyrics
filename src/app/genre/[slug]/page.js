@@ -25,9 +25,11 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const title = genre.metaTitle || `${genre.name} Songs & Lyrics | DJYoungster`
+    // Capitalize genre name for display
+    const capitalizedName = genre.name.charAt(0).toUpperCase() + genre.name.slice(1)
+    const title = genre.metaTitle || `${capitalizedName} Songs Lyrics with English Translation - DJYoungster`
     const description = genre.metaDescription ||
-      `Explore ${genre._count.songs} ${genre.name} songs with lyrics. ${genre.description || `Find the best ${genre.name} music on DJYoungster.`}`
+      `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/genre/${slug}`
@@ -101,7 +103,8 @@ async function getGenreData(slug, searchParams) {
         name: true,
         slug: true,
         description: true,
-        imageUrl: true
+        imageUrl: true,
+        metaDescription: true
       }
     })
 

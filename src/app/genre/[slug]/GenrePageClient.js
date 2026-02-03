@@ -84,6 +84,13 @@ export default function GenrePageClient({ initialData }) {
   const featuredSongs = initialData?.featuredSongs || []
   const pagination = initialData?.pagination || null
 
+  // Capitalize genre name for display
+  const capitalizedName = genre?.name ? genre.name.charAt(0).toUpperCase() + genre.name.slice(1) : ''
+
+  // Generate description - use custom if available, otherwise auto-generate
+  const genreDescription = genre?.metaDescription ||
+    `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
+
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1
 
@@ -132,6 +139,11 @@ export default function GenrePageClient({ initialData }) {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
+            {/* Genre Description */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{genreDescription}</p>
+            </div>
+
             {/* Filters */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-2">

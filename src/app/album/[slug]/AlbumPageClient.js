@@ -172,6 +172,11 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
   const [moreAlbums] = useState(initialMoreAlbums)
   const [showShareModal, setShowShareModal] = useState(false)
 
+  // Generate description - use custom if available, otherwise auto-generate
+  const artistName = album?.artist?.name || 'Various Artists'
+  const albumDescription = album?.metaDescription ||
+    `Explore ${album?.title} by ${artistName} song lyrics and meanings. Djyoungster provides ${album?.title} lyrics in English Translation, Hindi and Punjabi language variations.`
+
   const formatViews = (views) => {
     if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'
     if (views >= 1000) return (views / 1000).toFixed(1) + 'K'
@@ -281,6 +286,11 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Tracklist */}
           <div className="lg:col-span-2">
+            {/* Album Description */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{albumDescription}</p>
+            </div>
+
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden">
               <div className="p-5 border-b border-slate-100 dark:border-slate-700">
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white flex items-center gap-2">

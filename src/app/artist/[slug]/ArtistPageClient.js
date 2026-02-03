@@ -441,6 +441,10 @@ export default function ArtistPageClient({ initialData }) {
 
   const socialLinks = parseSocialLinks(artist?.socialLinks)
 
+  // Generate description - use custom if available, otherwise auto-generate
+  const artistDescription = artist?.metaDescription ||
+    `${artist?.name} through his song lyrics and meanings. Djyoungster provides ${artist?.name} lyrics in English Translation, Hindi and Punjabi language variations.`
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Breadcrumb */}
@@ -467,6 +471,11 @@ export default function ArtistPageClient({ initialData }) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
+            {/* Artist Description */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{artistDescription}</p>
+            </div>
+
             {/* Filter Bar */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

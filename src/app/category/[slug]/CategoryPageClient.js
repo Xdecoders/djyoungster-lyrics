@@ -86,6 +86,10 @@ export default function CategoryPageClient({ initialData }) {
   const genres = initialData?.genres || []
   const pagination = initialData?.pagination || null
 
+  // Generate description - use custom if available, otherwise auto-generate
+  const categoryDescription = category?.metaDescription ||
+    `Explore ${category?.name} song lyrics and meanings. Djyoungster provides ${category?.name} lyrics in English Translation, Hindi and Punjabi language variations.`
+
   const currentSort = searchParams.get('sort') || 'latest'
   const currentGenre = searchParams.get('genre') || ''
   const currentPage = parseInt(searchParams.get('page')) || 1
@@ -155,6 +159,11 @@ export default function CategoryPageClient({ initialData }) {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-3">
+            {/* Category Description */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
+              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{categoryDescription}</p>
+            </div>
+
             {/* Filters */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
               <div className="flex items-center gap-2">
