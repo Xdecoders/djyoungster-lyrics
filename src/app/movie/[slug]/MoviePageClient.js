@@ -172,6 +172,11 @@ export default function MoviePageClient({ initialMovie }) {
                   {formatViews(movie.totalViews)} views
                 </span>
               </div>
+              {movie.description && (
+                <p className="mt-4 text-slate-600 dark:text-slate-300 leading-relaxed">
+                  {movie.description}
+                </p>
+              )}
             </div>
           </div>
         </div>

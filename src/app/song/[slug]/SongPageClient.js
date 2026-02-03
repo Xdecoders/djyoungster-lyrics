@@ -775,7 +775,7 @@ function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize }) {
               {version.label}
             </h3>
             <p
-              className="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200 leading-relaxed transition-all duration-200"
+              className="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200 leading-relaxed"
               style={{ fontSize: isActive ? `${fontSize}px` : '16px', lineHeight: '1.8' }}
             >
               {version.content}

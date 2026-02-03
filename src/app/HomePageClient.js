@@ -763,19 +763,6 @@ export default function HomePageClient({ initialData }) {
           </section>
         )}
 
-        {/* Recent Albums */}
-        {data?.albums?.length > 0 && (
-          <Carousel
-            title="Recent Albums"
-            icon={FiDisc}
-            iconBg="bg-teal-100"
-            viewAllLink="/albums"
-          >
-            {data.albums.map((album, index) => (
-              <AlbumCard key={album.id} album={album} index={index} />
-            ))}
-          </Carousel>
-        )}
 
         {/* About & FAQs Section - Two Columns */}
         <section className="mb-16 mt-8">
