@@ -38,8 +38,7 @@ export default function AddArtist() {
     setFormData(prev => ({
       ...prev,
       name,
-      slug: generateSlug(name),
-      metaTitle: name
+      slug: generateSlug(name)
     }))
   }
 
@@ -223,6 +222,7 @@ export default function AddArtist() {
           {/* SEO Settings */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
             <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4">SEO Settings</h2>
+            <p className="text-sm text-slate-500 mb-4">Leave empty to use auto-generated defaults shown below.</p>
 
             <div className="space-y-4">
               <div>
@@ -235,8 +235,11 @@ export default function AddArtist() {
                   value={formData.metaTitle}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
-                  placeholder="SEO optimized title"
+                  placeholder={formData.name ? `${formData.name} Songs Lyrics with English Translation - DJYoungster` : 'SEO optimized title'}
                 />
+                {!formData.metaTitle && formData.name && (
+                  <p className="text-xs text-slate-400 mt-1">Default: {formData.name} Songs Lyrics with English Translation - DJYoungster</p>
+                )}
               </div>
 
               <div>
@@ -249,8 +252,11 @@ export default function AddArtist() {
                   onChange={handleChange}
                   rows={3}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
-                  placeholder="Brief description for search engines..."
+                  placeholder={formData.name ? `${formData.name} through his song lyrics and meanings. Djyoungster provides ${formData.name} lyrics in English Translation, Hindi and Punjabi language variations.` : 'Brief description for search engines...'}
                 />
+                {!formData.metaDescription && formData.name && (
+                  <p className="text-xs text-slate-400 mt-1">Default: {formData.name} through his song lyrics and meanings. Djyoungster provides {formData.name} lyrics in English Translation, Hindi and Punjabi language variations.</p>
+                )}
               </div>
             </div>
           </div>
