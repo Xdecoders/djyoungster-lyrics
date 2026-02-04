@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   FiMusic,
   FiUser,
@@ -284,9 +285,9 @@ function SongCard({ song, view = 'grid' }) {
         href={`/song/${song.slug}`}
         className="flex items-center gap-4 p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 hover:border-emerald-200 dark:hover:border-emerald-800 hover:shadow-md transition-all group"
       >
-        <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+        <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
           {song.coverImage || song.album?.coverImage ? (
-            <img src={song.coverImage || song.album?.coverImage} alt={song.title} className="w-full h-full object-cover" />
+            <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="56px" className="object-cover" />
           ) : (
             <FiMusic className="w-6 h-6 text-emerald-400" />
           )}
@@ -316,7 +317,7 @@ function SongCard({ song, view = 'grid' }) {
     <Link href={`/song/${song.slug}`} className="group">
       <div className="aspect-square rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center mb-3 overflow-hidden relative shadow-sm group-hover:shadow-md transition-all">
         {song.coverImage || song.album?.coverImage ? (
-          <img src={song.coverImage || song.album?.coverImage} alt={song.title} className="w-full h-full object-cover" />
+          <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
         ) : (
           <FiMusic className="w-12 h-12 text-emerald-300" />
         )}
@@ -351,9 +352,9 @@ function FeaturedSongCard({ song, index }) {
       className="flex items-center gap-4 p-3 rounded-xl hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition group"
     >
       <span className="w-6 text-center font-bold text-slate-300 dark:text-slate-600 group-hover:text-primary transition">{index + 1}</span>
-      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden">
+      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden relative">
         {song.coverImage ? (
-          <img src={song.coverImage} alt={song.title} className="w-full h-full object-cover" />
+          <Image src={song.coverImage} alt={song.title} fill sizes="48px" className="object-cover" />
         ) : (
           <FiMusic className="w-5 h-5 text-emerald-400" />
         )}
@@ -374,9 +375,9 @@ function FeaturedSongCard({ song, index }) {
 function AlbumCard({ album }) {
   return (
     <Link href={`/album/${album.slug}`} className="group">
-      <div className="aspect-square rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all">
+      <div className="aspect-square rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all relative">
         {album.coverImage ? (
-          <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+          <Image src={album.coverImage} alt={album.title} fill sizes="(max-width: 640px) 50vw, 176px" className="object-cover" />
         ) : (
           <FiDisc className="w-12 h-12 text-emerald-300" />
         )}

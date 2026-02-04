@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   FiSearch,
   FiMusic,
@@ -21,7 +22,7 @@ function SongCard({ song }) {
     <Link href={`/song/${song.slug}`} className="group">
       <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 relative shadow-sm group-hover:shadow-md transition">
         {song.coverImage || song.album?.coverImage ? (
-          <img src={song.coverImage || song.album?.coverImage} alt={song.title} className="w-full h-full object-cover" />
+          <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
         ) : (
           <FiMusic className="w-12 h-12 text-emerald-400" />
         )}
@@ -40,9 +41,9 @@ function SongCard({ song }) {
 function ArtistCard({ artist }) {
   return (
     <Link href={`/artist/${artist.slug}`} className="group text-center">
-      <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md group-hover:scale-105 transition">
+      <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md group-hover:scale-105 transition relative">
         {artist.imageUrl ? (
-          <img src={artist.imageUrl} alt={artist.name} className="w-full h-full object-cover" />
+          <Image src={artist.imageUrl} alt={artist.name} fill sizes="96px" className="object-cover" />
         ) : (
           <FiUser className="w-10 h-10 text-emerald-400" />
         )}
@@ -56,9 +57,9 @@ function ArtistCard({ artist }) {
 function AlbumCard({ album }) {
   return (
     <Link href={`/album/${album.slug}`} className="group">
-      <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition">
+      <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
         {album.coverImage ? (
-          <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+          <Image src={album.coverImage} alt={album.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
         ) : (
           <FiDisc className="w-12 h-12 text-emerald-400" />
         )}
@@ -74,7 +75,7 @@ function MovieCard({ movie }) {
     <Link href={`/movie/${movie.slug || movie.id}`} className="group">
       <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
         {movie.thumbnail ? (
-          <img src={movie.thumbnail} alt={movie.title} className="w-full h-full object-cover" />
+          <Image src={movie.thumbnail} alt={movie.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
         ) : (
           <FiFilm className="w-12 h-12 text-rose-400" />
         )}

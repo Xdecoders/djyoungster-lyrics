@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { FiMusic, FiSearch, FiChevronLeft, FiChevronRight, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiArrowRight, FiFilm, FiX, FiTag, FiInfo, FiHelpCircle, FiChevronDown } from 'react-icons/fi'
 
@@ -185,9 +186,9 @@ function SearchWithAutocomplete() {
                             selectedIndex === currentIndex ? 'bg-primary/10 dark:bg-primary/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
                           }`}
                         >
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
                             {song.image ? (
-                              <img src={song.image} alt={song.title} className="w-full h-full object-cover" />
+                              <Image src={song.image} alt={song.title} fill sizes="48px" className="object-cover" />
                             ) : (
                               <FiMusic className="w-5 h-5 text-slate-400" />
                             )}
@@ -218,9 +219,9 @@ function SearchWithAutocomplete() {
                             selectedIndex === currentIndex ? 'bg-primary/10 dark:bg-primary/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
                           }`}
                         >
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-100 to-rose-100 dark:from-pink-900/40 dark:to-rose-900/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-100 to-rose-100 dark:from-pink-900/40 dark:to-rose-900/40 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
                             {artist.image ? (
-                              <img src={artist.image} alt={artist.name} className="w-full h-full object-cover" />
+                              <Image src={artist.image} alt={artist.name} fill sizes="48px" className="object-cover" />
                             ) : (
                               <FiUser className="w-5 h-5 text-slate-400" />
                             )}
@@ -251,9 +252,9 @@ function SearchWithAutocomplete() {
                             selectedIndex === currentIndex ? 'bg-primary/10 dark:bg-primary/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
                           }`}
                         >
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/40 dark:to-cyan-900/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-100 to-cyan-100 dark:from-blue-900/40 dark:to-cyan-900/40 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
                             {album.image ? (
-                              <img src={album.image} alt={album.title} className="w-full h-full object-cover" />
+                              <Image src={album.image} alt={album.title} fill sizes="48px" className="object-cover" />
                             ) : (
                               <FiDisc className="w-5 h-5 text-slate-400" />
                             )}
@@ -284,9 +285,9 @@ function SearchWithAutocomplete() {
                             selectedIndex === currentIndex ? 'bg-primary/10 dark:bg-primary/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'
                           }`}
                         >
-                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 flex items-center justify-center overflow-hidden flex-shrink-0">
+                          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/40 dark:to-orange-900/40 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
                             {movie.image ? (
-                              <img src={movie.image} alt={movie.title} className="w-full h-full object-cover" />
+                              <Image src={movie.image} alt={movie.title} fill sizes="48px" className="object-cover" />
                             ) : (
                               <FiFilm className="w-5 h-5 text-slate-400" />
                             )}
@@ -421,7 +422,7 @@ function SongCard({ song, index }) {
     <Link href={`/song/${song.slug}`} className="flex-shrink-0 w-44 group">
       <div className={`aspect-square rounded-2xl bg-gradient-to-br ${bgColor} flex items-center justify-center mb-3 overflow-hidden relative shadow-sm group-hover:shadow-md transition-all duration-300`}>
         {song.coverImage ? (
-          <img src={song.coverImage} alt={song.title} className="w-full h-full object-cover" />
+          <Image src={song.coverImage} alt={song.title} fill sizes="176px" className="object-cover" />
         ) : (
           <FiMusic className="w-12 h-12 text-slate-400" />
         )}
@@ -449,9 +450,9 @@ function ArtistCard({ artist, index }) {
 
   return (
     <Link href={`/artist/${artist.slug}`} className="flex-shrink-0 w-36 group text-center">
-      <div className={`w-28 h-28 mx-auto rounded-full ${pastelBgs[index % pastelBgs.length]} flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105`}>
+      <div className={`w-28 h-28 mx-auto rounded-full ${pastelBgs[index % pastelBgs.length]} flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105 relative`}>
         {artist.imageUrl ? (
-          <img src={artist.imageUrl} alt={artist.name} className="w-full h-full object-cover" />
+          <Image src={artist.imageUrl} alt={artist.name} fill sizes="112px" className="object-cover" />
         ) : (
           <FiUser className="w-10 h-10 text-slate-400" />
         )}
@@ -474,9 +475,9 @@ function AlbumCard({ album, index }) {
 
   return (
     <Link href={`/album/${album.slug}`} className="flex-shrink-0 w-44 group">
-      <div className={`aspect-square rounded-2xl bg-gradient-to-br ${pastelColors[index % pastelColors.length]} flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all duration-300`}>
+      <div className={`aspect-square rounded-2xl bg-gradient-to-br ${pastelColors[index % pastelColors.length]} flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all duration-300 relative`}>
         {album.coverImage ? (
-          <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+          <Image src={album.coverImage} alt={album.title} fill sizes="176px" className="object-cover" />
         ) : (
           <FiDisc className="w-12 h-12 text-slate-400" />
         )}
@@ -581,12 +582,14 @@ function MinimalistSongCard({ song, colorIndex }) {
       </div>
 
       {/* Right: Image */}
-      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-md">
+      <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 shadow-md relative">
         {song.coverImage ? (
-          <img
+          <Image
             src={song.coverImage}
             alt={song.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            fill
+            sizes="80px"
+            className="object-cover group-hover:scale-110 transition-transform duration-300"
           />
         ) : (
           <div

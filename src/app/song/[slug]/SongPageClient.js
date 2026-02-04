@@ -3,6 +3,7 @@
 import { useState, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   FiMusic,
   FiUser,
@@ -869,9 +870,9 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
               <header className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
                 <div className="flex flex-col sm:flex-row gap-6">
                   {/* Cover Image - Larger Size */}
-                  <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg mx-auto sm:mx-0">
+                  <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg mx-auto sm:mx-0 relative">
                     {song.coverImage ? (
-                      <img src={song.coverImage} alt={`${song.title} Song Cover`} className="w-full h-full object-cover" itemProp="image" />
+                      <Image src={song.coverImage} alt={`${song.title} Song Cover`} fill sizes="(max-width: 640px) 176px, 208px" className="object-cover" itemProp="image" />
                     ) : (
                       <FiMusic className="w-20 h-20 text-slate-400 dark:text-slate-500" />
                     )}
@@ -1119,9 +1120,9 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
                   <h3 className="font-semibold text-slate-800 dark:text-white mb-4">From Album</h3>
                   <Link href={`/album/${song.album.slug}`} className="flex items-center gap-4 group">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden relative">
                       {song.album.coverImage ? (
-                        <img src={song.album.coverImage} alt={song.album.title} className="w-full h-full object-cover" />
+                        <Image src={song.album.coverImage} alt={song.album.title} fill sizes="56px" className="object-cover" />
                       ) : (
                         <FiDisc className="w-7 h-7 text-emerald-400" />
                       )}

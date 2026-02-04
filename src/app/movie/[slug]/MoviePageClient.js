@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiFilm, FiMusic, FiPlay, FiEye, FiChevronRight, FiCalendar, FiUser, FiUsers, FiVideo, FiGlobe, FiAward, FiEdit3, FiHeadphones } from 'react-icons/fi'
 
 // Auto-generated Movie Description Component
@@ -87,9 +88,9 @@ function SongRow({ song, index }) {
       <span className="w-8 text-center hidden group-hover:block">
         <FiPlay className="w-5 h-5 text-rose-500 mx-auto" />
       </span>
-      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
         {song.coverImage ? (
-          <img src={song.coverImage} alt={song.title} className="w-full h-full object-cover" />
+          <Image src={song.coverImage} alt={song.title} fill sizes="48px" className="object-cover" />
         ) : (
           <FiMusic className="w-5 h-5 text-rose-500" />
         )}
@@ -136,12 +137,14 @@ export default function MoviePageClient({ initialMovie }) {
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
             {/* Poster Image - Larger Size */}
-            <div className="w-36 h-48 sm:w-44 sm:h-60 rounded-xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg">
+            <div className="w-36 h-48 sm:w-44 sm:h-60 rounded-xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg relative">
               {movie.posterUrl || movie.songs?.[0]?.coverImage ? (
-                <img
+                <Image
                   src={movie.posterUrl || movie.songs?.[0]?.coverImage}
                   alt={movie.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 640px) 144px, 176px"
+                  className="object-cover"
                 />
               ) : (
                 <FiFilm className="w-16 h-16 text-rose-400" />

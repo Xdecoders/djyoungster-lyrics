@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   FiMusic,
   FiDisc,
@@ -123,9 +124,9 @@ function SongRow({ song, index }) {
         <FiPlay className="w-5 h-5 text-primary mx-auto" />
       </span>
 
-      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
         {song.coverImage ? (
-          <img src={song.coverImage} alt={song.title} className="w-full h-full object-cover" />
+          <Image src={song.coverImage} alt={song.title} fill sizes="48px" className="object-cover" />
         ) : (
           <FiMusic className="w-5 h-5 text-primary" />
         )}
@@ -153,9 +154,9 @@ function SongRow({ song, index }) {
 function AlbumCard({ album }) {
   return (
     <Link href={`/album/${album.slug}`} className="group">
-      <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition">
+      <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
         {album.coverImage ? (
-          <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+          <Image src={album.coverImage} alt={album.title} fill sizes="(max-width: 640px) 50vw, 176px" className="object-cover" />
         ) : (
           <FiDisc className="w-12 h-12 text-emerald-400" />
         )}
@@ -214,9 +215,9 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
         <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8 mb-8">
           <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
             {/* Cover Image - Larger Size */}
-            <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden shadow-lg mx-auto sm:mx-0 flex-shrink-0">
+            <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden shadow-lg mx-auto sm:mx-0 flex-shrink-0 relative">
               {album.coverImage ? (
-                <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+                <Image src={album.coverImage} alt={album.title} fill sizes="(max-width: 640px) 176px, 208px" className="object-cover" />
               ) : (
                 <FiDisc className="w-20 h-20 text-emerald-400" />
               )}
@@ -232,9 +233,9 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
                 href={`/artist/${album.artist?.slug}`}
                 className="inline-flex items-center gap-3 mb-4 group"
               >
-                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden">
+                <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center overflow-hidden relative">
                   {album.artist?.imageUrl ? (
-                    <img src={album.artist.imageUrl} alt={album.artist.name} className="w-full h-full object-cover" />
+                    <Image src={album.artist.imageUrl} alt={album.artist.name} fill sizes="40px" className="object-cover" />
                   ) : (
                     <FiUser className="w-5 h-5 text-slate-400" />
                   )}
