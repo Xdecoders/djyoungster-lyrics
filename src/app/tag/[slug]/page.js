@@ -66,18 +66,25 @@ export default async function TagPage({ params }) {
     include: {
       _count: { select: { songs: true } },
       songs: {
-        include: {
+        select: {
           song: {
-            include: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              coverImage: true,
+              views: true,
+              status: true,
+              createdAt: true,
               artists: {
-                include: {
-                  artist: true
+                select: {
+                  artist: {
+                    select: { id: true, name: true, slug: true, image: true }
+                  }
                 }
               },
               album: {
-                select: {
-                  coverImage: true
-                }
+                select: { id: true, title: true, slug: true, coverImage: true }
               }
             }
           }

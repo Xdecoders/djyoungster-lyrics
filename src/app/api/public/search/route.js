@@ -52,16 +52,22 @@ export async function GET(request) {
       ;[songs, totalSongs] = await Promise.all([
         prisma.song.findMany({
           where: songWhere,
-          include: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverImage: true,
+            views: true,
+            createdAt: true,
             artists: {
-              include: {
+              select: {
                 artist: { select: { id: true, name: true, slug: true } }
               }
             },
             album: { select: { id: true, title: true, slug: true, coverImage: true } },
             movie: { select: { id: true, title: true, slug: true } },
             genres: {
-              include: {
+              select: {
                 genre: { select: { id: true, name: true, slug: true } }
               }
             }

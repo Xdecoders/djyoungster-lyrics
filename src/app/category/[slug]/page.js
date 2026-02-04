@@ -136,9 +136,15 @@ async function getCategoryData(slug, searchParams) {
     const [songs, totalSongs, genres] = await Promise.all([
       prisma.song.findMany({
         where: songWhere,
-        include: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          coverImage: true,
+          views: true,
+          createdAt: true,
           artists: {
-            include: {
+            select: {
               artist: { select: { id: true, name: true, slug: true } }
             }
           },
@@ -170,10 +176,15 @@ async function getCategoryData(slug, searchParams) {
         categories: { some: { categoryId: category.id } },
         status: 'published'
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        views: true,
         artists: {
-          include: {
-            artist: { select: { name: true, slug: true } }
+          select: {
+            artist: { select: { id: true, name: true, slug: true } }
           }
         }
       },
