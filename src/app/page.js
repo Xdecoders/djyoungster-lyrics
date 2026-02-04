@@ -98,7 +98,7 @@ async function getHomepageData() {
       artists: {
         select: {
           artist: {
-            select: { id: true, name: true, slug: true, image: true }
+            select: { id: true, name: true, slug: true, imageUrl: true }
           }
         }
       },
