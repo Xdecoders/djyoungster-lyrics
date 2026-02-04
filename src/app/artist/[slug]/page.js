@@ -204,8 +204,8 @@ async function getArtistData(slug, searchParams) {
         coverImage: true,
         views: true,
         artists: {
-          include: {
-            artist: { select: { name: true, slug: true } }
+          select: {
+            artist: { select: { id: true, name: true, slug: true } }
           }
         }
       },

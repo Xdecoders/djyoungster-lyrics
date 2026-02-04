@@ -10,14 +10,20 @@ export async function GET(request, { params }) {
       include: {
         songs: {
           where: { status: 'published' },
-          include: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverImage: true,
+            views: true,
+            createdAt: true,
             artists: {
-              include: {
+              select: {
                 artist: { select: { id: true, name: true, slug: true } }
               }
             },
             genres: {
-              include: {
+              select: {
                 genre: { select: { id: true, name: true, slug: true } }
               }
             }
