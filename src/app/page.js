@@ -87,17 +87,32 @@ const homepageFAQs = [
 // Fetch homepage data on server
 async function getHomepageData() {
   try {
+    // Select only fields needed for homepage display (exclude lyrics)
+    const songSelectFields = {
+      id: true,
+      title: true,
+      slug: true,
+      coverImage: true,
+      views: true,
+      createdAt: true,
+      artists: {
+        select: {
+          artist: {
+            select: { id: true, name: true, slug: true, image: true }
+          }
+        }
+      },
+      album: {
+        select: { id: true, title: true, slug: true, coverImage: true }
+      }
+    }
+
     // Fetch latest songs
     const latestSongs = await prisma.song.findMany({
       where: { status: 'published' },
       orderBy: { createdAt: 'desc' },
       take: 10,
-      include: {
-        artists: {
-          include: { artist: true }
-        },
-        album: true
-      }
+      select: songSelectFields
     })
 
     // Fetch trending songs (most viewed)
@@ -105,26 +120,16 @@ async function getHomepageData() {
       where: { status: 'published' },
       orderBy: { views: 'desc' },
       take: 10,
-      include: {
-        artists: {
-          include: { artist: true }
-        },
-        album: true
-      }
+      select: songSelectFields
     })
 
     // Fetch categories with their songs
     const categories = await prisma.category.findMany({
       include: {
         songs: {
-          include: {
+          select: {
             song: {
-              include: {
-                artists: {
-                  include: { artist: true }
-                },
-                album: true
-              }
+              select: songSelectFields
             }
           },
           take: 10
