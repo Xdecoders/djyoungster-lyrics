@@ -3,17 +3,32 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
+    // Select only fields needed for homepage display (exclude lyrics)
+    const songSelectFields = {
+      id: true,
+      title: true,
+      slug: true,
+      coverImage: true,
+      views: true,
+      createdAt: true,
+      artists: {
+        select: {
+          artist: {
+            select: { id: true, name: true, slug: true, imageUrl: true }
+          }
+        }
+      },
+      album: {
+        select: { id: true, title: true, slug: true, coverImage: true }
+      }
+    }
+
     // Fetch latest songs
     const latestSongs = await prisma.song.findMany({
       where: { status: 'published' },
       orderBy: { createdAt: 'desc' },
       take: 10,
-      include: {
-        artists: {
-          include: { artist: true }
-        },
-        album: true
-      }
+      select: songSelectFields
     })
 
     // Fetch trending songs (most viewed)
@@ -21,26 +36,16 @@ export async function GET() {
       where: { status: 'published' },
       orderBy: { views: 'desc' },
       take: 10,
-      include: {
-        artists: {
-          include: { artist: true }
-        },
-        album: true
-      }
+      select: songSelectFields
     })
 
     // Fetch categories with their songs
     const categories = await prisma.category.findMany({
       include: {
         songs: {
-          include: {
+          select: {
             song: {
-              include: {
-                artists: {
-                  include: { artist: true }
-                },
-                album: true
-              }
+              select: songSelectFields
             }
           },
           take: 10
@@ -55,13 +60,9 @@ export async function GET() {
     const genres = await prisma.genre.findMany({
       include: {
         songs: {
-          include: {
+          select: {
             song: {
-              include: {
-                artists: {
-                  include: { artist: true }
-                }
-              }
+              select: songSelectFields
             }
           },
           take: 10
@@ -75,7 +76,11 @@ export async function GET() {
     // Fetch popular artists
     const artists = await prisma.artist.findMany({
       take: 10,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        imageUrl: true,
         _count: {
           select: { songs: true }
         }
@@ -91,8 +96,15 @@ export async function GET() {
     const albums = await prisma.album.findMany({
       take: 10,
       orderBy: { createdAt: 'desc' },
-      include: {
-        artist: true,
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        releaseDate: true,
+        artist: {
+          select: { id: true, name: true, slug: true }
+        },
         _count: {
           select: { songs: true }
         }
@@ -102,7 +114,10 @@ export async function GET() {
     // Fetch popular tags
     const tags = await prisma.tag.findMany({
       take: 14,
-      include: {
+      select: {
+        id: true,
+        name: true,
+        slug: true,
         _count: {
           select: { songs: true }
         }
