@@ -1,9 +1,6 @@
 import { prisma } from '@/lib/prisma'
-import { unstable_noStore as noStore } from 'next/cache'
-
 // Get global site settings (favicon, ogImage, etc.)
 export async function getSiteSettings() {
-  noStore()
 
   try {
     const settings = await prisma.siteSeoSettings.findUnique({
@@ -80,8 +77,6 @@ const DEFAULT_SETTINGS = {
 }
 
 export async function getSeoSettings(pageKey) {
-  // Disable caching to always fetch fresh SEO settings from database
-  noStore()
 
   const defaults = {
     metaTitle: DEFAULT_SETTINGS[pageKey]?.metaTitle,

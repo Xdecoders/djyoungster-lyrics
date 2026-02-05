@@ -61,7 +61,7 @@ export async function generateMetadata({ searchParams }) {
       images: [ogImageUrl],
     },
     robots: {
-      index: true,
+      index: false,
       follow: true,
     },
   }

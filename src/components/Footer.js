@@ -93,8 +93,8 @@ export default function Footer() {
   ]
 
   const legalLinks = [
-    { href: '/about', label: 'About Us' },
-    { href: '/contact', label: 'Contact Us' },
+    { href: '/about-us', label: 'About Us' },
+    { href: '/contact-us', label: 'Contact Us' },
     { href: '/privacy-policy', label: 'Privacy Policy' },
     { href: '/terms-and-conditions', label: 'Terms & Conditions' },
     { href: '/disclaimer', label: 'Disclaimer' },

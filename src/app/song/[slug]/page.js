@@ -5,7 +5,7 @@ import { generateSongSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import SongPageClient from './SongPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds for fresh data
-export const revalidate = false
+export const revalidate = 60
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
@@ -183,35 +183,23 @@ async function getSongData(slug) {
           }
         },
         genres: {
-          include: {
+          select: {
             genre: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              }
+              select: { id: true, name: true, slug: true }
             }
           }
         },
         categories: {
-          include: {
+          select: {
             category: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              }
+              select: { id: true, name: true, slug: true }
             }
           }
         },
         tags: {
-          include: {
+          select: {
             tag: {
-              select: {
-                id: true,
-                name: true,
-                slug: true,
-              }
+              select: { id: true, name: true, slug: true }
             }
           }
         },
@@ -238,11 +226,16 @@ async function getSongData(slug) {
           }
         ]
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        views: true,
         artists: {
-          include: {
+          select: {
             artist: {
-              select: { name: true, slug: true }
+              select: { id: true, name: true, slug: true }
             }
           }
         }

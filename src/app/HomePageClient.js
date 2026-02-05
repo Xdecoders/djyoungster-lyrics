@@ -406,7 +406,7 @@ function Carousel({ children, title, icon: Icon, iconBg, viewAllLink }) {
 }
 
 // Song Card Component
-function SongCard({ song, index }) {
+function SongCard({ song, index, priority = false }) {
   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
   const pastelColors = [
     'from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40',
@@ -422,7 +422,7 @@ function SongCard({ song, index }) {
     <Link href={`/song/${song.slug}`} className="flex-shrink-0 w-44 group">
       <div className={`aspect-square rounded-2xl bg-gradient-to-br ${bgColor} flex items-center justify-center mb-3 overflow-hidden relative shadow-sm group-hover:shadow-md transition-all duration-300`}>
         {song.coverImage ? (
-          <Image src={song.coverImage} alt={song.title} fill sizes="176px" className="object-cover" />
+          <Image src={song.coverImage} alt={song.title} fill sizes="176px" className="object-cover" priority={priority} />
         ) : (
           <FiMusic className="w-12 h-12 text-slate-400" />
         )}
@@ -703,7 +703,7 @@ export default function HomePageClient({ initialData }) {
             viewAllLink="/songs?sort=trending"
           >
             {data.trendingSongs.map((song, index) => (
-              <SongCard key={song.id} song={song} index={index} />
+              <SongCard key={song.id} song={song} index={index} priority={index < 4} />
             ))}
           </Carousel>
         )}

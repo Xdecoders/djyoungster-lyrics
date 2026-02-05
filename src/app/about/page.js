@@ -1,28 +1,6 @@
-import { prisma } from '@/lib/prisma'
-import StaticPageContent from '@/components/StaticPageContent'
+import { redirect } from 'next/navigation'
 
-export async function generateMetadata() {
-  try {
-    const page = await prisma.page.findUnique({
-      where: { slug: 'about-us', isPublished: true }
-    })
-
-    if (page) {
-      return {
-        title: page.metaTitle || page.title,
-        description: page.metaDescription || 'Learn more about us'
-      }
-    }
-  } catch (error) {
-    console.error('Error generating metadata:', error)
-  }
-
-  return {
-    title: 'About Us',
-    description: 'Learn more about us'
-  }
-}
-
+// Redirect /about to /about-us to avoid duplicate content
 export default function AboutPage() {
-  return <StaticPageContent slug="about-us" />
+  redirect('/about-us')
 }

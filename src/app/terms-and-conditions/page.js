@@ -1,16 +1,27 @@
 import { prisma } from '@/lib/prisma'
 import StaticPageContent from '@/components/StaticPageContent'
 
+const SLUG = 'terms-and-conditions'
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+
+export const revalidate = 60
+
 export async function generateMetadata() {
   try {
     const page = await prisma.page.findUnique({
-      where: { slug: 'terms-and-conditions', isPublished: true }
+      where: { slug: SLUG, isPublished: true }
     })
 
     if (page) {
       return {
         title: page.metaTitle || page.title,
-        description: page.metaDescription || 'Terms and conditions for using our website'
+        description: page.metaDescription || 'Terms and Conditions for DJYoungster',
+        alternates: { canonical: `${siteUrl}/${SLUG}` },
+        openGraph: {
+          title: page.metaTitle || page.title,
+          description: page.metaDescription || 'Terms and Conditions for DJYoungster',
+          url: `${siteUrl}/${SLUG}`,
+        },
       }
     }
   } catch (error) {
@@ -18,11 +29,25 @@ export async function generateMetadata() {
   }
 
   return {
-    title: 'Terms and Conditions',
-    description: 'Terms and conditions for using our website'
+    title: 'Terms and Conditions | DJYoungster',
+    description: 'Terms and Conditions for DJYoungster',
+    alternates: { canonical: `${siteUrl}/${SLUG}` },
   }
 }
 
-export default function TermsAndConditionsPage() {
-  return <StaticPageContent slug="terms-and-conditions" />
+async function getPageData() {
+  try {
+    const page = await prisma.page.findUnique({
+      where: { slug: SLUG, isPublished: true }
+    })
+    return page
+  } catch (error) {
+    console.error('Error fetching page:', error)
+    return null
+  }
+}
+
+export default async function TermsAndConditionsPage() {
+  const page = await getPageData()
+  return <StaticPageContent slug={SLUG} page={page ? JSON.parse(JSON.stringify(page)) : null} />
 }

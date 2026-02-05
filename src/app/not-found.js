@@ -1,6 +1,12 @@
 import Link from 'next/link'
 import { FiHome, FiMusic } from 'react-icons/fi'
 
+export const metadata = {
+  title: 'Page Not Found | DJYoungster',
+  description: 'The page you are looking for does not exist or has been moved.',
+  robots: { index: false, follow: true },
+}
+
 export default function NotFound() {
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 px-4">

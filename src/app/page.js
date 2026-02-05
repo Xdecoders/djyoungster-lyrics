@@ -5,7 +5,7 @@ import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema } 
 
 // Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
-export const revalidate = false
+export const revalidate = 60
 
 export async function generateMetadata() {
   const seo = await getSeoSettings('homepage')
@@ -107,83 +107,49 @@ async function getHomepageData() {
       }
     }
 
-    // Fetch latest songs
-    const latestSongs = await prisma.song.findMany({
-      where: { status: 'published' },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-      select: songSelectFields
-    })
-
-    // Fetch trending songs (most viewed)
-    const trendingSongs = await prisma.song.findMany({
-      where: { status: 'published' },
-      orderBy: { views: 'desc' },
-      take: 10,
-      select: songSelectFields
-    })
-
-    // Fetch categories with their songs
-    const categories = await prisma.category.findMany({
-      include: {
-        songs: {
-          select: {
-            song: {
-              select: songSelectFields
-            }
+    // Run all queries in parallel
+    const [latestSongs, trendingSongs, categories, artists, albums, tags, siteSettings] = await Promise.all([
+      prisma.song.findMany({
+        where: { status: 'published' },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+        select: songSelectFields
+      }),
+      prisma.song.findMany({
+        where: { status: 'published' },
+        orderBy: { views: 'desc' },
+        take: 10,
+        select: songSelectFields
+      }),
+      prisma.category.findMany({
+        include: {
+          songs: {
+            select: { song: { select: songSelectFields } },
+            take: 10
           },
-          take: 10
-        },
-        _count: {
-          select: { songs: true }
+          _count: { select: { songs: true } }
         }
-      }
-    })
-
-    // Fetch popular artists
-    const artists = await prisma.artist.findMany({
-      take: 10,
-      include: {
-        _count: {
-          select: { songs: true }
+      }),
+      prisma.artist.findMany({
+        take: 10,
+        include: { _count: { select: { songs: true } } },
+        orderBy: { songs: { _count: 'desc' } }
+      }),
+      prisma.album.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          artist: true,
+          _count: { select: { songs: true } }
         }
-      },
-      orderBy: {
-        songs: {
-          _count: 'desc'
-        }
-      }
-    })
-
-    // Fetch recent albums
-    const albums = await prisma.album.findMany({
-      take: 10,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        artist: true,
-        _count: {
-          select: { songs: true }
-        }
-      }
-    })
-
-    // Fetch popular tags
-    const tags = await prisma.tag.findMany({
-      take: 14,
-      include: {
-        _count: {
-          select: { songs: true }
-        }
-      },
-      orderBy: {
-        songs: {
-          _count: 'desc'
-        }
-      }
-    })
-
-    // Fetch site settings for hero
-    const siteSettings = await getSiteSettings()
+      }),
+      prisma.tag.findMany({
+        take: 14,
+        include: { _count: { select: { songs: true } } },
+        orderBy: { songs: { _count: 'desc' } }
+      }),
+      getSiteSettings()
+    ])
 
     return {
       latestSongs,
