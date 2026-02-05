@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
-import { writeFile, mkdir } from 'fs/promises'
+import { mkdir } from 'fs/promises'
 import path from 'path'
+import { generateImageSizes } from '@/lib/imageProcessor'
 
 export async function POST(request) {
   try {
@@ -35,17 +36,7 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Map MIME type to correct extension
-    const extMap = {
-      'image/jpeg': '.jpg',
-      'image/jpg': '.jpg',
-      'image/png': '.png',
-      'image/webp': '.webp',
-      'image/gif': '.gif',
-    }
-    const ext = extMap[file.type] || '.jpg'
-
-    // Generate clean filename: strip existing extension and special chars, then add correct extension
+    // Generate clean filename: strip existing extension and special chars
     const baseName = file.name
       .replace(/\.[^.]+$/, '')        // Remove original extension
       .replace(/[^a-zA-Z0-9-]/g, '-') // Replace special chars with hyphens
@@ -53,26 +44,18 @@ export async function POST(request) {
       .replace(/^-|-$/g, '')          // Trim leading/trailing hyphens
       .substring(0, 80)               // Limit length
     const timestamp = Date.now()
-    const filename = `${timestamp}-${baseName}${ext}`
+    const finalBaseName = `${timestamp}-${baseName}`
 
     // Ensure upload directory exists
     const uploadDir = path.join(process.cwd(), 'public', 'uploads')
-    try {
-      await mkdir(uploadDir, { recursive: true })
-    } catch (err) {
-      // Directory might already exist
-    }
+    await mkdir(uploadDir, { recursive: true })
 
-    // Write file
-    const filepath = path.join(uploadDir, filename)
-    await writeFile(filepath, buffer)
-
-    // Return the public URL
-    const url = `/uploads/${filename}`
+    // Generate all image sizes (returns main WebP path)
+    const url = await generateImageSizes(buffer, finalBaseName, uploadDir)
 
     return NextResponse.json({
       url,
-      filename,
+      filename: `${finalBaseName}.webp`,
       message: 'File uploaded successfully'
     })
   } catch (error) {

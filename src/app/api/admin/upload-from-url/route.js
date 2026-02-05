@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { writeFile, mkdir, access } from 'fs/promises'
+import { mkdir, access } from 'fs/promises'
 import path from 'path'
-import sharp from 'sharp'
+import { generateImageSizes } from '@/lib/imageProcessor'
 
 export async function POST(request) {
   try {
@@ -70,9 +70,9 @@ export async function POST(request) {
       )
     }
 
-    // Generate unique filename with .webp extension (all images will be converted to WebP)
+    // Generate unique base name
     const timestamp = Date.now()
-    const filename = `${timestamp}-downloaded.webp`
+    const baseName = `${timestamp}-downloaded`
 
     // Use UPLOAD_DIR env variable if set, otherwise fall back to public/uploads
     const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'public', 'uploads')
@@ -80,11 +80,7 @@ export async function POST(request) {
     console.log('[UploadFromURL] Upload directory:', uploadDir)
 
     // Ensure upload directory exists
-    try {
-      await mkdir(uploadDir, { recursive: true })
-    } catch (err) {
-      console.log('[UploadFromURL] mkdir result:', err?.code || 'created')
-    }
+    await mkdir(uploadDir, { recursive: true })
 
     // Verify directory is writable
     try {
@@ -97,31 +93,13 @@ export async function POST(request) {
       )
     }
 
-    // Convert image to WebP format using sharp
-    let webpBuffer
-    try {
-      webpBuffer = await sharp(buffer)
-        .webp({ quality: 85 }) // Good balance between quality and file size
-        .toBuffer()
-      console.log('[UploadFromURL] Image converted to WebP. Original size:', buffer.length, '-> WebP size:', webpBuffer.length)
-    } catch (sharpError) {
-      console.error('[UploadFromURL] Sharp conversion error:', sharpError)
-      // If conversion fails, save the original file
-      webpBuffer = buffer
-      console.log('[UploadFromURL] Falling back to original image format')
-    }
-
-    // Write file
-    const filepath = path.join(uploadDir, filename)
-    await writeFile(filepath, webpBuffer)
-    console.log('[UploadFromURL] File saved to:', filepath)
-
-    // Return the public URL
-    const localUrl = `/uploads/${filename}`
+    // Generate all image sizes (returns main WebP path)
+    const localUrl = await generateImageSizes(buffer, baseName, uploadDir)
+    console.log('[UploadFromURL] Images generated:', localUrl)
 
     return NextResponse.json({
       url: localUrl,
-      filename,
+      filename: `${baseName}.webp`,
       originalUrl: url,
       message: 'Image downloaded and saved successfully'
     })

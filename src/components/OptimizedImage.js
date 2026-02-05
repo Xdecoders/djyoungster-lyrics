@@ -2,14 +2,21 @@
 
 import Image from 'next/image'
 
-/**
- * Wrapper around Next.js Image that handles local uploads.
- * Local uploads (paths starting with /uploads/) are served unoptimized
- * because Next.js production server only optimizes images that existed
- * before the server started. Runtime-uploaded images need unoptimized mode.
- */
+function localImageLoader({ src, width }) {
+  // Map requested width to nearest pre-generated size suffix
+  const basePath = src.replace(/\.webp$/, '')
+  if (width <= 96) return `${basePath}-thumb.webp`
+  if (width <= 320) return `${basePath}-sm.webp`
+  if (width <= 640) return `${basePath}-md.webp`
+  return `${basePath}.webp`
+}
+
 export default function OptimizedImage({ src, ...props }) {
   const isLocalUpload = typeof src === 'string' && src.startsWith('/uploads/')
 
-  return <Image src={src} unoptimized={isLocalUpload} {...props} />
+  if (isLocalUpload) {
+    return <Image src={src} loader={localImageLoader} {...props} />
+  }
+
+  return <Image src={src} {...props} />
 }
