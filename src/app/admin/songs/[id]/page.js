@@ -876,7 +876,7 @@ export default function EditSong() {
       const res = await fetch('/api/admin/translate-lyrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lyrics: formData.lyrics })
+        body: JSON.stringify({ lyrics: formData.lyrics, title: formData.title })
       })
       if (!res.ok) {
         const err = await res.json()
@@ -888,7 +888,10 @@ export default function EditSong() {
         lyricsRomanized: data.lyricsRomanized || prev.lyricsRomanized,
         lyricsTranslated: data.lyricsTranslated || prev.lyricsTranslated,
         lyricsHindi: data.lyricsHindi || prev.lyricsHindi,
-        lyricsPunjabi: data.lyricsPunjabi || prev.lyricsPunjabi
+        lyricsPunjabi: data.lyricsPunjabi || prev.lyricsPunjabi,
+        meaning: data.meaning || prev.meaning,
+        metaTitle: data.metaTitle || prev.metaTitle,
+        metaDescription: data.metaDescription || prev.metaDescription
       }))
     } catch (error) {
       alert('Auto-translate failed: ' + error.message)

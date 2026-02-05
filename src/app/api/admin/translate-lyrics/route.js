@@ -14,7 +14,7 @@ export async function POST(request) {
       )
     }
 
-    const { lyrics } = await request.json()
+    const { lyrics, title } = await request.json()
 
     if (!lyrics || !lyrics.trim()) {
       return NextResponse.json(
@@ -23,19 +23,25 @@ export async function POST(request) {
       )
     }
 
+    const songTitle = title ? `"${title}"` : 'this song'
+
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 4096,
+      system: 'You are a professional lyrics translator and music analyst. You MUST respond with ONLY raw JSON — no markdown, no code fences, no explanation text before or after. Use \\n for line breaks inside JSON string values.',
       messages: [
         {
           role: 'user',
-          content: `You are a professional lyrics translator. Translate the following song lyrics into 4 variants. Preserve line breaks, stanza structure, and keep the same number of lines in each translation.
+          content: `Translate the following song lyrics into 4 variants and write a song meaning. Preserve stanza structure using \\n for line breaks and \\n\\n for stanza breaks inside the JSON string values.
 
-Return ONLY valid JSON (no markdown, no code fences) with these 4 fields:
+Return ONLY a JSON object with these 7 fields:
 - "lyricsRomanized": Latin script transliteration of the original lyrics
 - "lyricsTranslated": English translation
 - "lyricsHindi": Hindi translation in Devanagari script
 - "lyricsPunjabi": Punjabi translation in Gurmukhi script
+- "meaning": A detailed explanation of the song ${songTitle}'s meaning in 300-400 words in English. Include the song name and reference key hook lines or phrases from the lyrics. Cover the themes, emotions, story, and cultural context. Write it as flowing paragraphs, not bullet points.
+- "metaTitle": An SEO-optimized page title under 60 characters. Format: "${title || '[Song Name]'} Lyrics, Meaning & Translation - DjYoungster". Keep it concise, include the song name first.
+- "metaDescription": An SEO-optimized meta description between 150-160 characters. Include the song name, a catchy hook line or key phrase quoted from the lyrics, and mention lyrics/meaning/translation. End with "- DjYoungster".
 
 If the lyrics are already in one of these languages, still provide all 4 variants. For the romanized version, transliterate the original script to Latin characters.
 
@@ -45,17 +51,34 @@ ${lyrics}`
       ]
     })
 
-    const responseText = message.content[0].text
+    let responseText = message.content[0].text.trim()
+
+    // Strip markdown code fences if present
+    responseText = responseText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?\s*```\s*$/i, '')
+    responseText = responseText.trim()
 
     let translations
     try {
       translations = JSON.parse(responseText)
     } catch {
+      // Try to extract JSON object from response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
-        translations = JSON.parse(jsonMatch[0])
+        try {
+          translations = JSON.parse(jsonMatch[0])
+        } catch {
+          throw new Error('Failed to parse translation response as JSON')
+        }
       } else {
         throw new Error('Failed to parse translation response as JSON')
+      }
+    }
+
+    // Validate expected fields exist
+    const requiredFields = ['lyricsRomanized', 'lyricsTranslated', 'lyricsHindi', 'lyricsPunjabi', 'meaning', 'metaTitle', 'metaDescription']
+    for (const field of requiredFields) {
+      if (typeof translations[field] !== 'string') {
+        translations[field] = translations[field] ? String(translations[field]) : ''
       }
     }
 
