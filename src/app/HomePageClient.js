@@ -381,6 +381,7 @@ function Carousel({ children, title, icon: Icon, iconBg, viewAllLink }) {
           <button
             onClick={() => scroll('left')}
             disabled={!canScrollLeft}
+            aria-label="Scroll left"
             className={`p-2 rounded-full transition ${canScrollLeft ? 'bg-white dark:bg-slate-800 shadow-md hover:shadow-lg text-slate-700 dark:text-slate-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed'}`}
           >
             <FiChevronLeft className="w-5 h-5" />
@@ -388,6 +389,7 @@ function Carousel({ children, title, icon: Icon, iconBg, viewAllLink }) {
           <button
             onClick={() => scroll('right')}
             disabled={!canScrollRight}
+            aria-label="Scroll right"
             className={`p-2 rounded-full transition ${canScrollRight ? 'bg-white dark:bg-slate-800 shadow-md hover:shadow-lg text-slate-700 dark:text-slate-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600 cursor-not-allowed'}`}
           >
             <FiChevronRight className="w-5 h-5" />
