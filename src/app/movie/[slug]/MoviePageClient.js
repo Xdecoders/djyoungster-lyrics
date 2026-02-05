@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import Image from '@/components/OptimizedImage'
 import { FiFilm, FiMusic, FiPlay, FiEye, FiChevronRight, FiCalendar, FiUser, FiUsers, FiVideo, FiGlobe, FiAward, FiEdit3, FiHeadphones } from 'react-icons/fi'
 
 // Auto-generated Movie Description Component

@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   FiMusic,
   FiPlay,
@@ -20,7 +21,7 @@ function SongCard({ song }) {
     <Link href={`/song/${song.slug}`} className="group">
       <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 relative shadow-sm group-hover:shadow-md transition">
         {song.coverImage || song.album?.coverImage ? (
-          <img src={song.coverImage || song.album?.coverImage} alt={song.title} className="w-full h-full object-cover" />
+          <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" className="object-cover" />
         ) : (
           <FiMusic className="w-12 h-12 text-emerald-400" />
         )}
@@ -52,9 +53,9 @@ function SongRow({ song, index }) {
     >
       <span className="w-8 text-center text-slate-400 dark:text-slate-500 font-medium">{index + 1}</span>
 
-      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden flex-shrink-0">
+      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
         {song.coverImage || song.album?.coverImage ? (
-          <img src={song.coverImage || song.album?.coverImage} alt={song.title} className="w-full h-full object-cover" />
+          <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, 25vw" className="object-cover" />
         ) : (
           <FiMusic className="w-5 h-5 text-primary" />
         )}

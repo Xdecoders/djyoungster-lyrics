@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilm, FiChevronRight } from 'react-icons/fi'
 
@@ -12,7 +13,7 @@ function MovieCard({ movie }) {
     <Link href={`/movie/${movie.slug || movie.id}`} className="group">
       <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
         {posterImage ? (
-          <img src={posterImage} alt={movie.title} className="w-full h-full object-cover" />
+          <Image src={posterImage} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover" />
         ) : (
           <FiFilm className="w-16 h-16 text-rose-400" />
         )}

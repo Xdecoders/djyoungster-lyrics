@@ -1,15 +1,16 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiDisc, FiChevronRight } from 'react-icons/fi'
 
 function AlbumCard({ album }) {
   return (
     <Link href={`/album/${album.slug}`} className="group">
-      <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition">
+      <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
         {album.coverImage ? (
-          <img src={album.coverImage} alt={album.title} className="w-full h-full object-cover" />
+          <Image src={album.coverImage} alt={album.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover" />
         ) : (
           <FiDisc className="w-12 h-12 text-emerald-400" />
         )}

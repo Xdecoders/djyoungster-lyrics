@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiUser, FiChevronRight } from 'react-icons/fi'
 
@@ -8,9 +9,9 @@ function ArtistCard({ artist }) {
   const displayImage = artist.imageUrl || artist.thumbnail
   return (
     <Link href={`/artist/${artist.slug}`} className="group text-center">
-      <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md group-hover:scale-105 transition">
+      <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md group-hover:scale-105 transition relative">
         {displayImage ? (
-          <img src={displayImage} alt={artist.name} className="w-full h-full object-cover" />
+          <Image src={displayImage} alt={artist.name} fill sizes="128px" className="object-cover" />
         ) : (
           <FiUser className="w-12 h-12 text-emerald-400" />
         )}

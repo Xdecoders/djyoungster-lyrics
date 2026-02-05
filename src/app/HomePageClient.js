@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import Image from '@/components/OptimizedImage'
 import { useRouter } from 'next/navigation'
 import { FiMusic, FiSearch, FiChevronLeft, FiChevronRight, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiArrowRight, FiFilm, FiX, FiTag, FiInfo, FiHelpCircle, FiChevronDown } from 'react-icons/fi'
 
