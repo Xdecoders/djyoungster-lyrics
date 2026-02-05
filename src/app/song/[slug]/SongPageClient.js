@@ -840,24 +840,21 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
     <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
       {/* Breadcrumb with Schema */}
       <nav aria-label="Breadcrumb" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-        <ol className="flex items-center gap-2 text-sm" itemScope itemType="https://schema.org/BreadcrumbList">
-          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-            <Link href="/" itemProp="item" className="text-slate-500 dark:text-slate-400 hover:text-primary transition">
-              <span itemProp="name">Home</span>
+        <ol className="flex items-center gap-2 text-sm">
+          <li>
+            <Link href="/" className="text-slate-500 dark:text-slate-400 hover:text-primary transition">
+              Home
             </Link>
-            <meta itemProp="position" content="1" />
           </li>
           <FiChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" />
-          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-            <Link href="/songs" itemProp="item" className="text-slate-500 dark:text-slate-400 hover:text-primary transition">
-              <span itemProp="name">Songs</span>
+          <li>
+            <Link href="/songs" className="text-slate-500 dark:text-slate-400 hover:text-primary transition">
+              Songs
             </Link>
-            <meta itemProp="position" content="2" />
           </li>
           <FiChevronRight className="w-4 h-4 text-slate-300 dark:text-slate-600" />
-          <li itemProp="itemListElement" itemScope itemType="https://schema.org/ListItem">
-            <span itemProp="name" className="text-slate-800 dark:text-white font-medium truncate">{song.title}</span>
-            <meta itemProp="position" content="3" />
+          <li>
+            <span className="text-slate-800 dark:text-white font-medium truncate">{song.title}</span>
           </li>
         </ol>
       </nav>

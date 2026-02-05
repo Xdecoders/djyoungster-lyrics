@@ -343,7 +343,7 @@ export function generateBreadcrumbSchema(breadcrumbs) {
       '@type': 'ListItem',
       position: index + 1,
       name: crumb.name,
-      item: crumb.url ? `${SITE_URL}${crumb.url}` : undefined
+      item: crumb.url ? { '@type': 'WebPage', '@id': `${SITE_URL}${crumb.url}` } : undefined
     }))
   }
 }
