@@ -174,12 +174,14 @@ function HeroSection({ artist, featuredSongs, songs, socialLinks }) {
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8">
       <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
         {/* Profile Image - Larger Size */}
-        <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg">
+        <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg relative">
           {profileImage ? (
-            <img
+            <Image
               src={profileImage}
               alt={artist?.name}
-              className="w-full h-full object-cover"
+              fill
+              sizes="(max-width: 640px) 176px, 208px"
+              className="object-cover"
               onError={() => setProfileImageError(true)}
             />
           ) : (

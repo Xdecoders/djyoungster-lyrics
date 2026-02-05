@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiSave, FiArrowLeft, FiUser, FiGlobe, FiImage } from 'react-icons/fi'
+import { FiSave, FiArrowLeft, FiUser, FiGlobe, FiImage, FiUpload, FiLink } from 'react-icons/fi'
 
 export default function AddArtist() {
   const router = useRouter()
@@ -17,6 +17,7 @@ export default function AddArtist() {
     metaTitle: '',
     metaDescription: ''
   })
+  const [imageMode, setImageMode] = useState('url')
   const [errors, setErrors] = useState({})
 
   useEffect(() => {
@@ -48,6 +49,31 @@ export default function AddArtist() {
       ...prev,
       [name]: value
     }))
+  }
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    const formDataUpload = new FormData()
+    formDataUpload.append('file', file)
+
+    try {
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formDataUpload
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        setFormData(prev => ({ ...prev, imageUrl: data.url }))
+      } else {
+        alert('Failed to upload image')
+      }
+    } catch (error) {
+      console.error('Upload error:', error)
+      alert('Failed to upload image')
+    }
   }
 
   const validateForm = () => {
@@ -186,20 +212,68 @@ export default function AddArtist() {
                 />
               </div>
 
-              {/* Image URL */}
+              {/* Image */}
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2 flex items-center gap-2">
                   <FiImage className="w-4 h-4 text-slate-400" />
-                  Image URL
+                  Artist Image
                 </label>
-                <input
-                  type="text"
-                  name="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
-                  placeholder="https://example.com/image.jpg"
-                />
+
+                {/* Toggle between URL and Upload */}
+                <div className="flex gap-2 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setImageMode('url')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      imageMode === 'url'
+                        ? 'bg-primary text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    <FiLink className="w-4 h-4" />
+                    URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setImageMode('upload')}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition ${
+                      imageMode === 'upload'
+                        ? 'bg-primary text-white'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    <FiUpload className="w-4 h-4" />
+                    Upload
+                  </button>
+                </div>
+
+                {imageMode === 'url' ? (
+                  <input
+                    type="text"
+                    name="imageUrl"
+                    value={formData.imageUrl}
+                    onChange={handleChange}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+                    placeholder="https://example.com/image.jpg"
+                  />
+                ) : (
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-emerald-50 file:text-primary hover:file:bg-emerald-100"
+                  />
+                )}
+
+                {formData.imageUrl && (
+                  <div className="mt-3">
+                    <img
+                      src={formData.imageUrl}
+                      alt="Preview"
+                      className="w-24 h-24 object-cover rounded-xl border border-slate-200"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* Bio */}
