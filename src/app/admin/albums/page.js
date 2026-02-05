@@ -142,12 +142,14 @@ export default function AlbumsList() {
                   <div className="flex justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
                     <Link
                       href={`/admin/albums/${album.id}`}
+                      aria-label="Edit album"
                       className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
                     >
                       <FiEdit2 className="w-4 h-4" />
                     </Link>
                     <button
                       onClick={() => setDeleteConfirm(album.id)}
+                      aria-label="Delete album"
                       className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
                     >
                       <FiTrash2 className="w-4 h-4" />

@@ -185,6 +185,7 @@ export default function ArtistsList() {
               <button
                 onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
+                aria-label="Previous page"
                 className={`p-2 rounded-lg transition ${currentPage === 1 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`}
               >
                 <FiChevronLeft className="w-5 h-5" />
@@ -211,6 +212,7 @@ export default function ArtistsList() {
               <button
                 onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
+                aria-label="Next page"
                 className={`p-2 rounded-lg transition ${currentPage === totalPages ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`}
               >
                 <FiChevronRight className="w-5 h-5" />

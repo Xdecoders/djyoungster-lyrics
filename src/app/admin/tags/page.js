@@ -186,7 +186,7 @@ export default function TagsPage() {
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
             <FiX className="w-5 h-5 text-red-600" />
             <span className="text-red-700 font-medium">{errorMessage}</span>
-            <button onClick={() => setErrorMessage('')} className="ml-auto p-1 hover:bg-red-100 rounded">
+            <button onClick={() => setErrorMessage('')} aria-label="Dismiss error" className="ml-auto p-1 hover:bg-red-100 rounded">
               <FiX className="w-4 h-4 text-red-500" />
             </button>
           </div>
@@ -199,7 +199,7 @@ export default function TagsPage() {
               <h2 className="text-base sm:text-lg font-semibold text-slate-800">
                 {editingId ? 'Edit Tag' : 'Add New Tag'}
               </h2>
-              <button onClick={resetForm} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+              <button onClick={resetForm} aria-label="Close form" className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
                 <FiX className="w-5 h-5" />
               </button>
             </div>

@@ -194,7 +194,7 @@ export default function CategoriesPage() {
               <h2 className="text-base sm:text-lg font-semibold text-slate-800">
                 {editingId ? 'Edit Category' : 'Add New Category'}
               </h2>
-              <button onClick={resetForm} className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
+              <button onClick={resetForm} aria-label="Close form" className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition">
                 <FiX className="w-5 h-5" />
               </button>
             </div>
