@@ -27,8 +27,8 @@ export async function POST(request) {
 
     const message = await client.messages.create({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 4096,
-      system: 'You are a professional lyrics translator and music analyst. You MUST respond with ONLY raw JSON — no markdown, no code fences, no explanation text before or after. Use \\n for line breaks inside JSON string values.',
+      max_tokens: 8192,
+      system: 'You are a professional lyrics translator and music analyst. You MUST respond with ONLY raw JSON — no markdown, no code fences, no explanation text before or after. Use \\n for line breaks inside JSON string values. Escape any special characters properly for valid JSON.',
       messages: [
         {
           role: 'user',
@@ -51,6 +51,11 @@ ${lyrics}`
       ]
     })
 
+    // Check if response was truncated
+    if (message.stop_reason === 'max_tokens') {
+      throw new Error('Translation response was too long and got truncated. Try with shorter lyrics.')
+    }
+
     let responseText = message.content[0].text.trim()
 
     // Strip markdown code fences if present
@@ -60,17 +65,19 @@ ${lyrics}`
     let translations
     try {
       translations = JSON.parse(responseText)
-    } catch {
+    } catch (parseError) {
       // Try to extract JSON object from response
       const jsonMatch = responseText.match(/\{[\s\S]*\}/)
       if (jsonMatch) {
         try {
           translations = JSON.parse(jsonMatch[0])
         } catch {
-          throw new Error('Failed to parse translation response as JSON')
+          console.error('JSON parse failed. Response preview:', responseText.substring(0, 500))
+          throw new Error('Failed to parse translation response as JSON. The AI response was malformed.')
         }
       } else {
-        throw new Error('Failed to parse translation response as JSON')
+        console.error('No JSON found in response. Response preview:', responseText.substring(0, 500))
+        throw new Error('Failed to parse translation response as JSON. No valid JSON found in response.')
       }
     }
 
