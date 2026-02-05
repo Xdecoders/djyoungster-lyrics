@@ -60,6 +60,7 @@ export default function AddSong() {
 
   // Lyrics tab state
   const [activeLyricsTab, setActiveLyricsTab] = useState('main')
+  const [translating, setTranslating] = useState(false)
 
   // Artist search states
   const [artistSearch, setArtistSearch] = useState('')
@@ -778,6 +779,34 @@ export default function AddSong() {
     }
   }
 
+  const handleAutoTranslate = async () => {
+    if (!formData.lyrics.trim()) return
+    setTranslating(true)
+    try {
+      const res = await fetch('/api/admin/translate-lyrics', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lyrics: formData.lyrics })
+      })
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.error || 'Translation failed')
+      }
+      const data = await res.json()
+      setFormData(prev => ({
+        ...prev,
+        lyricsRomanized: data.lyricsRomanized || prev.lyricsRomanized,
+        lyricsTranslated: data.lyricsTranslated || prev.lyricsTranslated,
+        lyricsHindi: data.lyricsHindi || prev.lyricsHindi,
+        lyricsPunjabi: data.lyricsPunjabi || prev.lyricsPunjabi
+      }))
+    } catch (error) {
+      alert('Auto-translate failed: ' + error.message)
+    } finally {
+      setTranslating(false)
+    }
+  }
+
   const lyricsTabs = [
     { id: 'main', label: 'Main Lyrics', field: 'lyrics', required: true },
     { id: 'romanized', label: 'Romanized', field: 'lyricsRomanized' },
@@ -896,6 +925,24 @@ export default function AddSong() {
                       {tab.label} {tab.required && '*'}
                     </button>
                   ))}
+                  <button
+                    type="button"
+                    onClick={handleAutoTranslate}
+                    disabled={translating || !formData.lyrics.trim()}
+                    className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {translating ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-violet-400 border-t-transparent rounded-full animate-spin"></span>
+                        Translating...
+                      </>
+                    ) : (
+                      <>
+                        <FiGlobe className="w-4 h-4" />
+                        Auto-translate
+                      </>
+                    )}
+                  </button>
                 </div>
 
                 {/* Active Lyrics Textarea */}
