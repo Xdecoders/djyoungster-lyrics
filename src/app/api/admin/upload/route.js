@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
-import { writeFile, mkdir, access } from 'fs/promises'
+import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
-import sharp from 'sharp'
 
 export async function POST(request) {
   try {
@@ -36,54 +35,37 @@ export async function POST(request) {
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Generate unique filename with .webp extension
+    // Map MIME type to correct extension
+    const extMap = {
+      'image/jpeg': '.jpg',
+      'image/jpg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp',
+      'image/gif': '.gif',
+    }
+    const ext = extMap[file.type] || '.jpg'
+
+    // Generate clean filename: strip existing extension and special chars, then add correct extension
+    const baseName = file.name
+      .replace(/\.[^.]+$/, '')        // Remove original extension
+      .replace(/[^a-zA-Z0-9-]/g, '-') // Replace special chars with hyphens
+      .replace(/-+/g, '-')            // Collapse multiple hyphens
+      .replace(/^-|-$/g, '')          // Trim leading/trailing hyphens
+      .substring(0, 80)               // Limit length
     const timestamp = Date.now()
-    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '-').replace(/\.[^.]+$/, '') // Remove original extension
-    const filename = `${timestamp}-${originalName}.webp`
-
-    // Use UPLOAD_DIR env variable if set, otherwise fall back to public/uploads
-    // For production VPS, set UPLOAD_DIR to absolute path like /var/www/djyoungster/public/uploads
-    const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'public', 'uploads')
-
-    console.log('[Upload] process.cwd():', process.cwd())
-    console.log('[Upload] Upload directory:', uploadDir)
+    const filename = `${timestamp}-${baseName}${ext}`
 
     // Ensure upload directory exists
+    const uploadDir = path.join(process.cwd(), 'public', 'uploads')
     try {
       await mkdir(uploadDir, { recursive: true })
     } catch (err) {
-      console.log('[Upload] mkdir result:', err?.code || 'created')
-    }
-
-    // Verify directory is writable
-    try {
-      await access(uploadDir, 2) // 2 = fs.constants.W_OK (write permission)
-    } catch (err) {
-      console.error('[Upload] Directory not writable:', uploadDir)
-      return NextResponse.json(
-        { message: `Upload directory not writable: ${uploadDir}` },
-        { status: 500 }
-      )
-    }
-
-    // Convert image to WebP format using sharp
-    let webpBuffer
-    try {
-      webpBuffer = await sharp(buffer)
-        .webp({ quality: 85 }) // Good balance between quality and file size
-        .toBuffer()
-      console.log('[Upload] Image converted to WebP. Original size:', buffer.length, '-> WebP size:', webpBuffer.length)
-    } catch (sharpError) {
-      console.error('[Upload] Sharp conversion error:', sharpError)
-      // If conversion fails, save the original file
-      webpBuffer = buffer
-      console.log('[Upload] Falling back to original image format')
+      // Directory might already exist
     }
 
     // Write file
     const filepath = path.join(uploadDir, filename)
-    await writeFile(filepath, webpBuffer)
-    console.log('[Upload] File saved to:', filepath)
+    await writeFile(filepath, buffer)
 
     // Return the public URL
     const url = `/uploads/${filename}`
@@ -91,11 +73,10 @@ export async function POST(request) {
     return NextResponse.json({
       url,
       filename,
-      savedTo: filepath, // Include for debugging
       message: 'File uploaded successfully'
     })
   } catch (error) {
-    console.error('[Upload] Error:', error)
+    console.error('Error uploading file:', error)
     return NextResponse.json(
       { message: 'Error uploading file: ' + error.message },
       { status: 500 }
