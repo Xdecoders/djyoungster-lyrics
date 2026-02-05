@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 function localImageLoader({ src, width }) {
   // Map requested width to nearest pre-generated size suffix
-  const basePath = src.replace(/\.webp$/, '')
+  const basePath = src.replace(/\.(webp|jpg|jpeg|png|gif)$/, '')
   if (width <= 96) return `${basePath}-thumb.webp`
   if (width <= 320) return `${basePath}-sm.webp`
   if (width <= 640) return `${basePath}-md.webp`
