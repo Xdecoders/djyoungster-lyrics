@@ -6,13 +6,12 @@ import { useEffect, useState } from 'react'
 import {
   FiMusic,
   FiMail,
-  FiHeart,
-  FiChevronUp
+  FiHeart
 } from 'react-icons/fi'
+import { FaWhatsapp } from 'react-icons/fa'
 
 export default function Footer() {
   const pathname = usePathname()
-  const [showScrollTop, setShowScrollTop] = useState(false)
   const [categories, setCategories] = useState([])
   const [genres, setGenres] = useState([])
   const [email, setEmail] = useState('')
@@ -38,19 +37,6 @@ export default function Footer() {
     }
     fetchData()
   }, [])
-
-  // Show scroll to top button
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowScrollTop(window.scrollY > 500)
-    }
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
 
   const handleSubscribe = async (e) => {
     e.preventDefault()
@@ -228,16 +214,16 @@ export default function Footer() {
         </div>
       </footer>
 
-      {/* Scroll to Top Button */}
-      <button
-        onClick={scrollToTop}
-        className={`fixed bottom-6 right-6 z-50 p-3 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300 ${
-          showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
-        }`}
-        aria-label="Scroll to top"
+      {/* WhatsApp Channel Button */}
+      <a
+        href="https://whatsapp.com/channel/0029Vb7A52PEAKW8b0wxfV03"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 p-3 bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+        aria-label="Join our WhatsApp Channel"
       >
-        <FiChevronUp className="w-5 h-5" />
-      </button>
+        <FaWhatsapp className="w-6 h-6" />
+      </a>
     </>
   )
 }
