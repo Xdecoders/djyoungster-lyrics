@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+import Image from '@/components/OptimizedImage'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilm, FiChevronRight } from 'react-icons/fi'
 
