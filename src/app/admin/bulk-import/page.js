@@ -56,7 +56,7 @@ export default function BulkImportPage() {
     }
   }
 
-  // Discover URLs from sitemap
+  // Discover URLs from sitemap (non-blocking, polls for completion)
   const handleDiscover = async (site) => {
     setDiscovering(site)
     try {
@@ -67,8 +67,33 @@ export default function BulkImportPage() {
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message)
+
+      // Poll until discovery finishes (status changes from 'discovering')
+      const importId = data.importId
+      const pollDiscovery = async () => {
+        for (let i = 0; i < 120; i++) { // max ~4 minutes
+          await new Promise(r => setTimeout(r, 2000))
+          const pollRes = await fetch('/api/admin/bulk-import')
+          if (!pollRes.ok) continue
+          const imports = await pollRes.json()
+          const imp = imports.find(m => m.id === importId)
+          if (!imp || imp.status !== 'discovering') {
+            await fetchImports()
+            const total = imp?.totalUrls || 0
+            if (total > 0) {
+              alert(`Discovered ${total} URLs from ${site}`)
+            } else {
+              alert(`Discovery completed for ${site} (0 URLs found)`)
+            }
+            return
+          }
+        }
+        await fetchImports()
+        alert('Discovery is still running in the background. Refresh to check progress.')
+      }
+
       await fetchImports()
-      alert(`Discovered ${data.totalUrls} URLs from ${site}`)
+      await pollDiscovery()
     } catch (error) {
       alert(`Discovery failed: ${error.message}`)
     } finally {

@@ -1,7 +1,9 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { discoverSongUrls } from '@/lib/scrapers/sitemap'
 import { scrapeAndSaveSong } from '@/lib/scrapers/bulk-processor'
+
+export const maxDuration = 300
 
 // GET - List all bulk imports
 export async function GET() {
@@ -51,7 +53,7 @@ export async function POST(request) {
   }
 }
 
-// Discover URLs from sitemap
+// Discover URLs from sitemap (non-blocking)
 async function handleDiscover({ site }) {
   if (!site) {
     return NextResponse.json({ message: 'site is required' }, { status: 400 })
@@ -62,43 +64,47 @@ async function handleDiscover({ site }) {
     data: { site, status: 'discovering' }
   })
 
-  try {
-    const urls = await discoverSongUrls(site)
+  // Do the heavy sitemap work after responding to avoid timeout
+  after(async () => {
+    try {
+      const urls = await discoverSongUrls(site)
 
-    if (urls.length === 0) {
+      if (urls.length === 0) {
+        await prisma.bulkImport.update({
+          where: { id: bulkImport.id },
+          data: { status: 'completed', totalUrls: 0 }
+        })
+        return
+      }
+
+      // Batch insert URLs (in chunks to avoid query size limits)
+      const chunkSize = 500
+      for (let i = 0; i < urls.length; i += chunkSize) {
+        const chunk = urls.slice(i, i + chunkSize)
+        await prisma.bulkImportUrl.createMany({
+          data: chunk.map(url => ({
+            importId: bulkImport.id,
+            url
+          })),
+          skipDuplicates: true
+        })
+      }
+
       await prisma.bulkImport.update({
         where: { id: bulkImport.id },
-        data: { status: 'completed', totalUrls: 0 }
+        data: { status: 'pending', totalUrls: urls.length }
       })
-      return NextResponse.json({ importId: bulkImport.id, totalUrls: 0 })
-    }
-
-    // Batch insert URLs (in chunks to avoid query size limits)
-    const chunkSize = 500
-    for (let i = 0; i < urls.length; i += chunkSize) {
-      const chunk = urls.slice(i, i + chunkSize)
-      await prisma.bulkImportUrl.createMany({
-        data: chunk.map(url => ({
-          importId: bulkImport.id,
-          url
-        })),
-        skipDuplicates: true
+    } catch (error) {
+      console.error(`Discovery failed for ${site}:`, error)
+      await prisma.bulkImport.update({
+        where: { id: bulkImport.id },
+        data: { status: 'completed' }
       })
     }
+  })
 
-    await prisma.bulkImport.update({
-      where: { id: bulkImport.id },
-      data: { status: 'pending', totalUrls: urls.length }
-    })
-
-    return NextResponse.json({ importId: bulkImport.id, totalUrls: urls.length })
-  } catch (error) {
-    await prisma.bulkImport.update({
-      where: { id: bulkImport.id },
-      data: { status: 'completed' }
-    })
-    return NextResponse.json({ message: `Discovery failed: ${error.message}` }, { status: 500 })
-  }
+  // Return immediately
+  return NextResponse.json({ importId: bulkImport.id, status: 'discovering' })
 }
 
 // Add URLs manually (for Genius)
