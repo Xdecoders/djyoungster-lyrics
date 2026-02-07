@@ -101,7 +101,7 @@ function SongDescription({ song }) {
   const genres = song.genres?.map(sg => sg.genre.name).join(', ')
   const categories = song.categories?.map(sc => sc.category.name).join(', ')
 
-  let description = `"${song.title}" is a popular ${song.language || ''} song`
+  let description = `"${song.title}" is a popular song`
 
   if (artistNames !== 'Unknown Artist') {
     description += ` sung by ${artistNames}`
@@ -188,10 +188,6 @@ function SongCredits({ song }) {
   if (song.releaseYear) {
     credits.push({ label: 'Year', value: song.releaseYear.toString(), icon: FiCalendar })
   }
-  if (song.language) {
-    credits.push({ label: 'Language', value: song.language, icon: FiGlobe })
-  }
-
   if (credits.length === 0) return null
 
   return (
@@ -354,7 +350,7 @@ function FAQSection({ song }) {
   if (genres) {
     faqs.push({
       question: `What type of song is "${song.title}"?`,
-      answer: `"${song.title}" falls under ${genres}${song.language ? ` and is performed in ${song.language}` : ''}. The track blends these influences to create its distinctive sound.`
+      answer: `"${song.title}" falls under ${genres}. The track blends these influences to create its distinctive sound.`
     })
   }
 

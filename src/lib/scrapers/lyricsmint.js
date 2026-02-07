@@ -48,7 +48,6 @@ export async function scrapeLyricsMint(url) {
   let lyricist = ''
   let composer = ''
   let director = ''
-  let language = ''
   let label = ''
 
   $('section.credits table tr').each((_, tr) => {
@@ -59,7 +58,6 @@ export async function scrapeLyricsMint(url) {
     if (key === 'lyricist') lyricist = value
     if (key === 'music') composer = value
     if (key === 'director') director = value
-    if (key === 'language') language = value
     if (key === 'music label') label = value
   })
 
@@ -102,7 +100,6 @@ export async function scrapeLyricsMint(url) {
     starring: '',
     producer: '',
     director,
-    language: language || 'Punjabi',
     releaseYear: null,
     coverImage,
     youtubeUrl: '',

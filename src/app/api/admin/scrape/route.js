@@ -59,14 +59,6 @@ export async function POST(request) {
       })
     }
 
-    // Map language to matching category
-    let matchedCategory = null
-    if (scraped.language) {
-      const dbCategories = await prisma.category.findMany({ select: { id: true, name: true, slug: true } })
-      const langLower = scraped.language.toLowerCase()
-      matchedCategory = dbCategories.find(c => c.name.toLowerCase().includes(langLower))
-    }
-
     // Fuzzy-match movie name against DB
     let matchedMovie = null
     if (scraped.movieName) {
@@ -96,7 +88,6 @@ export async function POST(request) {
       scraped,
       matchedArtists,
       matchedMovie,
-      matchedCategory,
       duplicateWarning
     })
   } catch (error) {

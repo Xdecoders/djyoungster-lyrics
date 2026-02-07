@@ -143,20 +143,6 @@ export async function scrapeGenius(url) {
     if (ytEmbed.includes('youtube')) youtubeUrl = ytEmbed
   }
 
-  // Detect language from page metadata or JSON-LD
-  let language = ''
-  const htmlLang = $('html').attr('lang') || ''
-  const metaLang = $('meta[property="og:locale"]').attr('content') || ''
-  if (jsonLd?.inLanguage) {
-    language = jsonLd.inLanguage
-  }
-  // Map common lang codes to names
-  const langMap = { 'en': 'English', 'hi': 'Hindi', 'pa': 'Punjabi', 'ta': 'Tamil', 'te': 'Telugu' }
-  if (!language && htmlLang) language = langMap[htmlLang.split('-')[0]] || ''
-  if (!language && metaLang) language = langMap[metaLang.split('_')[0]] || ''
-  // Default Genius to English if nothing detected
-  if (!language) language = 'English'
-
   // Singers - for Genius, the primary artist is usually the singer
   singers = artistNames.join(', ')
 
@@ -173,7 +159,6 @@ export async function scrapeGenius(url) {
     starring: '',
     producer,
     director: '',
-    language,
     releaseYear,
     coverImage,
     youtubeUrl,

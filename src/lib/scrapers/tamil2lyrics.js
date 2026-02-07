@@ -2,6 +2,16 @@ import axios from 'axios'
 import * as cheerio from 'cheerio'
 import { generateSlug } from './index'
 
+// Check if text contains Tamil unicode characters
+function isTamil(text) {
+  return /[\u0B80-\u0BFF]/.test(text)
+}
+
+// Strip speaker prefixes like "Male : ", "Female : ", "Chorus : ", etc.
+function stripSpeakerPrefix(text) {
+  return text.replace(/^(?:Male|Female|Chorus|Child|All)\s*:\s*/i, '').trim()
+}
+
 export async function scrapeTamil2Lyrics(url) {
   const { data: html } = await axios.get(url, {
     headers: {
@@ -19,11 +29,10 @@ export async function scrapeTamil2Lyrics(url) {
   const titleEl = $('.lyrics-title h1')
   if (titleEl.length) {
     title = titleEl.text().trim()
-    // Remove "Lyrics" suffix if present
-    title = title.replace(/\s*lyrics\s*$/i, '').trim()
+    title = title.replace(/\s*lyrics\s*$/i, '').replace(/\s*song\s*$/i, '').trim()
   }
   if (!title) {
-    title = $('h1').first().text().trim().replace(/\s*lyrics\s*$/i, '').trim()
+    title = $('h1').first().text().trim().replace(/\s*song\s*lyrics\s*$/i, '').replace(/\s*lyrics\s*$/i, '').trim()
   }
 
   // Credits - extract from <strong>Label :</strong> Value pattern
@@ -64,20 +73,21 @@ export async function scrapeTamil2Lyrics(url) {
     'produced by': 'producer',
     'director': 'director',
     'directed by': 'director',
-    'year': 'releaseYear'
+    'year': 'releaseYear',
+    // Tamil credit labels
+    'பாடகர்கள்': 'singers',
+    'இசையமைப்பாளர்': 'composer',
+    'பாடலாசிரியர்': 'lyricist'
   }
 
-  // Parse credit fields
-  $('strong, b').each((_, el) => {
+  // Parse credit fields from <strong> tags (only top-level credits, not lyrics lines)
+  $('article').find('strong, b').each((_, el) => {
     const labelText = $(el).text().trim().replace(/\s*:\s*$/, '').toLowerCase()
     const mapped = creditMap[labelText]
     if (!mapped) return
 
-    // Get the value - text after the strong tag
     const parent = $(el).parent()
     let value = ''
-
-    // Try getting sibling text
     const fullText = parent.text()
     const labelFull = $(el).text()
     value = fullText.replace(labelFull, '').replace(/^\s*:\s*/, '').trim()
@@ -108,18 +118,17 @@ export async function scrapeTamil2Lyrics(url) {
     }
   }
 
-  // Lyrics - Tamil from first tab content, English from second
+  // ===== LYRICS EXTRACTION =====
   let lyrics = ''
   let lyricsTranslated = ''
 
+  // Method 1: Tab-based content (.tabcontent)
   const tabContents = $('.tabcontent')
   if (tabContents.length > 0) {
-    // First tab = Tamil lyrics
     const firstTab = tabContents.eq(0)
     firstTab.find('br').replaceWith('\n')
     lyrics = firstTab.text().trim()
 
-    // Second tab = English translation
     if (tabContents.length > 1) {
       const secondTab = tabContents.eq(1)
       secondTab.find('br').replaceWith('\n')
@@ -127,17 +136,63 @@ export async function scrapeTamil2Lyrics(url) {
     }
   }
 
-  // If no tabcontent, try other selectors
+  // Method 2: Extract from <article> <p> tags (current format)
   if (!lyrics) {
-    const lyricsDiv = $('.lyrics-body, .song-lyrics, .entry-content, [class*="lyrics"]').first()
-    if (lyricsDiv.length) {
-      lyricsDiv.find('br').replaceWith('\n')
-      lyrics = lyricsDiv.text().trim()
+    const englishLines = []
+    const tamilLines = []
+
+    $('article p').each((_, el) => {
+      const text = $(el).text().trim()
+      if (!text || text.length < 3) return
+
+      // Skip credit paragraphs (contain known credit labels)
+      const lowerText = text.toLowerCase()
+      const isCredit = Object.keys(creditMap).some(key =>
+        lowerText.startsWith(key + ' :') || lowerText.startsWith(key + ':')
+      )
+      if (isCredit) return
+
+      // Check if this is a lyrics line (has speaker prefix or is lyrics content)
+      const hasSpeaker = /^(?:Male|Female|Chorus|Child|All)\s*:/i.test(text) ||
+                         /^(?:பெண்|ஆண்|குழு|குரல்)\s*:/i.test(text)
+
+      if (hasSpeaker || text.length > 10) {
+        if (isTamil(text)) {
+          // Strip Tamil speaker prefixes
+          const cleaned = text.replace(/^(?:பெண்|ஆண்|குழு|குரல்|குழந்தை)\s*:\s*/g, '').trim()
+          if (cleaned) tamilLines.push(cleaned)
+        } else {
+          const cleaned = stripSpeakerPrefix(text)
+          if (cleaned) englishLines.push(cleaned)
+        }
+      }
+    })
+
+    // English/romanized = main lyrics, Tamil = translated
+    if (englishLines.length > 0) {
+      lyrics = englishLines.join('\n\n')
+    }
+    if (tamilLines.length > 0) {
+      lyricsTranslated = tamilLines.join('\n\n')
+    }
+
+    // If only Tamil lyrics found, swap
+    if (!lyrics && lyricsTranslated) {
+      lyrics = lyricsTranslated
+      lyricsTranslated = ''
     }
   }
 
   // Cover image
   let coverImage = $('meta[property="og:image"]').attr('content') || ''
+
+  // YouTube URL
+  let youtubeUrl = ''
+  const ytEmbed = $('iframe[src*="youtube.com/embed/"]').attr('src') || ''
+  if (ytEmbed) {
+    const match = ytEmbed.match(/youtube\.com\/embed\/([^?"]+)/)
+    if (match) youtubeUrl = `https://www.youtube.com/watch?v=${match[1]}`
+  }
 
   // Build artist names from singers
   let artistNames = []
@@ -158,10 +213,9 @@ export async function scrapeTamil2Lyrics(url) {
     starring,
     producer,
     director,
-    language: 'Tamil',
     releaseYear,
     coverImage,
-    youtubeUrl: '',
+    youtubeUrl,
     spotifyUrl: '',
     appleMusicUrl: '',
     lyricsRomanized: '',

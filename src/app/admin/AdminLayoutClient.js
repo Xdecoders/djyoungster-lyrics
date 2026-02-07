@@ -19,7 +19,8 @@ import {
   FiSearch,
   FiFileText,
   FiDatabase,
-  FiDownload
+  FiDownload,
+  FiDownloadCloud
 } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 
@@ -78,6 +79,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/dashboard', label: 'Dashboard', icon: FiHome },
     { href: '/admin/songs', label: 'Songs', icon: FiMusic },
     { href: '/admin/songs/scrape', label: 'Scrape Song', icon: FiDownload },
+    { href: '/admin/bulk-import', label: 'Bulk Import', icon: FiDownloadCloud },
     { href: '/admin/artists', label: 'Artists', icon: FiUsers },
     { href: '/admin/albums', label: 'Albums', icon: FiDisc },
     { href: '/admin/genres', label: 'Genres', icon: FiTag },

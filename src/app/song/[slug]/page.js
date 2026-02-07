@@ -82,7 +82,6 @@ export async function generateMetadata({ params }) {
         song.movie?.title,
         song.album?.title,
         genres,
-        song.language,
         'lyrics',
         'song lyrics',
         'music',

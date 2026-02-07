@@ -24,7 +24,6 @@ export default function AddSong() {
     lyricsHindi: '',
     lyricsPunjabi: '',
     meaning: '',
-    language: '',
     releaseYear: new Date().getFullYear(),
     artistIds: [],
     albumId: '',

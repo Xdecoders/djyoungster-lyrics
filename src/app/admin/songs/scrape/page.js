@@ -33,7 +33,6 @@ export default function ScrapeSong() {
     lyricsHindi: '',
     lyricsPunjabi: '',
     meaning: '',
-    language: '',
     releaseYear: new Date().getFullYear(),
     artistIds: [],
     albumId: '',
@@ -285,7 +284,6 @@ export default function ScrapeSong() {
         lyrics: s.lyrics || '',
         lyricsRomanized: s.lyricsRomanized || '',
         lyricsTranslated: s.lyricsTranslated || '',
-        language: s.language || '',
         releaseYear: s.releaseYear || new Date().getFullYear(),
         coverImage: s.coverImage || '',
         youtubeUrl: s.youtubeUrl || '',
@@ -316,11 +314,6 @@ export default function ScrapeSong() {
         setSelectedMovie(data.matchedMovie)
       }
 
-      // Auto-select category based on language
-      if (data.matchedCategory) {
-        setSelectedCategories([data.matchedCategory])
-      }
-
       setScraped(true)
     } catch (error) {
       setScrapeError(error.message)
@@ -344,7 +337,7 @@ export default function ScrapeSong() {
     setImagePreview('')
     setFormData({
       title: '', slug: '', lyrics: '', lyricsRomanized: '', lyricsTranslated: '',
-      lyricsHindi: '', lyricsPunjabi: '', meaning: '', language: '',
+      lyricsHindi: '', lyricsPunjabi: '', meaning: '',
       releaseYear: new Date().getFullYear(), artistIds: [], albumId: '',
       genreIds: [], categoryIds: [], tagIds: [], movieId: '', coverImage: '',
       youtubeUrl: '', spotifyUrl: '', appleMusicUrl: '', lyricist: '',

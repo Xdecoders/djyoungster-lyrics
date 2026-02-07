@@ -63,7 +63,6 @@ export async function POST(request) {
         lyricsPunjabi: data.lyricsPunjabi || null,
         meaning: data.meaning || null,
         duration: data.duration || null,
-        language: data.language || null,
         releaseYear: data.releaseYear ? parseInt(data.releaseYear) : null,
         albumId: data.albumId || null,
         movieId: data.movieId || null,
