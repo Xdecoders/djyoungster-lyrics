@@ -18,7 +18,8 @@ import {
   FiMail,
   FiSearch,
   FiFileText,
-  FiDatabase
+  FiDatabase,
+  FiDownload
 } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 
@@ -27,6 +28,7 @@ export default function AdminLayoutClient({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [pendingReports, setPendingReports] = useState(0)
+  const [activeSubscribers, setActiveSubscribers] = useState(0)
 
   // Check if on login page
   const isLoginPage = pathname === '/admin/login'
@@ -36,9 +38,10 @@ export default function AdminLayoutClient({ children }) {
     const token = localStorage.getItem('adminToken')
     setIsLoggedIn(!!token)
 
-    // Fetch pending reports count
+    // Fetch badge counts
     if (token && !isLoginPage) {
       fetchPendingReports()
+      fetchSubscriberCount()
     }
   }, [pathname, isLoginPage])
 
@@ -54,6 +57,18 @@ export default function AdminLayoutClient({ children }) {
     }
   }
 
+  const fetchSubscriberCount = async () => {
+    try {
+      const res = await fetch('/api/admin/newsletter/subscribers?limit=1')
+      if (res.ok) {
+        const data = await res.json()
+        setActiveSubscribers(data.stats?.active || 0)
+      }
+    } catch (error) {
+      console.error('Error fetching subscriber count:', error)
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('adminToken')
     window.location.href = '/admin/login'
@@ -62,20 +77,25 @@ export default function AdminLayoutClient({ children }) {
   const navItems = [
     { href: '/admin/dashboard', label: 'Dashboard', icon: FiHome },
     { href: '/admin/songs', label: 'Songs', icon: FiMusic },
+    { href: '/admin/songs/scrape', label: 'Scrape Song', icon: FiDownload },
     { href: '/admin/artists', label: 'Artists', icon: FiUsers },
     { href: '/admin/albums', label: 'Albums', icon: FiDisc },
     { href: '/admin/genres', label: 'Genres', icon: FiTag },
     { href: '/admin/categories', label: 'Categories', icon: FiGrid },
     { href: '/admin/movies', label: 'Movies', icon: FiFilm },
-    { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail },
-    { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badge: true },
+    { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail, badgeType: 'subscriber' },
+    { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badgeType: 'reports' },
     { href: '/admin/seo-settings', label: 'SEO Settings', icon: FiSearch },
     { href: '/admin/pages', label: 'Pages', icon: FiFileText },
     { href: '/admin/cache', label: 'Cache', icon: FiDatabase },
     { href: '/admin/settings', label: 'Settings', icon: FiSettings },
   ]
 
-  const isActive = (path) => pathname.startsWith(path)
+  const isActive = (path) => {
+    // Exact match for scrape to avoid conflict with /admin/songs
+    if (path === '/admin/songs' && pathname.startsWith('/admin/songs/scrape')) return false
+    return pathname.startsWith(path)
+  }
 
   // Login page - minimal layout
   if (isLoginPage) {
@@ -122,26 +142,33 @@ export default function AdminLayoutClient({ children }) {
 
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-            {navItems.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                  isActive(item.href)
-                    ? item.badge ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-primary'
-                    : item.badge && pendingReports > 0 ? 'text-red-600 hover:bg-red-50' : 'text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                <item.icon className="w-5 h-5" />
-                <span className="font-medium">{item.label}</span>
-                {item.badge && pendingReports > 0 && (
-                  <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center">
-                    {pendingReports > 99 ? '99+' : pendingReports}
-                  </span>
-                )}
-              </Link>
-            ))}
+            {navItems.map((item) => {
+              const badgeCount = item.badgeType === 'reports' ? pendingReports : item.badgeType === 'subscriber' ? activeSubscribers : 0
+              const hasBadge = badgeCount > 0
+              const isReportsBadge = item.badgeType === 'reports' && hasBadge
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setSidebarOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                    isActive(item.href)
+                      ? isReportsBadge ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-primary'
+                      : isReportsBadge ? 'text-red-600 hover:bg-red-50' : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span className="font-medium">{item.label}</span>
+                  {hasBadge && (
+                    <span className={`ml-auto text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center ${
+                      item.badgeType === 'reports' ? 'bg-red-500' : 'bg-emerald-500'
+                    }`}>
+                      {badgeCount > 99 ? '99+' : badgeCount}
+                    </span>
+                  )}
+                </Link>
+              )
+            })}
           </nav>
 
           {/* Bottom Actions */}
