@@ -219,7 +219,7 @@ export default function Footer() {
         href="https://whatsapp.com/channel/0029Vb7A52PEAKW8b0wxfV03"
         target="_blank"
         rel="noopener noreferrer"
-        className="fixed bottom-6 right-6 z-50 p-3 bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
+        className="fixed bottom-20 sm:bottom-6 right-6 z-50 p-3 bg-[#25D366] hover:bg-[#20BD5A] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-300"
         aria-label="Join our WhatsApp Channel"
       >
         <FaWhatsapp className="w-6 h-6" />

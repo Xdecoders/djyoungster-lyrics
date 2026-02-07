@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
@@ -34,7 +34,9 @@ import {
   FiPlus,
   FiMinus,
   FiTag,
-  FiGrid
+  FiGrid,
+  FiDownload,
+  FiCamera
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
 import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube } from 'react-icons/fa'
@@ -732,7 +734,7 @@ function LyricsToggle({ lyricsMode, setLyricsMode, hasRomanized, hasTranslated, 
 }
 
 // Lyrics Display Component - All versions rendered in HTML for SEO, CSS controls visibility
-function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize }) {
+function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize, isStoryMode, selectedLines, onLineToggle }) {
   const modeLabels = {
     romanized: { icon: FiType, text: 'Showing Romanized/Transliterated lyrics for easier reading' },
     translated: { icon: MdTranslate, text: 'Showing English Translation of the lyrics' },
@@ -776,15 +778,305 @@ function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize }) {
             <h3 className={isActive && version.id !== 'original' ? 'sr-only' : version.id === 'original' ? 'sr-only' : 'text-lg font-semibold text-slate-700 dark:text-slate-300 mb-3'}>
               {version.label}
             </h3>
-            <p
-              className="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200 leading-relaxed"
-              style={{ fontSize: isActive ? `${fontSize}px` : '16px', lineHeight: '1.8' }}
-            >
-              {version.content}
-            </p>
+            {isActive && isStoryMode ? (
+              <div style={{ fontSize: `${fontSize}px`, lineHeight: '1.8' }}>
+                {version.content.split('\n').map((line, idx) => {
+                  const trimmed = line.trim()
+                  if (!trimmed) return <div key={idx} className="h-4" />
+                  const isSelected = selectedLines?.some(l => l.index === idx)
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => onLineToggle?.(idx, trimmed)}
+                      className={`cursor-pointer px-3 py-1 rounded-lg transition-all select-none ${
+                        isSelected
+                          ? 'border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-slate-800 dark:text-white'
+                          : 'border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200'
+                      }`}
+                    >
+                      {trimmed}
+                    </div>
+                  )
+                })}
+              </div>
+            ) : (
+              <p
+                className="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200 leading-relaxed"
+                style={{ fontSize: isActive ? `${fontSize}px` : '16px', lineHeight: '1.8' }}
+              >
+                {version.content}
+              </p>
+            )}
           </section>
         )
       })}
+    </div>
+  )
+}
+
+// --- Story Image Generation Helpers ---
+
+async function ensureGoogleFont(fontFamily) {
+  const id = 'google-font-' + fontFamily.replace(/\s+/g, '-').toLowerCase()
+  if (!document.getElementById(id)) {
+    const link = document.createElement('link')
+    link.id = id
+    link.rel = 'stylesheet'
+    link.href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontFamily)}:ital,wght@0,400;0,700;1,400;1,700&display=swap`
+    document.head.appendChild(link)
+  }
+  try {
+    await document.fonts.ready
+    // Give a little extra time for font to be usable
+    await new Promise(r => setTimeout(r, 100))
+  } catch {
+    // Font load failed, will fall back to Georgia
+  }
+}
+
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = src
+  })
+}
+
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(' ')
+  const lines = []
+  let currentLine = ''
+  for (const word of words) {
+    const testLine = currentLine ? currentLine + ' ' + word : word
+    const metrics = ctx.measureText(testLine)
+    if (metrics.width > maxWidth && currentLine) {
+      lines.push(currentLine)
+      currentLine = word
+    } else {
+      currentLine = testLine
+    }
+  }
+  if (currentLine) lines.push(currentLine)
+  return lines
+}
+
+async function generateStoryImage({ selectedLines, songTitle, artistNames, coverImageUrl }) {
+  const W = 1080
+  const H = 1920
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+
+  // Background: try blurred cover image, fallback to gradient
+  let hasCoverBg = false
+  if (coverImageUrl) {
+    try {
+      const img = await loadImage(coverImageUrl)
+      // Draw scaled & blurred cover
+      ctx.filter = 'blur(40px) brightness(0.4)'
+      const scale = Math.max(W / img.width, H / img.height) * 1.2
+      const sw = img.width * scale
+      const sh = img.height * scale
+      ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh)
+      ctx.filter = 'none'
+      hasCoverBg = true
+    } catch {
+      // CORS or load failure — use gradient fallback
+    }
+  }
+
+  if (!hasCoverBg) {
+    const grad = ctx.createLinearGradient(0, 0, W, H)
+    grad.addColorStop(0, '#0f172a')
+    grad.addColorStop(0.5, '#1e293b')
+    grad.addColorStop(1, '#0f172a')
+    ctx.fillStyle = grad
+    ctx.fillRect(0, 0, W, H)
+  }
+
+  // Dark overlay gradient for text readability
+  const overlay = ctx.createLinearGradient(0, 0, 0, H)
+  overlay.addColorStop(0, 'rgba(0,0,0,0.3)')
+  overlay.addColorStop(0.5, 'rgba(0,0,0,0.5)')
+  overlay.addColorStop(1, 'rgba(0,0,0,0.4)')
+  ctx.fillStyle = overlay
+  ctx.fillRect(0, 0, W, H)
+
+  const green = '#1DB954'
+  const fontLyrics = "'Playfair Display', Georgia, serif"
+  const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
+  // Song title & artist — above the opening quote
+  ctx.textAlign = 'center'
+  ctx.font = `bold 34px ${fontSystem}`
+  ctx.fillStyle = '#ffffff'
+  ctx.fillText(songTitle, W / 2, 395)
+  ctx.font = `28px ${fontSystem}`
+  ctx.fillStyle = 'rgba(255,255,255,0.7)'
+  ctx.fillText('by ' + artistNames, W / 2, 438)
+
+  // Opening quote mark
+  ctx.fillStyle = green
+  ctx.globalAlpha = 0.15
+  ctx.font = `bold 200px ${fontSystem}`
+  ctx.fillText('\u201C', W / 2, 520)
+  ctx.globalAlpha = 1
+
+  // Lyrics lines
+  ctx.font = `italic 52px ${fontLyrics}`
+  ctx.fillStyle = '#ffffff'
+  ctx.textAlign = 'center'
+  ctx.shadowColor = 'rgba(0,0,0,0.5)'
+  ctx.shadowBlur = 10
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 4
+
+  const maxTextWidth = W - 160
+  const allWrappedLines = []
+  for (const line of selectedLines) {
+    const wrapped = wrapText(ctx, line, maxTextWidth)
+    allWrappedLines.push(...wrapped)
+  }
+
+  const lineHeight = 76
+  const totalLyricsHeight = allWrappedLines.length * lineHeight
+  const lyricsStartY = (H / 2) - (totalLyricsHeight / 2) + 40
+
+  allWrappedLines.forEach((line, i) => {
+    ctx.fillText(line, W / 2, lyricsStartY + i * lineHeight)
+  })
+
+  // Reset shadow
+  ctx.shadowColor = 'transparent'
+  ctx.shadowBlur = 0
+  ctx.shadowOffsetX = 0
+  ctx.shadowOffsetY = 0
+
+  // Closing quote mark
+  ctx.fillStyle = green
+  ctx.globalAlpha = 0.15
+  ctx.font = `bold 200px ${fontSystem}`
+  ctx.fillText('\u201D', W / 2, lyricsStartY + totalLyricsHeight + 100)
+  ctx.globalAlpha = 1
+
+  // Divider line
+  const dividerY = lyricsStartY + totalLyricsHeight + 160
+  ctx.strokeStyle = green
+  ctx.lineWidth = 2
+  ctx.globalAlpha = 0.5
+  ctx.beginPath()
+  ctx.moveTo(W / 2 - 60, dividerY)
+  ctx.lineTo(W / 2 + 60, dividerY)
+  ctx.stroke()
+  ctx.globalAlpha = 1
+
+  // Watermark
+  ctx.font = `bold 34px ${fontSystem}`
+  ctx.fillStyle = green
+  ctx.textAlign = 'center'
+  ctx.fillText('DJYoungster', W / 2, dividerY + 55)
+  ctx.font = `28px ${fontSystem}`
+  ctx.fillStyle = 'rgba(255,255,255,0.5)'
+  ctx.fillText('Created at djyoungster.com', W / 2, dividerY + 100)
+
+
+  return new Promise((resolve) => {
+    canvas.toBlob((blob) => resolve(blob), 'image/png')
+  })
+}
+
+// Story Preview Modal Component
+function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGenerating, songTitle }) {
+  const [blobUrl, setBlobUrl] = useState(null)
+
+  useEffect(() => {
+    if (storyImageBlob) {
+      const url = URL.createObjectURL(storyImageBlob)
+      setBlobUrl(url)
+      return () => URL.revokeObjectURL(url)
+    }
+    setBlobUrl(null)
+  }, [storyImageBlob])
+
+  if (!isOpen) return null
+
+  const handleDownload = () => {
+    if (!blobUrl) return
+    const a = document.createElement('a')
+    a.href = blobUrl
+    a.download = `${songTitle?.replace(/[^a-zA-Z0-9]/g, '-') || 'story'}-lyrics.png`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+  }
+
+  const handleShare = async () => {
+    if (!storyImageBlob) return
+    const file = new File([storyImageBlob], `${songTitle || 'story'}-lyrics.png`, { type: 'image/png' })
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: `${songTitle} - Lyrics`,
+          text: `Check out these lyrics from "${songTitle}" on DJYoungster!`
+        })
+      } catch (err) {
+        if (err.name !== 'AbortError') handleDownload()
+      }
+    } else {
+      handleDownload()
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 animate-slideUp max-h-[90vh] overflow-y-auto">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition z-10"
+        >
+          <FiX className="w-5 h-5" />
+        </button>
+
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+          <FiCamera className="w-5 h-5 text-purple-500" />
+          Story Preview
+        </h3>
+
+        {isGenerating ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="w-12 h-12 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin mb-4" />
+            <p className="text-slate-500 dark:text-slate-400 text-sm">Generating your story image...</p>
+          </div>
+        ) : blobUrl ? (
+          <>
+            <div className="rounded-xl overflow-hidden mb-4 shadow-lg bg-slate-900">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={blobUrl} alt="Story preview" className="w-full h-auto" />
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={handleDownload}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition"
+              >
+                <FiDownload className="w-4 h-4" />
+                Download
+              </button>
+              <button
+                onClick={handleShare}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-teal-700 transition"
+              >
+                <FiShare2 className="w-4 h-4" />
+                Share
+              </button>
+            </div>
+          </>
+        ) : null}
+      </div>
     </div>
   )
 }
@@ -803,7 +1095,55 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const [showReportModal, setShowReportModal] = useState(false)
   const [lyricsMode, setLyricsMode] = useState('original')
   const [lyricsFontSize, setLyricsFontSize] = useState(18)
+  const [isStoryMode, setIsStoryMode] = useState(false)
+  const [selectedLines, setSelectedLines] = useState([])
+  const [showStoryPreview, setShowStoryPreview] = useState(false)
+  const [storyImageBlob, setStoryImageBlob] = useState(null)
+  const [isGeneratingStory, setIsGeneratingStory] = useState(false)
   const lyricsRef = useRef(null)
+
+  // Reset selected lines when lyrics mode changes during story mode
+  useEffect(() => {
+    if (isStoryMode) {
+      setSelectedLines([])
+    }
+  }, [lyricsMode])
+
+  const handleLineToggle = useCallback((index, text) => {
+    setSelectedLines(prev => {
+      const exists = prev.find(l => l.index === index)
+      if (exists) {
+        return prev.filter(l => l.index !== index)
+      }
+      if (prev.length >= 4) return prev
+      return [...prev, { index, text }].sort((a, b) => a.index - b.index)
+    })
+  }, [])
+
+  const handleCreateStory = useCallback(async () => {
+    if (selectedLines.length < 2) return
+    setShowStoryPreview(true)
+    setIsGeneratingStory(true)
+    try {
+      await ensureGoogleFont('Playfair Display')
+      const blob = await generateStoryImage({
+        selectedLines: selectedLines.map(l => l.text),
+        songTitle: initialSong.title,
+        artistNames: initialSong.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist',
+        coverImageUrl: initialSong.coverImage || null
+      })
+      setStoryImageBlob(blob)
+    } catch (err) {
+      console.error('Story generation error:', err)
+    } finally {
+      setIsGeneratingStory(false)
+    }
+  }, [selectedLines, initialSong])
+
+  const exitStoryMode = useCallback(() => {
+    setIsStoryMode(false)
+    setSelectedLines([])
+  }, [])
 
   const copyLyrics = () => {
     let textToCopy = song.lyrics
@@ -1006,6 +1346,17 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   <FontSizeControl fontSize={lyricsFontSize} setFontSize={setLyricsFontSize} />
                 </div>
 
+                {!isStoryMode && (
+                  <button
+                    onClick={() => { setIsStoryMode(true); setSelectedLines([]) }}
+                    className="flex items-center gap-2 px-4 py-2 mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition"
+                  >
+                    <FiCamera className="w-4 h-4" />
+                    <span className="hidden sm:inline">Create Story</span>
+                    <span className="sm:hidden">IG Story</span>
+                  </button>
+                )}
+
                 <LyricsToggle
                   lyricsMode={lyricsMode}
                   setLyricsMode={setLyricsMode}
@@ -1015,12 +1366,27 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   hasPunjabi={!!song.lyricsPunjabi}
                 />
 
-                <LyricsDisplay
-                  song={song}
-                  lyricsMode={lyricsMode}
-                  lyricsRef={lyricsRef}
-                  fontSize={lyricsFontSize}
-                />
+                {/* Story Mode Banner */}
+                {isStoryMode && (
+                  <div className="mb-4 px-4 py-3 bg-gradient-to-r from-purple-600/10 to-pink-600/10 dark:from-purple-600/20 dark:to-pink-600/20 rounded-xl border border-purple-200 dark:border-purple-800">
+                    <p className="text-sm text-purple-700 dark:text-purple-300 font-medium flex items-center gap-2">
+                      <FiCamera className="w-4 h-4 flex-shrink-0" />
+                      Tap 2-4 lines below to create a shareable story image
+                    </p>
+                  </div>
+                )}
+
+                <div className={isStoryMode ? 'pb-24' : ''}>
+                  <LyricsDisplay
+                    song={song}
+                    lyricsMode={lyricsMode}
+                    lyricsRef={lyricsRef}
+                    fontSize={lyricsFontSize}
+                    isStoryMode={isStoryMode}
+                    selectedLines={selectedLines}
+                    onLineToggle={handleLineToggle}
+                  />
+                </div>
               </section>
 
               {/* WhatsApp Channel Banner */}
@@ -1230,6 +1596,44 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         songTitle={song.title}
         songId={song.id}
       />
+      <StoryPreviewModal
+        isOpen={showStoryPreview}
+        onClose={() => { setShowStoryPreview(false); setStoryImageBlob(null) }}
+        storyImageBlob={storyImageBlob}
+        isGenerating={isGeneratingStory}
+        songTitle={song.title}
+      />
+
+      {/* Story Mode Floating Bottom Bar */}
+      {isStoryMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 shadow-lg px-4 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+              {selectedLines.length} / 4 lines selected
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={exitStoryMode}
+                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateStory}
+                disabled={selectedLines.length < 2}
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition flex items-center gap-2 ${
+                  selectedLines.length >= 2
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700'
+                    : 'bg-slate-200 dark:bg-slate-600 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                }`}
+              >
+                <FiCamera className="w-4 h-4" />
+                Preview Story
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
