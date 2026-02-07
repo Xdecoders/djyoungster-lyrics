@@ -926,7 +926,7 @@ async function generateStoryImage({ selectedLines, songTitle, artistNames, cover
   ctx.globalAlpha = 1
 
   // Lyrics lines
-  ctx.font = `italic 52px ${fontLyrics}`
+  ctx.font = `normal 52px ${fontLyrics}`
   ctx.fillStyle = '#ffffff'
   ctx.textAlign = 'center'
   ctx.shadowColor = 'rgba(0,0,0,0.5)'
