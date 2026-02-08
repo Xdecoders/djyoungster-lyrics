@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/prisma'
-import HomePageClient from './HomePageClient'
+import HomeContent from './HomeContent'
 import AboutSection from './AboutSection'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema, generateAggregateRatingSchema } from '@/lib/schema'
@@ -195,11 +195,12 @@ export default async function Home() {
   const faqSchema = generateFAQSchema(homepageFAQs)
   const ratingSchema = generateAggregateRatingSchema()
 
-  // Fetch data on server
+  // Fetch data on server - Pure SSR
   const data = await getHomepageData()
 
   return (
     <>
+      {/* Schema Markup - Server Rendered */}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
@@ -216,7 +217,11 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ratingSchema) }}
       />
-      <HomePageClient initialData={JSON.parse(JSON.stringify(data))} />
+
+      {/* Main Content - Server Rendered */}
+      <HomeContent data={data} siteSettings={data.siteSettings} />
+
+      {/* About & FAQs - Server Rendered */}
       <AboutSection faqs={homepageFAQs} />
     </>
   )
