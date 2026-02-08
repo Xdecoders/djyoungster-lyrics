@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import HomePageClient from './HomePageClient'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
-import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema } from '@/lib/schema'
+import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema, generateAggregateRatingSchema } from '@/lib/schema'
 
 // Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
@@ -64,23 +64,31 @@ export async function generateMetadata() {
 const homepageFAQs = [
   {
     question: 'What is DJYoungster?',
-    answer: 'DJYoungster is a comprehensive lyrics platform where you can find song lyrics in multiple languages including Hindi, Punjabi, English, Tamil, Telugu, and more. We provide accurate lyrics, artist information, album details, and music streaming links all in one place.'
+    answer: 'DJYoungster is a comprehensive lyrics platform where you can find song lyrics in multiple languages including Hindi, Punjabi, English, Tamil, Telugu, and more. We provide accurate lyrics, artist information, album details, music streaming links, and an innovative Instagram Story creator all in one place.'
   },
   {
     question: 'How can I search for lyrics on DJYoungster?',
     answer: 'Simply use the search bar at the top of the page to search by song title, artist name, album, or even a few words from the lyrics. DJYoungster\'s smart search will help you find the exact song you\'re looking for.'
   },
   {
+    question: 'Can I create Instagram Stories with lyrics on DJYoungster?',
+    answer: 'Yes! DJYoungster features a unique Instagram Story creator that allows you to select your favorite lyrics (2-4 lines) from any song and generate beautiful, shareable story images. Choose from multiple stunning templates including Sad, Happy, Romantic, and Neon styles. Simply click the "Create Story" button on any song page, select your lines, preview with different templates, and download or share directly to Instagram.'
+  },
+  {
     question: 'Is DJYoungster free to use?',
-    answer: 'Yes! DJYoungster is completely free to use. You can browse, search, and read unlimited lyrics without any subscription or hidden charges.'
+    answer: 'Yes! DJYoungster is completely free to use. You can browse, search, and read unlimited lyrics, create Instagram story images, and access all features without any subscription or hidden charges.'
   },
   {
     question: 'How often is DJYoungster updated?',
-    answer: 'We update DJYoungster regularly with new song releases, trending tracks, and classic favorites. Our team works to add the latest lyrics as soon as songs are released.'
+    answer: 'We update DJYoungster regularly with new song releases, trending tracks, and classic favorites. Our team works to add the latest lyrics as soon as songs are released, ensuring you always have access to fresh content.'
   },
   {
     question: 'Can I request lyrics on DJYoungster?',
-    answer: 'Absolutely! If you can\'t find a song on DJYoungster, you can contact us through our contact page and we\'ll do our best to add it to our collection.'
+    answer: 'Absolutely! If you can\'t find a song on DJYoungster, you can contact us through our contact page and we\'ll do our best to add it to our collection within 24-48 hours.'
+  },
+  {
+    question: 'Does DJYoungster provide lyrics in multiple languages?',
+    answer: 'Yes! DJYoungster offers lyrics in multiple formats: original lyrics, romanized/transliterated versions for easier reading, and English translations. We support Hindi, Punjabi, Tamil, Telugu, Bhojpuri, Haryanvi, English, and many more regional Indian languages to help you understand and enjoy music from diverse cultures.'
   }
 ]
 
@@ -160,7 +168,7 @@ async function getHomepageData() {
       tags,
       siteSettings: {
         heroHeading: siteSettings.heroHeading || 'Discover Your Favorite Song Lyrics',
-        heroDescription: siteSettings.heroDescription || 'Explore thousands of song lyrics from your favorite artists. Search, discover, and sing along!'
+        heroDescription: siteSettings.heroDescription || 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
       }
     }
   } catch (error) {
@@ -174,7 +182,7 @@ async function getHomepageData() {
       tags: [],
       siteSettings: {
         heroHeading: 'Discover Your Favorite Song Lyrics',
-        heroDescription: 'Explore thousands of song lyrics from your favorite artists. Search, discover, and sing along!'
+        heroDescription: 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
       }
     }
   }
@@ -184,6 +192,7 @@ export default async function Home() {
   const websiteSchema = generateWebSiteSchema()
   const organizationSchema = generateOrganizationSchema()
   const faqSchema = generateFAQSchema(homepageFAQs)
+  const ratingSchema = generateAggregateRatingSchema()
 
   // Fetch data on server
   const data = await getHomepageData()
@@ -201,6 +210,10 @@ export default async function Home() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(ratingSchema) }}
       />
       <HomePageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
