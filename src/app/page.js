@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import HomePageClient from './HomePageClient'
+import AboutSection from './AboutSection'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema, generateAggregateRatingSchema } from '@/lib/schema'
 
@@ -216,6 +217,7 @@ export default async function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(ratingSchema) }}
       />
       <HomePageClient initialData={JSON.parse(JSON.stringify(data))} />
+      <AboutSection faqs={homepageFAQs} />
     </>
   )
 }

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
 import { useRouter } from 'next/navigation'
-import { FiMusic, FiSearch, FiChevronLeft, FiChevronRight, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiArrowRight, FiFilm, FiX, FiTag, FiInfo, FiHelpCircle, FiChevronDown, FiCheckCircle, FiUsers, FiGlobe, FiCamera } from 'react-icons/fi'
+import { FiMusic, FiSearch, FiChevronLeft, FiChevronRight, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiArrowRight, FiFilm, FiX, FiTag, FiCheckCircle, FiUsers, FiGlobe, FiCamera } from 'react-icons/fi'
 
 // Debounce hook
 function useDebounce(value, delay) {
@@ -644,28 +644,6 @@ function CategorySongGrid({ category }) {
   )
 }
 
-// FAQ Accordion Item Component
-function FAQItem({ question, answer }) {
-  const [isOpen, setIsOpen] = useState(false)
-
-  return (
-    <div className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-4 text-left bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition"
-      >
-        <span className="font-medium text-slate-800 dark:text-white text-sm sm:text-base pr-4">{question}</span>
-        <FiChevronDown className={`w-5 h-5 text-slate-500 dark:text-slate-400 flex-shrink-0 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
-      </button>
-      {isOpen && (
-        <div className="p-4 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700">
-          <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">{answer}</p>
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function HomePageClient({ initialData }) {
   // Use initial data from server - no loading state needed
   const data = initialData
@@ -787,72 +765,6 @@ export default function HomePageClient({ initialData }) {
             </div>
           </section>
         )}
-
-
-        {/* About & FAQs Section - Two Columns */}
-        <section className="mb-16 mt-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* About DJYoungster */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-700">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="p-2.5 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-                  <FiInfo className="w-5 h-5 text-primary" />
-                </div>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">About DJYoungster</h2>
-              </div>
-              <div className="prose prose-slate dark:prose-invert max-w-none">
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                  Welcome to <strong>DJYoungster</strong>, your ultimate destination for discovering and exploring song lyrics from around the world. Established as a trusted source for music enthusiasts, we bring together a vast collection of lyrics spanning multiple languages including Hindi, Punjabi, English, Tamil, Telugu, Bhojpuri, Haryanvi, and many more regional languages.
-                </p>
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                  Whether you're looking for the latest Bollywood hits, trending Punjabi tracks, classic English songs, or regional favorites, DJYoungster has you covered. Our platform is designed to help music lovers find accurate lyrics quickly, understand song meanings, discover new artists, and connect with the stories behind every song.
-                </p>
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed mb-4">
-                  <strong className="text-slate-700 dark:text-slate-200">Create Instagram Stories:</strong> Express yourself with our innovative Instagram Story creator! Select your favorite lyrics (2-4 lines) from any song and transform them into stunning, shareable story images. Choose from beautiful templates including Sad, Happy, Romantic, and Neon themes – perfect for sharing your mood, expressing emotions, or connecting with friends through music on Instagram, WhatsApp, and other social platforms.
-                </p>
-                <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                  DJYoungster is more than just a lyrics website – it's a trusted community for music enthusiasts. We continuously update our database with verified lyrics from new releases, provide romanized versions for non-native speakers, offer English translations for better understanding, and deliver creative tools for social sharing. Trusted by over 15,000+ users monthly, join the DJYoungster family and discover why we're the go-to platform for accurate lyrics and creative expression.
-                </p>
-              </div>
-            </div>
-
-            {/* FAQs */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-100 dark:border-slate-700">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="p-2.5 rounded-xl bg-blue-100 dark:bg-blue-900/30">
-                  <FiHelpCircle className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Frequently Asked Questions</h2>
-              </div>
-              <div className="space-y-3">
-                <FAQItem
-                  question="What is DJYoungster?"
-                  answer="DJYoungster is a comprehensive lyrics platform where you can find song lyrics in multiple languages including Hindi, Punjabi, English, Tamil, Telugu, and more. We provide accurate lyrics, artist information, album details, music streaming links, and an innovative Instagram Story creator all in one place."
-                />
-                <FAQItem
-                  question="How can I search for lyrics on DJYoungster?"
-                  answer="Simply use the search bar at the top of the page to search by song title, artist name, album, or even a few words from the lyrics. DJYoungster's smart search will help you find the exact song you're looking for."
-                />
-                <FAQItem
-                  question="Can I create Instagram Stories with lyrics on DJYoungster?"
-                  answer="Yes! DJYoungster features a unique Instagram Story creator that allows you to select your favorite lyrics (2-4 lines) from any song and generate beautiful, shareable story images. Choose from multiple stunning templates including Sad, Happy, Romantic, and Neon styles. Simply click the 'Create Story' button on any song page, select your lines, preview with different templates, and download or share directly to Instagram."
-                />
-                <FAQItem
-                  question="Is DJYoungster free to use?"
-                  answer="Yes! DJYoungster is completely free to use. You can browse, search, and read unlimited lyrics, create Instagram story images, and access all features without any subscription or hidden charges."
-                />
-                <FAQItem
-                  question="How often is DJYoungster updated?"
-                  answer="We update DJYoungster regularly with new song releases, trending tracks, and classic favorites. Our team works to add the latest lyrics as soon as songs are released, ensuring you always have access to fresh content."
-                />
-                <FAQItem
-                  question="Does DJYoungster provide lyrics in multiple languages?"
-                  answer="Yes! DJYoungster offers lyrics in multiple formats: original lyrics, romanized/transliterated versions for easier reading, and English translations. We support Hindi, Punjabi, Tamil, Telugu, Bhojpuri, Haryanvi, English, and many more regional Indian languages to help you understand and enjoy music from diverse cultures."
-                />
-              </div>
-            </div>
-          </div>
-        </section>
 
       </main>
     </div>
