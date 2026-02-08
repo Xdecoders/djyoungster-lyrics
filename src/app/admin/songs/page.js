@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiMusic, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiCheck, FiX, FiEye, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { FiMusic, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiCheck, FiX, FiEye, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown } from 'react-icons/fi'
 
 const ITEMS_PER_PAGE = 10
 
@@ -14,6 +14,8 @@ export default function SongsList() {
   const [searchTerm, setSearchTerm] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [sortBy, setSortBy] = useState('createdAt') // title, views, status, createdAt
+  const [sortOrder, setSortOrder] = useState('desc') // asc or desc
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -50,15 +52,69 @@ export default function SongsList() {
     }
   }
 
+  // Sort handler
+  const handleSort = (column) => {
+    if (sortBy === column) {
+      // Toggle sort order if same column
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      // New column, default to descending
+      setSortBy(column)
+      setSortOrder('desc')
+    }
+    setCurrentPage(1) // Reset to first page
+  }
+
+  // Filter songs by search term
   const filteredSongs = songs.filter(song =>
     song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     song.artists?.some(a => a.artist.name.toLowerCase().includes(searchTerm.toLowerCase()))
   )
 
+  // Sort filtered songs
+  const sortedSongs = [...filteredSongs].sort((a, b) => {
+    let aValue, bValue
+
+    switch (sortBy) {
+      case 'title':
+        aValue = a.title.toLowerCase()
+        bValue = b.title.toLowerCase()
+        break
+      case 'views':
+        aValue = a.views || 0
+        bValue = b.views || 0
+        break
+      case 'status':
+        aValue = a.status
+        bValue = b.status
+        break
+      case 'createdAt':
+        aValue = new Date(a.createdAt).getTime()
+        bValue = new Date(b.createdAt).getTime()
+        break
+      default:
+        return 0
+    }
+
+    if (aValue < bValue) return sortOrder === 'asc' ? -1 : 1
+    if (aValue > bValue) return sortOrder === 'asc' ? 1 : -1
+    return 0
+  })
+
   // Pagination logic
-  const totalPages = Math.ceil(filteredSongs.length / ITEMS_PER_PAGE)
+  const totalPages = Math.ceil(sortedSongs.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const paginatedSongs = filteredSongs.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  const paginatedSongs = sortedSongs.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+
+  // Sort indicator component
+  const SortIcon = ({ column }) => {
+    if (sortBy !== column) return null
+    return sortOrder === 'asc' ? (
+      <FiArrowUp className="w-3.5 h-3.5 inline-block ml-1" />
+    ) : (
+      <FiArrowDown className="w-3.5 h-3.5 inline-block ml-1" />
+    )
+  }
 
   // Reset to page 1 when search changes
   useEffect(() => {
@@ -130,12 +186,27 @@ export default function SongsList() {
               <table className="w-full">
                 <thead className="bg-slate-50 border-b border-slate-200">
                   <tr>
-                    <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Song</th>
+                    <th
+                      onClick={() => handleSort('title')}
+                      className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100 transition select-none"
+                    >
+                      Song <SortIcon column="title" />
+                    </th>
                     <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Artists</th>
                     <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden lg:table-cell">Album</th>
-                    <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Status</th>
+                    <th
+                      onClick={() => handleSort('status')}
+                      className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell cursor-pointer hover:bg-slate-100 transition select-none"
+                    >
+                      Status <SortIcon column="status" />
+                    </th>
                     <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden sm:table-cell">Verified</th>
-                    <th className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell">Views</th>
+                    <th
+                      onClick={() => handleSort('views')}
+                      className="text-left px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider hidden md:table-cell cursor-pointer hover:bg-slate-100 transition select-none"
+                    >
+                      Views <SortIcon column="views" />
+                    </th>
                     <th className="text-right px-4 sm:px-6 py-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
@@ -226,7 +297,7 @@ export default function SongsList() {
         {/* Pagination */}
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-slate-500">
-            Showing {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredSongs.length)} of {filteredSongs.length} songs
+            Showing {startIndex + 1}-{Math.min(startIndex + ITEMS_PER_PAGE, sortedSongs.length)} of {sortedSongs.length} songs
           </div>
           {totalPages > 1 && (
             <div className="flex items-center gap-2">
