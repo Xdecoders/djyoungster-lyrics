@@ -117,7 +117,7 @@ async function getHomepageData() {
     }
 
     // Run all queries in parallel
-    const [latestSongs, trendingSongs, categories, artists, albums, tags, siteSettings] = await Promise.all([
+    const [latestSongs, trendingSongs, categories, artists, tags, siteSettings] = await Promise.all([
       prisma.song.findMany({
         where: { status: 'published' },
         orderBy: { createdAt: 'desc' },
@@ -144,14 +144,6 @@ async function getHomepageData() {
         include: { _count: { select: { songs: true } } },
         orderBy: { songs: { _count: 'desc' } }
       }),
-      prisma.album.findMany({
-        take: 10,
-        orderBy: { createdAt: 'desc' },
-        include: {
-          artist: true,
-          _count: { select: { songs: true } }
-        }
-      }),
       prisma.tag.findMany({
         take: 14,
         include: { _count: { select: { songs: true } } },
@@ -165,7 +157,6 @@ async function getHomepageData() {
       trendingSongs,
       categories,
       artists,
-      albums,
       tags,
       siteSettings: {
         heroHeading: siteSettings.heroHeading || 'Discover Your Favorite Song Lyrics',
@@ -179,7 +170,6 @@ async function getHomepageData() {
       trendingSongs: [],
       categories: [],
       artists: [],
-      albums: [],
       tags: [],
       siteSettings: {
         heroHeading: 'Discover Your Favorite Song Lyrics',

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
-import { FiMusic, FiPlay, FiUser, FiDisc, FiTrendingUp, FiClock, FiTag, FiCheckCircle, FiUsers, FiGlobe, FiCamera } from 'react-icons/fi'
+import { FiMusic, FiPlay, FiUser, FiTrendingUp, FiClock, FiTag, FiCheckCircle, FiUsers, FiGlobe, FiCamera } from 'react-icons/fi'
 import SearchWithAutocomplete from './SearchClient'
 
 // Server-Side Rendered Song Card
@@ -57,31 +57,6 @@ function ArtistCard({ artist, index }) {
       </div>
       <h3 className="font-medium text-slate-800 dark:text-white text-sm truncate">{artist.name}</h3>
       <p className="text-xs text-slate-500 dark:text-slate-400">{artist._count?.songs || 0} songs</p>
-    </Link>
-  )
-}
-
-// Server-Side Rendered Album Card
-function AlbumCard({ album, index }) {
-  const pastelColors = [
-    'from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40',
-    'from-teal-100 to-emerald-100 dark:from-teal-900/40 dark:to-emerald-900/40',
-    'from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40',
-    'from-sky-100 to-blue-100 dark:from-sky-900/40 dark:to-blue-900/40',
-    'from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40',
-  ]
-
-  return (
-    <Link href={`/album/${album.slug}`} className="flex-shrink-0 w-44 group">
-      <div className={`aspect-square rounded-2xl bg-gradient-to-br ${pastelColors[index % pastelColors.length]} flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all duration-300 relative`}>
-        {album.coverImage ? (
-          <Image src={album.coverImage} alt={album.title} fill sizes="176px" className="object-cover" />
-        ) : (
-          <FiDisc className="w-12 h-12 text-slate-400" />
-        )}
-      </div>
-      <h3 className="font-medium text-slate-800 dark:text-white truncate text-sm">{album.title}</h3>
-      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{album.artist?.name}</p>
     </Link>
   )
 }
@@ -196,20 +171,6 @@ export default function HomeContent({ data, siteSettings }) {
           >
             {data.artists.map((artist, index) => (
               <ArtistCard key={artist.id} artist={artist} index={index} />
-            ))}
-          </ScrollableSection>
-        )}
-
-        {/* Albums - SSR */}
-        {data?.albums?.length > 0 && (
-          <ScrollableSection
-            title="Latest Albums"
-            icon={FiDisc}
-            iconBg="bg-purple-100"
-            viewAllLink="/albums"
-          >
-            {data.albums.map((album, index) => (
-              <AlbumCard key={album.id} album={album} index={index} />
             ))}
           </ScrollableSection>
         )}
