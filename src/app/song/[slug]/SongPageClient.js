@@ -1687,6 +1687,17 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                         {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
                         {copied ? 'Copied!' : 'Copy Lyrics'}
                       </button>
+                      {commentsCount > 0 && (
+                        <button
+                          onClick={() => {
+                            commentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          }}
+                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition"
+                        >
+                          <FiMessageSquare className="w-4 h-4" />
+                          Comments ({commentsCount})
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1762,27 +1773,15 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 </div>
               </section>
 
-              {/* Comments/Report Button - Shows after lyrics */}
+              {/* Report Button - Always visible after lyrics */}
               <div className="mb-6">
-                {commentsCount > 0 ? (
-                  <button
-                    onClick={() => {
-                      commentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                    }}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition shadow-md hover:shadow-lg"
-                  >
-                    <FiMessageSquare className="w-5 h-5" />
-                    <span>View {commentsCount} Comment{commentsCount !== 1 ? 's' : ''}</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setShowReportModal(true)}
-                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
-                  >
-                    <FiAlertCircle className="w-5 h-5" />
-                    <span>Report an Error</span>
-                  </button>
-                )}
+                <button
+                  onClick={() => setShowReportModal(true)}
+                  className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                >
+                  <FiAlertCircle className="w-5 h-5" />
+                  <span>Report an Error</span>
+                </button>
               </div>
 
               {/* WhatsApp Channel Banner */}
