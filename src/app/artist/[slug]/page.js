@@ -213,8 +213,26 @@ async function getArtistData(slug, searchParams) {
       take: 5
     })
 
+    // Get aggregate rating across all songs by this artist
+    const allSongIds = await prisma.song.findMany({
+      where: { artists: { some: { artistId: artist.id } }, status: 'published' },
+      select: { id: true }
+    })
+    const songIds = allSongIds.map(s => s.id)
+    let averageRating = 0
+    let totalRatings = 0
+    if (songIds.length > 0) {
+      const ratingAgg = await prisma.songRating.aggregate({
+        where: { songId: { in: songIds } },
+        _avg: { rating: true },
+        _count: { rating: true }
+      })
+      averageRating = ratingAgg._avg.rating ? Math.round(ratingAgg._avg.rating * 10) / 10 : 0
+      totalRatings = ratingAgg._count.rating
+    }
+
     return {
-      artist: { ...artist, totalSongs },
+      artist: { ...artist, totalSongs, averageRating, totalRatings },
       songs,
       featuredSongs,
       genres: artistGenres,
