@@ -1211,7 +1211,7 @@ const EMOJI_MAP = {
   hundred: { icon: '\uD83D\uDCAF', label: 'Perfect' }
 }
 
-function RatingsAndReactions({ slug }) {
+function RatingsAndReactions({ slug, ratingsRef, onRatingChange }) {
   const [averageRating, setAverageRating] = useState(0)
   const [totalRatings, setTotalRatings] = useState(0)
   const [userRating, setUserRating] = useState(0)
@@ -1230,6 +1230,7 @@ function RatingsAndReactions({ slug }) {
           setAverageRating(data.averageRating)
           setTotalRatings(data.totalRatings)
           setUserRating(data.userRating)
+          onRatingChange?.(data.averageRating, data.totalRatings)
         }
       } catch (err) {
         console.error('Error fetching ratings:', err)
@@ -1265,8 +1266,10 @@ function RatingsAndReactions({ slug }) {
     const newAvg = prevRating === 0
       ? (prevAvg * prevTotal + rating) / newTotal
       : (prevAvg * prevTotal - prevRating + rating) / prevTotal
-    setAverageRating(Math.round(newAvg * 10) / 10)
+    const roundedAvg = Math.round(newAvg * 10) / 10
+    setAverageRating(roundedAvg)
     setTotalRatings(newTotal)
+    onRatingChange?.(roundedAvg, newTotal)
 
     try {
       const res = await fetch(`/api/public/songs/${slug}/rate`, {
@@ -1279,16 +1282,19 @@ function RatingsAndReactions({ slug }) {
         setAverageRating(data.averageRating)
         setTotalRatings(data.totalRatings)
         setUserRating(data.userRating)
+        onRatingChange?.(data.averageRating, data.totalRatings)
       } else {
         // Revert
         setUserRating(prevRating)
         setAverageRating(prevAvg)
         setTotalRatings(prevTotal)
+        onRatingChange?.(prevAvg, prevTotal)
       }
     } catch {
       setUserRating(prevRating)
       setAverageRating(prevAvg)
       setTotalRatings(prevTotal)
+      onRatingChange?.(prevAvg, prevTotal)
     }
   }
 
@@ -1328,7 +1334,7 @@ function RatingsAndReactions({ slug }) {
   const displayRating = hoverRating || userRating
 
   return (
-    <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
+    <section ref={ratingsRef} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
       {/* Star Rating */}
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
@@ -1434,7 +1440,10 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const [storyImageBlob, setStoryImageBlob] = useState(null)
   const [isGeneratingStory, setIsGeneratingStory] = useState(false)
   const [storyTemplate, setStoryTemplate] = useState(STORY_TEMPLATES[0])
+  const [headerAvgRating, setHeaderAvgRating] = useState(0)
+  const [headerTotalRatings, setHeaderTotalRatings] = useState(0)
   const lyricsRef = useRef(null)
+  const ratingsRef = useRef(null)
 
   // Reset selected lines when lyrics mode changes during story mode
   useEffect(() => {
@@ -1574,9 +1583,39 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
 
                   {/* Song Info */}
                   <div className="flex-1 text-center sm:text-left">
-                    <h1 itemProp="name" className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-3">
+                    <h1 itemProp="name" className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">
                       {song.title} Lyrics
                     </h1>
+
+                    {/* Star Rating Summary */}
+                    <button
+                      onClick={() => ratingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
+                      className="inline-flex items-center gap-1.5 mb-3 group cursor-pointer"
+                      title="Rate this song"
+                    >
+                      <div className="flex items-center gap-0.5">
+                        {[1, 2, 3, 4, 5].map((star) => (
+                          <svg
+                            key={star}
+                            className={`w-4 h-4 transition-colors ${
+                              star <= Math.round(headerAvgRating)
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-slate-300 dark:text-slate-600 fill-slate-300 dark:fill-slate-600'
+                            }`}
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth="1"
+                          >
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-primary transition">
+                        {headerTotalRatings > 0
+                          ? `${headerAvgRating} (${headerTotalRatings})`
+                          : 'Rate this song'}
+                      </span>
+                    </button>
 
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4">
                       {song.artists?.map(({ artist }) => (
@@ -1739,7 +1778,14 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
               </section>
 
               {/* Ratings & Reactions */}
-              <RatingsAndReactions slug={params.slug} />
+              <RatingsAndReactions
+                slug={params.slug}
+                ratingsRef={ratingsRef}
+                onRatingChange={(avg, total) => {
+                  setHeaderAvgRating(avg)
+                  setHeaderTotalRatings(total)
+                }}
+              />
 
               {/* Report Button - Always visible after lyrics */}
               <div className="mb-6">
