@@ -175,11 +175,27 @@ async function getAlbumData(slug) {
     // Calculate total views
     const totalViews = album.songs.reduce((sum, song) => sum + (song.views || 0), 0)
 
+    // Get aggregate rating across all songs in this album
+    const songIds = album.songs.map(s => s.id)
+    let averageRating = 0
+    let totalRatings = 0
+    if (songIds.length > 0) {
+      const ratingAgg = await prisma.songRating.aggregate({
+        where: { songId: { in: songIds } },
+        _avg: { rating: true },
+        _count: { rating: true }
+      })
+      averageRating = ratingAgg._avg.rating ? Math.round(ratingAgg._avg.rating * 10) / 10 : 0
+      totalRatings = ratingAgg._count.rating
+    }
+
     return {
       album: {
         ...album,
         totalSongs: album.songs.length,
-        totalViews
+        totalViews,
+        averageRating,
+        totalRatings
       },
       moreAlbums
     }
