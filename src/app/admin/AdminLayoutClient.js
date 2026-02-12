@@ -20,8 +20,7 @@ import {
   FiFileText,
   FiDatabase,
   FiDownload,
-  FiDownloadCloud,
-  FiMessageSquare
+  FiDownloadCloud
 } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 
@@ -31,7 +30,6 @@ export default function AdminLayoutClient({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [pendingReports, setPendingReports] = useState(0)
   const [activeSubscribers, setActiveSubscribers] = useState(0)
-  const [pendingComments, setPendingComments] = useState(0)
 
   // Check if on login page
   const isLoginPage = pathname === '/admin/login'
@@ -45,7 +43,6 @@ export default function AdminLayoutClient({ children }) {
     if (token && !isLoginPage) {
       fetchPendingReports()
       fetchSubscriberCount()
-      fetchPendingComments()
     }
   }, [pathname, isLoginPage])
 
@@ -73,23 +70,6 @@ export default function AdminLayoutClient({ children }) {
     }
   }
 
-  const fetchPendingComments = async () => {
-    try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('/api/admin/comments?status=pending&limit=1', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
-      if (res.ok) {
-        const data = await res.json()
-        setPendingComments(data.pendingCount || 0)
-      }
-    } catch (error) {
-      console.error('Error fetching pending comments:', error)
-    }
-  }
-
   const handleLogout = () => {
     localStorage.removeItem('adminToken')
     window.location.href = '/admin/login'
@@ -105,8 +85,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/genres', label: 'Genres', icon: FiTag },
     { href: '/admin/categories', label: 'Categories', icon: FiGrid },
     { href: '/admin/movies', label: 'Movies', icon: FiFilm },
-    { href: '/admin/comments', label: 'Comments', icon: FiMessageSquare, badgeType: 'comments' },
-    { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail, badgeType: 'subscriber' },
+{ href: '/admin/newsletter', label: 'Newsletter', icon: FiMail, badgeType: 'subscriber' },
     { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badgeType: 'reports' },
     { href: '/admin/seo-settings', label: 'SEO Settings', icon: FiSearch },
     { href: '/admin/pages', label: 'Pages', icon: FiFileText },
@@ -166,10 +145,9 @@ export default function AdminLayoutClient({ children }) {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
-              const badgeCount = item.badgeType === 'reports' ? pendingReports : item.badgeType === 'subscriber' ? activeSubscribers : item.badgeType === 'comments' ? pendingComments : 0
+              const badgeCount = item.badgeType === 'reports' ? pendingReports : item.badgeType === 'subscriber' ? activeSubscribers : 0
               const hasBadge = badgeCount > 0
               const isReportsBadge = item.badgeType === 'reports' && hasBadge
-              const isCommentsBadge = item.badgeType === 'comments' && hasBadge
               return (
                 <Link
                   key={item.href}
@@ -177,15 +155,15 @@ export default function AdminLayoutClient({ children }) {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive(item.href)
-                      ? isReportsBadge ? 'bg-red-50 text-red-600' : isCommentsBadge ? 'bg-orange-50 text-orange-600' : 'bg-emerald-50 text-primary'
-                      : isReportsBadge ? 'text-red-600 hover:bg-red-50' : isCommentsBadge ? 'text-orange-600 hover:bg-orange-50' : 'text-slate-600 hover:bg-slate-50'
+                      ? isReportsBadge ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-primary'
+                      : isReportsBadge ? 'text-red-600 hover:bg-red-50' : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
                   {hasBadge && (
                     <span className={`ml-auto text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center ${
-                      item.badgeType === 'reports' ? 'bg-red-500' : item.badgeType === 'comments' ? 'bg-orange-500' : 'bg-emerald-500'
+                      item.badgeType === 'reports' ? 'bg-red-500' : 'bg-emerald-500'
                     }`}>
                       {badgeCount > 99 ? '99+' : badgeCount}
                     </span>

@@ -109,7 +109,7 @@ export default function CategoryPageClient({ initialData }) {
 
   if (!category) {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 flex items-center justify-center">
+      <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900 flex items-center justify-center">
         <div className="text-center">
           <div className="w-20 h-20 bg-rose-100 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
             <FiGlobe className="w-10 h-10 text-rose-400" />
@@ -128,7 +128,7 @@ export default function CategoryPageClient({ initialData }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-orange-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900">
       {/* Breadcrumb */}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <ol className="flex items-center gap-2 text-sm">

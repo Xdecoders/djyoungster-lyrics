@@ -449,7 +449,7 @@ export default function ArtistPageClient({ initialData }) {
     `${artist?.name} through his song lyrics and meanings. Djyoungster provides ${artist?.name} lyrics in English Translation, Hindi and Punjabi language variations.`
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900">
       {/* Breadcrumb */}
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         <ol className="flex items-center gap-2 text-sm">

@@ -653,7 +653,7 @@ export default function HomePageClient({ initialData }) {
   }
 
   return (
-    <div className="bg-gradient-to-b from-emerald-50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800">
+    <div className="bg-[#f8fafc] dark:bg-slate-900">
       {/* Hero Section */}
       <section className="py-16 sm:py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
