@@ -36,7 +36,9 @@ import {
   FiTag,
   FiGrid,
   FiDownload,
-  FiCamera
+  FiCamera,
+  FiMessageSquare,
+  FiSend
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
 import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube } from 'react-icons/fa'
@@ -1201,6 +1203,239 @@ function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGenerating, song
   )
 }
 
+// Comments Section Component
+function CommentsSection({ songId, songTitle, onCountChange, commentsRef }) {
+  const [comments, setComments] = useState([])
+  const [total, setTotal] = useState(0)
+  const [page, setPage] = useState(1)
+  const [loading, setLoading] = useState(true)
+  const [formData, setFormData] = useState({ name: '', comment: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [error, setError] = useState('')
+
+  // Fetch comments
+  useEffect(() => {
+    const fetchComments = async () => {
+      setLoading(true)
+      try {
+        const res = await fetch(`/api/public/comments?songId=${songId}&page=${page}&limit=20`)
+        if (res.ok) {
+          const data = await res.json()
+          setComments(data.comments)
+          setTotal(data.total)
+          // Update parent component's count
+          if (onCountChange) {
+            onCountChange(data.total)
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching comments:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchComments()
+  }, [songId, page, onCountChange])
+
+  // Handle form input change
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+    setError('')
+  }
+
+  // Handle comment submission
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSubmitting(true)
+    setError('')
+
+    try {
+      const res = await fetch('/api/public/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          songId,
+          name: formData.name,
+          comment: formData.comment
+        })
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        setSubmitSuccess(true)
+        setFormData({ name: '', comment: '' })
+        setTimeout(() => setSubmitSuccess(false), 5000)
+      } else {
+        setError(data.error || 'Failed to submit comment')
+      }
+    } catch (err) {
+      console.error('Error submitting comment:', err)
+      setError('Failed to submit comment. Please try again.')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  // Format time ago
+  const timeAgo = (date) => {
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000)
+    const intervals = {
+      year: 31536000,
+      month: 2592000,
+      week: 604800,
+      day: 86400,
+      hour: 3600,
+      minute: 60
+    }
+
+    for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+      const interval = Math.floor(seconds / secondsInUnit)
+      if (interval >= 1) {
+        return `${interval} ${unit}${interval > 1 ? 's' : ''} ago`
+      }
+    }
+    return 'just now'
+  }
+
+  // Get initials from name
+  const getInitials = (name) => {
+    return name
+      .split(' ')
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2)
+  }
+
+  return (
+    <section ref={commentsRef} className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6" itemScope itemType="https://schema.org/Comment">
+      <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+        <FiMessageSquare className="w-5 h-5 text-primary" />
+        Comments {total > 0 && <span className="text-sm font-normal text-slate-500">({total})</span>}
+      </h2>
+
+      {/* Comment Form */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-100 dark:border-emerald-900/50 p-5 mb-6">
+        <h3 className="font-medium text-slate-800 dark:text-white mb-3">Leave a Comment</h3>
+
+        {submitSuccess && (
+          <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
+            <p className="text-sm text-green-700 dark:text-green-300 flex items-center gap-2">
+              <FiCheck className="w-4 h-4" />
+              Comment submitted! It will appear after admin approval.
+            </p>
+          </div>
+        )}
+
+        {error && (
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <input
+              type="text"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Your Name"
+              required
+              minLength={2}
+              maxLength={50}
+              className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div>
+            <textarea
+              name="comment"
+              value={formData.comment}
+              onChange={handleChange}
+              placeholder="Share your thoughts about this song..."
+              required
+              minLength={10}
+              maxLength={500}
+              rows={4}
+              className="w-full px-4 py-2.5 border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-primary resize-none"
+            />
+            <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+              {formData.comment.length}/500 characters
+            </p>
+          </div>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <FiSend className="w-4 h-4" />
+            {submitting ? 'Submitting...' : 'Post Comment'}
+          </button>
+        </form>
+      </div>
+
+      {/* Comments List */}
+      <div className="space-y-4">
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="inline-block w-8 h-8 border-4 border-slate-200 border-t-primary rounded-full animate-spin"></div>
+          </div>
+        ) : comments.length === 0 ? (
+          <div className="text-center py-8">
+            <FiMessageSquare className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+            <p className="text-slate-500 dark:text-slate-400">No comments yet. Be the first to share your thoughts!</p>
+          </div>
+        ) : (
+          comments.map((comment) => (
+            <div key={comment.id} className="flex gap-3 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+              {/* Avatar */}
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-emerald-600 flex items-center justify-center text-white font-semibold text-sm flex-shrink-0">
+                {getInitials(comment.name)}
+              </div>
+
+              {/* Comment Content */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-medium text-slate-800 dark:text-white">{comment.name}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">{timeAgo(comment.createdAt)}</span>
+                </div>
+                <p className="text-slate-600 dark:text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
+                  {comment.comment}
+                </p>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Pagination */}
+      {total > 20 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            Previous
+          </button>
+          <span className="px-4 py-2 text-slate-600 dark:text-slate-300">
+            Page {page} of {Math.ceil(total / 20)}
+          </span>
+          <button
+            onClick={() => setPage(p => p + 1)}
+            disabled={page >= Math.ceil(total / 20)}
+            className="px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </section>
+  )
+}
+
 export default function SongPageClient({ initialSong, initialRelatedSongs = [] }) {
   const params = useParams()
   // Use initial data from server - no loading state needed
@@ -1221,7 +1456,9 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const [storyImageBlob, setStoryImageBlob] = useState(null)
   const [isGeneratingStory, setIsGeneratingStory] = useState(false)
   const [storyTemplate, setStoryTemplate] = useState(STORY_TEMPLATES[0])
+  const [commentsCount, setCommentsCount] = useState(0)
   const lyricsRef = useRef(null)
+  const commentsRef = useRef(null)
 
   // Reset selected lines when lyrics mode changes during story mode
   useEffect(() => {
@@ -1450,13 +1687,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                         {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
                         {copied ? 'Copied!' : 'Copy Lyrics'}
                       </button>
-                      <button
-                        onClick={() => setShowReportModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
-                      >
-                        <FiAlertCircle className="w-4 h-4" />
-                        Report
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -1532,6 +1762,29 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 </div>
               </section>
 
+              {/* Comments/Report Button - Shows after lyrics */}
+              <div className="mb-6">
+                {commentsCount > 0 ? (
+                  <button
+                    onClick={() => {
+                      commentsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                    }}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-emerald-700 transition shadow-md hover:shadow-lg"
+                  >
+                    <FiMessageSquare className="w-5 h-5" />
+                    <span>View {commentsCount} Comment{commentsCount !== 1 ? 's' : ''}</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setShowReportModal(true)}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                  >
+                    <FiAlertCircle className="w-5 h-5" />
+                    <span>Report an Error</span>
+                  </button>
+                )}
+              </div>
+
               {/* WhatsApp Channel Banner */}
               <a
                 href="https://whatsapp.com/channel/0029Vb7A52PEAKW8b0wxfV03"
@@ -1570,6 +1823,14 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
 
               {/* FAQ Section */}
               <FAQSection song={song} />
+
+              {/* Comments Section */}
+              <CommentsSection
+                songId={song.id}
+                songTitle={song.title}
+                onCountChange={setCommentsCount}
+                commentsRef={commentsRef}
+              />
             </div>
 
             {/* Sidebar */}

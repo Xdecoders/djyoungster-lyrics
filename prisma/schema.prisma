@@ -53,6 +53,7 @@ model Song {
   tags       SongTag[]
   songLikes  SongLike[]
   reports    Report[]
+  comments   Comment[]
 
   @@index([slug])
   @@index([title])
@@ -322,4 +323,19 @@ model BulkImportUrl {
   updatedAt DateTime   @updatedAt
 
   @@index([importId, status])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  songId    String
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  name      String
+  comment   String   @db.Text
+  approved  Boolean  @default(false)
+  ipAddress String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([songId, approved])
+  @@index([approved])
 }
