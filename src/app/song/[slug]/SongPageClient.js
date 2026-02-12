@@ -1707,19 +1707,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 </div>
               </header>
 
-              {/* Song Meaning - Before Lyrics */}
-              {song.meaning && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
-                  <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                    <FiBookOpen className="w-5 h-5 text-primary" />
-                    {song.title} Song Meaning
-                  </h2>
-                  <div className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                    <p className="whitespace-pre-line">{song.meaning}</p>
-                  </div>
-                </div>
-              )}
-
               {/* Lyrics Section */}
               <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8 mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -1787,6 +1774,19 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 }}
               />
 
+              {/* Song Meaning - After Ratings */}
+              {song.meaning && (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
+                  <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                    <FiBookOpen className="w-5 h-5 text-primary" />
+                    {song.title} Song Meaning
+                  </h2>
+                  <div className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <p className="whitespace-pre-line">{song.meaning}</p>
+                  </div>
+                </div>
+              )}
+
               {/* Report Button - Always visible after lyrics */}
               <div className="mb-6">
                 <button
@@ -1839,7 +1839,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
             </div>
 
             {/* Sidebar */}
-            <aside className="lg:col-span-1">
+            <aside className="lg:col-span-1 lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:scrollbar-thin">
               {/* Categories/Languages */}
               {categories.length > 0 && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
