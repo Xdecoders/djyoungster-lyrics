@@ -179,7 +179,7 @@ export default function MoviePageClient({ initialMovie }) {
                 )}
                 <span className="flex items-center gap-1.5">
                   <FiMusic className="w-4 h-4" />
-                  {movie.totalSongs} songs
+                  {movie.totalSongs} {movie.totalSongs === 1 ? 'song' : 'songs'}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <FiEye className="w-4 h-4" />

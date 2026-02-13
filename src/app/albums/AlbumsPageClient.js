@@ -17,7 +17,7 @@ function AlbumCard({ album }) {
       </div>
       <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">{album.title}</h3>
       <p className="text-sm text-slate-500 dark:text-slate-400 truncate">{album.artist?.name}</p>
-      <p className="text-xs text-slate-400 dark:text-slate-500">{album._count?.songs || 0} songs</p>
+      <p className="text-xs text-slate-400 dark:text-slate-500">{album._count?.songs || 0} {album._count?.songs === 1 ? 'song' : 'songs'}</p>
     </Link>
   )
 }

@@ -214,7 +214,7 @@ function HeroSection({ artist, featuredSongs, songs, socialLinks }) {
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1.5">
               <FiMusic className="w-4 h-4" />
-              {artist?.totalSongs || artist?._count?.songs || 0} Songs
+              {artist?.totalSongs || artist?._count?.songs || 0} {(artist?.totalSongs || artist?._count?.songs || 0) === 1 ? 'Song' : 'Songs'}
             </span>
             {artist?.albums?.length > 0 && (
               <span className="flex items-center gap-1.5">

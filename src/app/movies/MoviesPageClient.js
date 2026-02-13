@@ -22,7 +22,7 @@ function MovieCard({ movie }) {
         </div>
       </div>
       <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">{movie.title}</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400">{movie._count?.songs || 0} songs</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{movie._count?.songs || 0} {movie._count?.songs === 1 ? 'song' : 'songs'}</p>
     </Link>
   )
 }

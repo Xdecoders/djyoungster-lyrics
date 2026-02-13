@@ -17,7 +17,7 @@ function ArtistCard({ artist }) {
         )}
       </div>
       <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">{artist.name}</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400">{artist._count?.songs || 0} songs</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{artist._count?.songs || 0} {artist._count?.songs === 1 ? 'song' : 'songs'}</p>
     </Link>
   )
 }

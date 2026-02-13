@@ -163,7 +163,7 @@ function AlbumCard({ album }) {
         )}
       </div>
       <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">{album.title}</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400">{album._count?.songs || 0} songs</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400">{album._count?.songs || 0} {album._count?.songs === 1 ? 'song' : 'songs'}</p>
     </Link>
   )
 }
@@ -265,7 +265,7 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
                 )}
                 <span className="flex items-center gap-1.5">
                   <FiMusic className="w-4 h-4" />
-                  {album.totalSongs} songs
+                  {album.totalSongs} {album.totalSongs === 1 ? 'song' : 'songs'}
                 </span>
                 <span className="flex items-center gap-1.5">
                   <FiEye className="w-4 h-4" />
