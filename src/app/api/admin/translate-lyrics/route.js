@@ -32,18 +32,24 @@ export async function POST(request) {
       messages: [
         {
           role: 'user',
-          content: `Translate the following song lyrics into 4 variants and write a song meaning. Preserve stanza structure using \\n for line breaks and \\n\\n for stanza breaks inside the JSON string values.
+          content: `Process the following song lyrics into 4 script variants and write a song meaning. Preserve stanza structure using \\n for line breaks and \\n\\n for stanza breaks inside the JSON string values.
+
+CRITICAL RULES:
+- "lyricsHindi" and "lyricsPunjabi" must be TRANSLITERATIONS (script conversion), NOT translations.
+- Keep the EXACT SAME original words — only change the script/writing system.
+- Example: Punjabi "ਤੇਰੀ ਜਿੰਦ ਦਾ ਨੀ ਮੁੱਲ" → Hindi "तेरी जिंद दा नी मुल्ल" (same words, different script)
+- Do NOT replace words with Hindi/Punjabi equivalents. Do NOT change the language.
 
 Return ONLY a JSON object with these 7 fields:
-- "lyricsRomanized": Latin script transliteration of the original lyrics
-- "lyricsTranslated": English translation
-- "lyricsHindi": Hindi translation in Devanagari script
-- "lyricsPunjabi": Punjabi translation in Gurmukhi script
+- "lyricsRomanized": Latin script transliteration of the original lyrics (same words, Roman characters)
+- "lyricsTranslated": English translation (actual meaning translation into English)
+- "lyricsHindi": The SAME original lyrics written in Devanagari script (transliteration, NOT translation)
+- "lyricsPunjabi": The SAME original lyrics written in Gurmukhi script (transliteration, NOT translation)
 - "meaning": A detailed explanation of the song ${songTitle}'s meaning in 300-400 words in English. Include the song name and reference key hook lines or phrases from the lyrics. Cover the themes, emotions, story, and cultural context. Write it as flowing paragraphs, not bullet points.
 - "metaTitle": An SEO-optimized page title under 60 characters. Format: "${title || '[Song Name]'} Lyrics, Meaning & Translation - DjYoungster". Keep it concise, include the song name first.
 - "metaDescription": An SEO-optimized meta description between 150-160 characters. Include the song name, a catchy hook line or key phrase quoted from the lyrics, and mention lyrics/meaning/translation. End with "- DjYoungster".
 
-If the lyrics are already in one of these languages, still provide all 4 variants. For the romanized version, transliterate the original script to Latin characters.
+IMPORTANT: For lyricsHindi and lyricsPunjabi, you are doing SCRIPT CONVERSION only — the words must remain identical to the original, just written in a different script. Only lyricsTranslated should be an actual language translation (into English).
 
 Lyrics:
 ${lyrics}`
