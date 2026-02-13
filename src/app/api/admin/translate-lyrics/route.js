@@ -1,15 +1,15 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { NextResponse } from 'next/server'
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY
+const client = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
 })
 
 export async function POST(request) {
   try {
-    if (!process.env.ANTHROPIC_API_KEY) {
+    if (!process.env.OPENAI_API_KEY) {
       return NextResponse.json(
-        { error: 'ANTHROPIC_API_KEY is not configured' },
+        { error: 'OPENAI_API_KEY is not configured' },
         { status: 500 }
       )
     }
@@ -25,11 +25,14 @@ export async function POST(request) {
 
     const songTitle = title ? `"${title}"` : 'this song'
 
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-5-20250929',
+    const completion = await client.chat.completions.create({
+      model: 'gpt-4o',
       max_tokens: 8192,
-      system: 'You are a professional lyrics translator and music analyst. You MUST respond with ONLY raw JSON — no markdown, no code fences, no explanation text before or after. Use \\n for line breaks inside JSON string values. Escape any special characters properly for valid JSON.',
       messages: [
+        {
+          role: 'system',
+          content: 'You are a professional lyrics translator and music analyst. You MUST respond with ONLY raw JSON — no markdown, no code fences, no explanation text before or after. Use \\n for line breaks inside JSON string values. Escape any special characters properly for valid JSON.'
+        },
         {
           role: 'user',
           content: `Process the following song lyrics into 4 script variants and write a song meaning. Preserve stanza structure using \\n for line breaks and \\n\\n for stanza breaks inside the JSON string values.
@@ -57,12 +60,14 @@ ${lyrics}`
       ]
     })
 
+    const choice = completion.choices[0]
+
     // Check if response was truncated
-    if (message.stop_reason === 'max_tokens') {
+    if (choice.finish_reason === 'length') {
       throw new Error('Translation response was too long and got truncated. Try with shorter lyrics.')
     }
 
-    let responseText = message.content[0].text.trim()
+    let responseText = choice.message.content.trim()
 
     // Strip markdown code fences if present
     responseText = responseText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?\s*```\s*$/i, '')
