@@ -31,7 +31,9 @@ export async function GET(request) {
         count: tag._count.songs
       }))
 
-    return NextResponse.json(popularTags)
+    return NextResponse.json(popularTags, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
+    })
   } catch (error) {
     console.error('Error fetching tags:', error)
     return NextResponse.json([])

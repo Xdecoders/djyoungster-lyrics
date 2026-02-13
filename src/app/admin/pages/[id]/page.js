@@ -25,7 +25,10 @@ export default function EditPagePage({ params }) {
 
   const fetchPage = async () => {
     try {
-      const res = await fetch(`/api/admin/pages/${id}`)
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch(`/api/admin/pages/${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       if (res.ok) {
         const data = await res.json()
         setPage({
@@ -51,9 +54,10 @@ export default function EditPagePage({ params }) {
     e.preventDefault()
     setSaving(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/pages/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(page)
       })
 

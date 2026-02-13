@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import HomeContent from './HomeContent'
 import AboutSection from './AboutSection'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
-import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema, generateAggregateRatingSchema } from '@/lib/schema'
+import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema } from '@/lib/schema'
 
 // Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
@@ -183,7 +183,6 @@ export default async function Home() {
   const websiteSchema = generateWebSiteSchema()
   const organizationSchema = generateOrganizationSchema()
   const faqSchema = generateFAQSchema(homepageFAQs)
-  const ratingSchema = generateAggregateRatingSchema()
 
   // Fetch data on server - Pure SSR
   const data = await getHomepageData()
@@ -203,11 +202,6 @@ export default async function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(ratingSchema) }}
-      />
-
       {/* Main Content - Server Rendered */}
       <HomeContent data={data} siteSettings={data.siteSettings} />
 

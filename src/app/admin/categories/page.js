@@ -34,9 +34,13 @@ export default function CategoriesPage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/admin/categories')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/categories', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) return
       const data = await res.json()
-      setCategories(data)
+      setCategories(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching categories:', error)
     } finally {
@@ -79,13 +83,14 @@ export default function CategoriesPage() {
     setErrorMessage('')
 
     try {
+      const token = localStorage.getItem('adminToken')
       const url = editingId
         ? `/api/admin/categories/${editingId}`
         : '/api/admin/categories'
 
       const res = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 
@@ -123,8 +128,10 @@ export default function CategoriesPage() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/categories/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setCategories(categories.filter(cat => cat.id !== id))

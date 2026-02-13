@@ -37,8 +37,11 @@ export default function ReportsPage() {
   const fetchReports = async () => {
     try {
       setLoading(true)
+      const token = localStorage.getItem('adminToken')
       const url = filter ? `/api/admin/reports?status=${filter}` : '/api/admin/reports'
-      const res = await fetch(url)
+      const res = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       const data = await res.json()
       setReports(data.reports || [])
       setCounts(data.counts || { pending: 0, reviewed: 0, resolved: 0, total: 0 })
@@ -51,9 +54,10 @@ export default function ReportsPage() {
 
   const updateStatus = async (id, status) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/reports/${id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ status })
       })
       if (res.ok) {
@@ -66,8 +70,10 @@ export default function ReportsPage() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/reports/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setReports(reports.filter(r => r.id !== id))

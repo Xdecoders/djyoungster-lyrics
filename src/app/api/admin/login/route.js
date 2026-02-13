@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { signToken } from '@/lib/auth'
+import { rateLimit, rateLimitResponse } from '@/lib/rateLimit'
+import { headers } from 'next/headers'
 const bcrypt = require('bcryptjs')
 
 export async function POST(request) {
-  console.log('=== Login attempt started ===')
-
   try {
-    
+    // Rate limit: 5 attempts per minute per IP
+    const headersList = await headers()
+    const ip = headersList.get('x-forwarded-for')?.split(',')[0]?.trim() || headersList.get('x-real-ip') || '127.0.0.1'
+    const { success } = rateLimit(`login:${ip}`, 5, 60 * 1000)
+    if (!success) return rateLimitResponse()
+
     const body = await request.json()
-    console.log('Request body:', { email: body.email, hasPassword: !!body.password })
-    
     const { email, password } = body
 
     if (!email || !password) {
@@ -19,13 +23,9 @@ export async function POST(request) {
       )
     }
 
-    // Find admin
-    console.log('Searching for admin with email:', email)
     const admin = await prisma.admin.findUnique({
       where: { email }
     })
-
-    console.log('Admin found:', admin ? 'Yes' : 'No')
 
     if (!admin) {
       return NextResponse.json(
@@ -34,10 +34,7 @@ export async function POST(request) {
       )
     }
 
-    // Verify password
-    console.log('Verifying password...')
     const isValid = await bcrypt.compare(password, admin.password)
-    console.log('Password valid:', isValid)
 
     if (!isValid) {
       return NextResponse.json(
@@ -46,9 +43,7 @@ export async function POST(request) {
       )
     }
 
-    // Create token
-    const token = Buffer.from(`${admin.id}:${Date.now()}`).toString('base64')
-    console.log('Login successful!')
+    const token = await signToken(admin.id)
 
     return NextResponse.json({
       message: 'Login successful',
@@ -61,11 +56,7 @@ export async function POST(request) {
       }
     })
   } catch (error) {
-    console.error('=== Login error ===')
-    console.error('Error name:', error.name)
-    console.error('Error message:', error.message)
-    console.error('Full error:', error)
-    
+    console.error('Login error:', error.message)
     return NextResponse.json(
       { message: 'Server error: ' + error.message },
       { status: 500 }

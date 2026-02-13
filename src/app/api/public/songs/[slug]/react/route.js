@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
+import { rateLimit, rateLimitResponse } from '@/lib/rateLimit'
 
 const VALID_EMOJIS = ['fire', 'heart', 'sad', 'party', 'hundred']
 
@@ -72,6 +73,10 @@ export async function POST(request, { params }) {
     const { slug } = await params
     const headersList = await headers()
     const clientIP = getClientIP(headersList)
+
+    const { success } = rateLimit(`song-react:${clientIP}`, 20, 60 * 1000)
+    if (!success) return rateLimitResponse()
+
     const body = await request.json()
     const { emoji } = body
 

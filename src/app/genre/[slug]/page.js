@@ -1,11 +1,19 @@
+import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import GenrePageClient from './GenrePageClient'
 
-// Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
 export const revalidate = 60
+
+// Pre-render all genres at build time
+export async function generateStaticParams() {
+  const genres = await prisma.genre.findMany({
+    select: { slug: true }
+  })
+  return genres.map(genre => ({ slug: genre.slug }))
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -217,7 +225,9 @@ export default async function GenrePage({ params, searchParams }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
-      <GenrePageClient initialData={JSON.parse(JSON.stringify(data))} />
+      <Suspense fallback={<div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900" />}>
+        <GenrePageClient initialData={JSON.parse(JSON.stringify(data))} />
+      </Suspense>
     </>
   )
 }

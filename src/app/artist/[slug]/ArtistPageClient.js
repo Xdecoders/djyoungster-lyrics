@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import InteractiveRating from '@/components/InteractiveRating'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
@@ -201,31 +202,14 @@ function HeroSection({ artist, featuredSongs, songs, socialLinks }) {
           </div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 dark:text-white mb-2">{artist?.name}</h1>
 
-          {/* Star Rating */}
-          <div className="flex items-center gap-1.5 mb-4 justify-center sm:justify-start">
-            <div className="flex items-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <svg
-                  key={star}
-                  className={`w-4 h-4 ${
-                    star <= Math.round(artist?.averageRating || 0)
-                      ? 'text-amber-400 fill-amber-400'
-                      : 'text-slate-300 dark:text-slate-600 fill-slate-300 dark:fill-slate-600'
-                  }`}
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth="1"
-                >
-                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                </svg>
-              ))}
-            </div>
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              {artist?.totalRatings > 0
-                ? `${artist.averageRating} (${artist.totalRatings} ${artist.totalRatings === 1 ? 'rating' : 'ratings'})`
-                : 'No ratings yet'}
-            </span>
-          </div>
+          {/* Interactive Star Rating */}
+          <InteractiveRating
+            entityType="artist"
+            entitySlug={artist?.slug}
+            initialRating={artist?.averageRating || 0}
+            initialTotal={artist?.totalRatings || 0}
+            className="mb-4 justify-center sm:justify-start"
+          />
 
           <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1.5">

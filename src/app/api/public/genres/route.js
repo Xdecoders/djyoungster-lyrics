@@ -13,7 +13,9 @@ export async function GET(request) {
     // Only return genres that have at least one song
     const genres = allGenres.filter(genre => genre._count.songs > 0)
 
-    return NextResponse.json({ genres })
+    return NextResponse.json({ genres }, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
+    })
   } catch (error) {
     console.error('Error fetching genres:', error)
     return NextResponse.json({ error: 'Failed to fetch genres' }, { status: 500 })

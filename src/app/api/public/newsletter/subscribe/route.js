@@ -1,8 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { rateLimit, rateLimitResponse } from '@/lib/rateLimit'
 
 export async function POST(request) {
   try {
+    const forwarded = request.headers.get('x-forwarded-for')
+    const ip = forwarded ? forwarded.split(',')[0] : 'unknown'
+    const { success } = rateLimit(`newsletter:${ip}`, 5, 60 * 1000)
+    if (!success) return rateLimitResponse()
+
     const { email, name } = await request.json()
 
     if (!email || !email.includes('@')) {
@@ -11,10 +17,6 @@ export async function POST(request) {
         { status: 400 }
       )
     }
-
-    // Get IP address
-    const forwarded = request.headers.get('x-forwarded-for')
-    const ipAddress = forwarded ? forwarded.split(',')[0] : 'unknown'
 
     // Check if already subscribed
     const existing = await prisma.newsletterSubscriber.findUnique({
@@ -45,7 +47,7 @@ export async function POST(request) {
       data: {
         email: email.toLowerCase(),
         name: name || null,
-        ipAddress
+        ipAddress: ip
       }
     })
 

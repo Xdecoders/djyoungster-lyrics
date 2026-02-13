@@ -1,12 +1,20 @@
+import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import TagPageClient from './TagPageClient'
 
-// Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
 export const revalidate = 60
+
+// Pre-render all tags at build time
+export async function generateStaticParams() {
+  const tags = await prisma.tag.findMany({
+    select: { slug: true }
+  })
+  return tags.map(tag => ({ slug: tag.slug }))
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -119,7 +127,9 @@ export default async function TagPage({ params }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <TagPageClient initialTag={JSON.parse(JSON.stringify(tag))} initialSongs={JSON.parse(JSON.stringify(songs))} />
+      <Suspense fallback={<div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900" />}>
+        <TagPageClient initialTag={JSON.parse(JSON.stringify(tag))} initialSongs={JSON.parse(JSON.stringify(songs))} />
+      </Suspense>
     </>
   )
 }

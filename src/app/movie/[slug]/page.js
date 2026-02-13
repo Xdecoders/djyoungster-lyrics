@@ -4,9 +4,17 @@ import { getAbsoluteUrl } from '@/lib/seo'
 import { generateMovieSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import MoviePageClient from './MoviePageClient'
 
-// Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
 export const revalidate = 60
+
+// Pre-render all movies at build time
+export async function generateStaticParams() {
+  const movies = await prisma.movie.findMany({
+    where: { slug: { not: null } },
+    select: { slug: true }
+  })
+  return movies.map(movie => ({ slug: movie.slug }))
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -137,19 +145,14 @@ async function getMovieData(slug) {
 
     const totalViews = movie.songs.reduce((sum, song) => sum + (song.views || 0), 0)
 
-    // Get aggregate rating across all songs in this movie
-    const songIds = movie.songs.map(s => s.id)
-    let averageRating = 0
-    let totalRatings = 0
-    if (songIds.length > 0) {
-      const ratingAgg = await prisma.songRating.aggregate({
-        where: { songId: { in: songIds } },
-        _avg: { rating: true },
-        _count: { rating: true }
-      })
-      averageRating = ratingAgg._avg.rating ? Math.round(ratingAgg._avg.rating * 10) / 10 : 0
-      totalRatings = ratingAgg._count.rating
-    }
+    // Get direct movie rating from MovieRating table
+    const ratingAgg = await prisma.movieRating.aggregate({
+      where: { movieId: movie.id },
+      _avg: { rating: true },
+      _count: { rating: true }
+    })
+    const averageRating = ratingAgg._avg.rating ? Math.round(ratingAgg._avg.rating * 10) / 10 : 0
+    const totalRatings = ratingAgg._count.rating
 
     return {
       movie: {

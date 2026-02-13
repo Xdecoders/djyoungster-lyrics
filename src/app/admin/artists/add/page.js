@@ -59,8 +59,10 @@ export default function AddArtist() {
     formDataUpload.append('file', file)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload
       })
 
@@ -91,9 +93,10 @@ export default function AddArtist() {
     setLoading(true)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/artists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 

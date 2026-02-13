@@ -35,9 +35,13 @@ export default function TagsPage() {
 
   const fetchTags = async () => {
     try {
-      const res = await fetch('/api/admin/tags')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/tags', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) return
       const data = await res.json()
-      setTags(data)
+      setTags(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching tags:', error)
     } finally {
@@ -80,13 +84,14 @@ export default function TagsPage() {
     setErrorMessage('')
 
     try {
+      const token = localStorage.getItem('adminToken')
       const url = editingId
         ? `/api/admin/tags/${editingId}`
         : '/api/admin/tags'
 
       const res = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 
@@ -124,8 +129,10 @@ export default function TagsPage() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/tags/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setTags(tags.filter(tag => tag.id !== id))

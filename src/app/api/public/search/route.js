@@ -186,6 +186,8 @@ export async function GET(request) {
         total: type === 'songs' ? totalSongs : type === 'artists' ? totalArtists : type === 'albums' ? totalAlbums : totalMovies,
         totalPages: Math.ceil((type === 'songs' ? totalSongs : type === 'artists' ? totalArtists : type === 'albums' ? totalAlbums : totalMovies) / limit)
       } : null
+    }, {
+      headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' }
     })
 
   } catch (error) {

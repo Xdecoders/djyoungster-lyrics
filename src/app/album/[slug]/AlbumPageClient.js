@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import InteractiveRating from '@/components/InteractiveRating'
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
 import {
@@ -228,31 +229,14 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
               <p className="text-sm text-emerald-600 dark:text-emerald-400 font-medium mb-2">Album</p>
               <h1 className="text-3xl sm:text-4xl font-bold text-slate-800 dark:text-white mb-2">{album.title} Songs Lyrics</h1>
 
-              {/* Star Rating */}
-              <div className="flex items-center gap-1.5 mb-4 justify-center sm:justify-start">
-                <div className="flex items-center gap-0.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg
-                      key={star}
-                      className={`w-4 h-4 ${
-                        star <= Math.round(album.averageRating || 0)
-                          ? 'text-amber-400 fill-amber-400'
-                          : 'text-slate-300 dark:text-slate-600 fill-slate-300 dark:fill-slate-600'
-                      }`}
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      strokeWidth="1"
-                    >
-                      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                    </svg>
-                  ))}
-                </div>
-                <span className="text-xs text-slate-500 dark:text-slate-400">
-                  {album.totalRatings > 0
-                    ? `${album.averageRating} (${album.totalRatings} ${album.totalRatings === 1 ? 'rating' : 'ratings'})`
-                    : 'No ratings yet'}
-                </span>
-              </div>
+              {/* Interactive Star Rating */}
+              <InteractiveRating
+                entityType="album"
+                entitySlug={album.slug}
+                initialRating={album.averageRating || 0}
+                initialTotal={album.totalRatings || 0}
+                className="mb-4 justify-center sm:justify-start"
+              />
 
               {/* Artist */}
               <Link

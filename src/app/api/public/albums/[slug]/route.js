@@ -70,7 +70,7 @@ export async function GET(request, { params }) {
     // Calculate total duration and views
     const totalViews = album.songs.reduce((sum, song) => sum + (song.views || 0), 0)
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       album: {
         ...album,
         totalSongs: album.songs.length,
@@ -78,6 +78,8 @@ export async function GET(request, { params }) {
       },
       moreAlbums
     })
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
+    return response
 
   } catch (error) {
     console.error('Error fetching album:', error)

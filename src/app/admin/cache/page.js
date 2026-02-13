@@ -24,11 +24,12 @@ export default function CacheManagementPage() {
     setResults(prev => ({ ...prev, [type]: null }))
 
     try {
+      const token = localStorage.getItem('adminToken')
       const body = type === 'all' ? { all: true } : { type }
 
       const res = await fetch('/api/admin/revalidate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(body)
       })
 
@@ -183,9 +184,10 @@ function SpecificPageCacheClear() {
     setResult(null)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/revalidate', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ type, slug: slug.trim() })
       })
 

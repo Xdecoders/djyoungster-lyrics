@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiUser, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 
 const ITEMS_PER_PAGE = 10
@@ -26,9 +27,11 @@ export default function ArtistsList() {
 
   const fetchArtists = async () => {
     try {
-      const res = await fetch('/api/admin/artists')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/artists', { headers: { 'Authorization': `Bearer ${token}` } })
+      if (!res.ok) return
       const data = await res.json()
-      setArtists(data)
+      setArtists(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching artists:', error)
     } finally {
@@ -38,8 +41,10 @@ export default function ArtistsList() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/artists/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setArtists(artists.filter(artist => artist.id !== id))
@@ -130,7 +135,7 @@ export default function ArtistsList() {
                 <div className="p-5">
                   <div className="flex items-start gap-4">
                     {artist.imageUrl ? (
-                      <img src={artist.imageUrl} alt={artist.name} className="w-14 h-14 rounded-xl object-cover" />
+                      <Image src={artist.imageUrl} alt={artist.name} width={56} height={56} className="w-14 h-14 rounded-xl object-cover" unoptimized />
                     ) : (
                       <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center">
                         <FiUser className="w-7 h-7 text-emerald-400" />

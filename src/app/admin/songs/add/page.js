@@ -266,14 +266,15 @@ export default function AddSong() {
 
   const fetchData = async () => {
     try {
+      const token = localStorage.getItem('adminToken')
       const [artistsRes, albumsRes, genresRes, categoriesRes, moviesRes, creditsRes, tagsRes] = await Promise.all([
-        fetch('/api/admin/artists'),
-        fetch('/api/admin/albums'),
-        fetch('/api/admin/genres'),
-        fetch('/api/admin/categories'),
-        fetch('/api/admin/movies'),
-        fetch('/api/admin/song-credits'),
-        fetch('/api/admin/tags')
+        fetch('/api/admin/artists', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/albums', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/genres', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/categories', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/movies', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/song-credits', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/tags', { headers: { 'Authorization': `Bearer ${token}` } })
       ])
 
       setArtists(await artistsRes.json())
@@ -369,11 +370,13 @@ export default function AddSong() {
 
     setUploadingImage(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const uploadFormData = new FormData()
       uploadFormData.append('file', imageFile)
 
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: uploadFormData
       })
 
@@ -412,9 +415,10 @@ export default function AddSong() {
 
     setUploadingImage(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/upload-from-url', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ url })
       })
 
@@ -519,9 +523,10 @@ export default function AddSong() {
 
     setSavingArtist(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/artists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           name: newArtistData.name,
           slug: generateSlug(newArtistData.name),
@@ -553,9 +558,10 @@ export default function AddSong() {
 
     setSavingMovie(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/movies', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           title: newMovieData.title,
           year: newMovieData.year ? parseInt(newMovieData.year) : null,
@@ -587,9 +593,10 @@ export default function AddSong() {
 
     setSavingAlbum(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/albums', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           title: newAlbumData.title,
           slug: generateSlug(newAlbumData.title),
@@ -622,9 +629,10 @@ export default function AddSong() {
 
     setSavingGenre(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/genres', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           name: newGenreData.name,
           slug: generateSlug(newGenreData.name),
@@ -656,9 +664,10 @@ export default function AddSong() {
 
     setSavingCategory(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           name: newCategoryData.name,
           slug: generateSlug(newCategoryData.name)
@@ -705,9 +714,10 @@ export default function AddSong() {
 
     setSavingTag(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/tags', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ name: tagName })
       })
       if (res.ok) {
@@ -747,9 +757,10 @@ export default function AddSong() {
     setLoading(true)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/songs', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 
@@ -782,9 +793,10 @@ export default function AddSong() {
     if (!formData.lyrics.trim()) return
     setTranslating(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/translate-lyrics', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ lyrics: formData.lyrics, title: formData.title })
       })
       if (!res.ok) {

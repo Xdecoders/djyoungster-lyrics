@@ -7,29 +7,38 @@ import { submitUrlForIndexing } from '@/lib/googleIndexing'
 export async function GET() {
   try {
     const songs = await prisma.song.findMany({
-      include: {
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        status: true,
+        views: true,
+        verified: true,
+        language: true,
+        createdAt: true,
         artists: {
-          include: {
-            artist: true
+          select: {
+            artist: { select: { id: true, name: true, slug: true } }
           }
         },
-        album: true,
+        album: { select: { id: true, title: true, slug: true } },
         genres: {
-          include: {
-            genre: true
+          select: {
+            genre: { select: { id: true, name: true, slug: true } }
           }
         },
         categories: {
-          include: {
-            category: true
+          select: {
+            category: { select: { id: true, name: true, slug: true } }
           }
         },
         tags: {
-          include: {
-            tag: true
+          select: {
+            tag: { select: { id: true, name: true, slug: true } }
           }
         },
-        movie: true
+        movie: { select: { id: true, title: true, slug: true } }
       },
       orderBy: {
         createdAt: 'desc'

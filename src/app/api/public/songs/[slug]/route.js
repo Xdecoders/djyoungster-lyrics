@@ -127,10 +127,9 @@ export async function GET(request, { params }) {
       orderBy: { views: 'desc' }
     })
 
-    return NextResponse.json({
-      song,
-      relatedSongs
-    })
+    const response = NextResponse.json({ song, relatedSongs })
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
+    return response
 
   } catch (error) {
     console.error('Error fetching song:', error)

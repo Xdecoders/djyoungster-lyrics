@@ -1,12 +1,20 @@
+import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import CategoryPageClient from './CategoryPageClient'
 
-// Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
 export const revalidate = 60
+
+// Pre-render all categories at build time
+export async function generateStaticParams() {
+  const categories = await prisma.category.findMany({
+    select: { slug: true }
+  })
+  return categories.map(category => ({ slug: category.slug }))
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -245,7 +253,9 @@ export default async function CategoryPage({ params, searchParams }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
-      <CategoryPageClient initialData={JSON.parse(JSON.stringify(data))} />
+      <Suspense fallback={<div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900" />}>
+        <CategoryPageClient initialData={JSON.parse(JSON.stringify(data))} />
+      </Suspense>
     </>
   )
 }

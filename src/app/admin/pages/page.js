@@ -17,7 +17,10 @@ export default function AdminPagesPage() {
 
   const fetchPages = async () => {
     try {
-      const res = await fetch('/api/admin/pages')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/pages', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       if (res.ok) {
         const data = await res.json()
         setPages(data)
@@ -33,9 +36,10 @@ export default function AdminPagesPage() {
     e.preventDefault()
     setCreating(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/pages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           title: newPage.title,
           slug: newPage.slug || newPage.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
@@ -65,8 +69,10 @@ export default function AdminPagesPage() {
     if (!confirm(`Are you sure you want to delete "${title}"?`)) return
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/pages/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
 
       if (res.ok) {
@@ -82,9 +88,10 @@ export default function AdminPagesPage() {
 
   const togglePublish = async (page) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/pages/${page.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           ...page,
           isPublished: !page.isPublished
@@ -111,9 +118,10 @@ export default function AdminPagesPage() {
 
   const createDefaultPage = async (pageInfo) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/pages', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           title: pageInfo.title,
           slug: pageInfo.slug,

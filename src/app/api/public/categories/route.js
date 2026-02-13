@@ -17,7 +17,9 @@ export async function GET() {
     // Only return categories that have songs
     const categoriesWithSongs = categories.filter(cat => cat._count.songs > 0)
 
-    return NextResponse.json(categoriesWithSongs)
+    return NextResponse.json(categoriesWithSongs, {
+      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
+    })
   } catch (error) {
     console.error('Error fetching categories:', error)
     return NextResponse.json(

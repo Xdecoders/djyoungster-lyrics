@@ -41,9 +41,13 @@ export default function MoviesPage() {
 
   const fetchMovies = async () => {
     try {
-      const res = await fetch('/api/admin/movies')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/movies', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) return
       const data = await res.json()
-      setMovies(data)
+      setMovies(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching movies:', error)
     } finally {
@@ -64,8 +68,10 @@ export default function MoviesPage() {
     formDataUpload.append('file', file)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload
       })
 
@@ -105,13 +111,14 @@ export default function MoviesPage() {
     if (!formData.title.trim()) return
 
     try {
+      const token = localStorage.getItem('adminToken')
       const url = editingId
         ? `/api/admin/movies/${editingId}`
         : '/api/admin/movies'
 
       const res = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 
@@ -144,8 +151,10 @@ export default function MoviesPage() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/movies/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setMovies(movies.filter(movie => movie.id !== id))

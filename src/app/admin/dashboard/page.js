@@ -44,10 +44,18 @@ export default function AdminDashboard() {
 
   const fetchStats = async () => {
     try {
+      const token = localStorage.getItem('adminToken')
       const [statsRes, reportsRes] = await Promise.all([
-        fetch('/api/admin/stats'),
-        fetch('/api/admin/reports?status=pending')
+        fetch('/api/admin/stats', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/reports?status=pending', { headers: { 'Authorization': `Bearer ${token}` } })
       ])
+      if (!statsRes.ok) {
+        if (statsRes.status === 401) {
+          localStorage.removeItem('adminToken')
+          router.push('/admin/login')
+          return
+        }
+      }
       const statsData = await statsRes.json()
       setStats(statsData)
 
@@ -330,7 +338,7 @@ function StatCard({ title, value, Icon, bgColor, iconBgColor, iconColor, loading
             {loading ? (
               <span className="inline-block w-12 h-8 bg-slate-200 rounded animate-pulse"></span>
             ) : (
-              value.toLocaleString()
+              (value ?? 0).toLocaleString()
             )}
           </p>
         </div>

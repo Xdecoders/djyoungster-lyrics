@@ -4,9 +4,16 @@ import { getAbsoluteUrl } from '@/lib/seo'
 import { generateAlbumSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import AlbumPageClient from './AlbumPageClient'
 
-// Dynamic SSR - always fetch fresh data on each request
 // ISR - Cache pages and revalidate every 60 seconds
 export const revalidate = 60
+
+// Pre-render all albums at build time
+export async function generateStaticParams() {
+  const albums = await prisma.album.findMany({
+    select: { slug: true }
+  })
+  return albums.map(album => ({ slug: album.slug }))
+}
 
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -175,19 +182,14 @@ async function getAlbumData(slug) {
     // Calculate total views
     const totalViews = album.songs.reduce((sum, song) => sum + (song.views || 0), 0)
 
-    // Get aggregate rating across all songs in this album
-    const songIds = album.songs.map(s => s.id)
-    let averageRating = 0
-    let totalRatings = 0
-    if (songIds.length > 0) {
-      const ratingAgg = await prisma.songRating.aggregate({
-        where: { songId: { in: songIds } },
-        _avg: { rating: true },
-        _count: { rating: true }
-      })
-      averageRating = ratingAgg._avg.rating ? Math.round(ratingAgg._avg.rating * 10) / 10 : 0
-      totalRatings = ratingAgg._count.rating
-    }
+    // Get direct album rating from AlbumRating table
+    const ratingAgg = await prisma.albumRating.aggregate({
+      where: { albumId: album.id },
+      _avg: { rating: true },
+      _count: { rating: true }
+    })
+    const averageRating = ratingAgg._avg.rating ? Math.round(ratingAgg._avg.rating * 10) / 10 : 0
+    const totalRatings = ratingAgg._count.rating
 
     return {
       album: {

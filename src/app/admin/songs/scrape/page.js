@@ -194,15 +194,16 @@ export default function ScrapeSong() {
   useEffect(() => { setFormData(prev => ({ ...prev, tagIds: selectedTags.map(t => t.id) })) }, [selectedTags])
 
   const fetchData = async () => {
+    const token = localStorage.getItem('adminToken')
     try {
       const [artistsRes, albumsRes, genresRes, categoriesRes, moviesRes, creditsRes, tagsRes] = await Promise.all([
-        fetch('/api/admin/artists'),
-        fetch('/api/admin/albums'),
-        fetch('/api/admin/genres'),
-        fetch('/api/admin/categories'),
-        fetch('/api/admin/movies'),
-        fetch('/api/admin/song-credits'),
-        fetch('/api/admin/tags')
+        fetch('/api/admin/artists', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/albums', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/genres', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/categories', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/movies', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/song-credits', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('/api/admin/tags', { headers: { 'Authorization': `Bearer ${token}` } })
       ])
       setArtists(await artistsRes.json())
       setAlbums(await albumsRes.json())
@@ -251,13 +252,14 @@ export default function ScrapeSong() {
   // ========== SCRAPE HANDLER ==========
   const handleScrape = async () => {
     if (!scrapeUrl.trim()) return
+    const token = localStorage.getItem('adminToken')
     setScraping(true)
     setScrapeError('')
 
     try {
       const res = await fetch('/api/admin/scrape', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ url: scrapeUrl.trim() })
       })
 
@@ -271,7 +273,7 @@ export default function ScrapeSong() {
       setDuplicateWarning(data.duplicateWarning)
 
       // Re-fetch artists list (API may have auto-created new ones)
-      const artistsRes = await fetch('/api/admin/artists')
+      const artistsRes = await fetch('/api/admin/artists', { headers: { 'Authorization': `Bearer ${token}` } })
       const freshArtists = await artistsRes.json()
       setArtists(freshArtists)
 
@@ -350,11 +352,12 @@ export default function ScrapeSong() {
   const handleDownloadFromUrl = async () => {
     const url = formData.coverImage.trim()
     if (!url) return
+    const token = localStorage.getItem('adminToken')
     setUploadingImage(true)
     try {
       const res = await fetch('/api/admin/upload-from-url', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ url })
       })
       const data = await res.json()
@@ -375,11 +378,12 @@ export default function ScrapeSong() {
   // ========== AUTO TRANSLATE ==========
   const handleAutoTranslate = async () => {
     if (!formData.lyrics.trim()) return
+    const token = localStorage.getItem('adminToken')
     setTranslating(true)
     try {
       const res = await fetch('/api/admin/translate-lyrics', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ lyrics: formData.lyrics, title: formData.title })
       })
       if (!res.ok) {
@@ -422,11 +426,12 @@ export default function ScrapeSong() {
 
   const handleAddNewArtist = async () => {
     if (!newArtistData.name.trim()) return
+    const token = localStorage.getItem('adminToken')
     setSavingArtist(true)
     try {
       const res = await fetch('/api/admin/artists', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           name: newArtistData.name,
           slug: generateSlug(newArtistData.name),
@@ -465,11 +470,12 @@ export default function ScrapeSong() {
 
   const handleAddNewMovie = async () => {
     if (!newMovieData.title.trim()) return
+    const token = localStorage.getItem('adminToken')
     setSavingMovie(true)
     try {
       const res = await fetch('/api/admin/movies', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           title: newMovieData.title,
           year: newMovieData.year ? parseInt(newMovieData.year) : null,
@@ -508,11 +514,12 @@ export default function ScrapeSong() {
 
   const handleAddNewAlbum = async () => {
     if (!newAlbumData.title.trim()) return
+    const token = localStorage.getItem('adminToken')
     setSavingAlbum(true)
     try {
       const res = await fetch('/api/admin/albums', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           title: newAlbumData.title,
           slug: generateSlug(newAlbumData.title),
@@ -555,11 +562,12 @@ export default function ScrapeSong() {
 
   const handleAddNewGenre = async () => {
     if (!newGenreData.name.trim()) return
+    const token = localStorage.getItem('adminToken')
     setSavingGenre(true)
     try {
       const res = await fetch('/api/admin/genres', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           name: newGenreData.name,
           slug: generateSlug(newGenreData.name),
@@ -601,11 +609,12 @@ export default function ScrapeSong() {
 
   const handleAddNewCategory = async () => {
     if (!newCategoryData.name.trim()) return
+    const token = localStorage.getItem('adminToken')
     setSavingCategory(true)
     try {
       const res = await fetch('/api/admin/categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           name: newCategoryData.name,
           slug: generateSlug(newCategoryData.name)
@@ -651,11 +660,12 @@ export default function ScrapeSong() {
   const handleCreateTag = async () => {
     const tagName = tagSearch.trim()
     if (!tagName) return
+    const token = localStorage.getItem('adminToken')
     setSavingTag(true)
     try {
       const res = await fetch('/api/admin/tags', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ name: tagName })
       })
       if (res.ok) {
@@ -682,11 +692,12 @@ export default function ScrapeSong() {
     if (e) e.preventDefault()
     if (!validateForm()) return
 
+    const token = localStorage.getItem('adminToken')
     setLoading(true)
     try {
       const res = await fetch('/api/admin/songs', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
       const data = await res.json()

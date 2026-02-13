@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiTag, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX } from 'react-icons/fi'
 
 export default function GenresPage() {
@@ -32,9 +33,13 @@ export default function GenresPage() {
 
   const fetchGenres = async () => {
     try {
-      const res = await fetch('/api/admin/genres')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/genres', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) return
       const data = await res.json()
-      setGenres(data)
+      setGenres(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching genres:', error)
     } finally {
@@ -74,13 +79,14 @@ export default function GenresPage() {
     if (!formData.name.trim()) return
 
     try {
+      const token = localStorage.getItem('adminToken')
       const url = editingId
         ? `/api/admin/genres/${editingId}`
         : '/api/admin/genres'
 
       const res = await fetch(url, {
         method: editingId ? 'PUT' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 
@@ -108,8 +114,10 @@ export default function GenresPage() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/genres/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setGenres(genres.filter(genre => genre.id !== id))
@@ -276,7 +284,7 @@ export default function GenresPage() {
                 <div key={genre.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
                   <div className="flex items-center gap-4">
                     {genre.imageUrl ? (
-                      <img src={genre.imageUrl} alt={genre.name} className="w-12 h-12 rounded-xl object-cover" />
+                      <Image src={genre.imageUrl} alt={genre.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover" unoptimized />
                     ) : (
                       <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
                         <FiTag className="w-6 h-6 text-amber-400" />

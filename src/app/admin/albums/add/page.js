@@ -33,9 +33,13 @@ export default function AddAlbum() {
 
   const fetchArtists = async () => {
     try {
-      const res = await fetch('/api/admin/artists')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/artists', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (!res.ok) return
       const data = await res.json()
-      setArtists(data)
+      setArtists(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching artists:', error)
     }
@@ -74,8 +78,10 @@ export default function AddAlbum() {
     formDataUpload.append('file', file)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload
       })
 
@@ -107,9 +113,10 @@ export default function AddAlbum() {
     setLoading(true)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/albums', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 

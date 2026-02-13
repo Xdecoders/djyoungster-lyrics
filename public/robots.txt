@@ -4,27 +4,20 @@
 User-agent: *
 Allow: /
 Disallow: /admin/
-Disallow: /api/admin/
+Disallow: /api/
 Disallow: /search?
 
 # Googlebot specific
 User-agent: Googlebot
 Allow: /
 Disallow: /admin/
-Disallow: /api/admin/
+Disallow: /api/
 
 # Bingbot
 User-agent: Bingbot
 Allow: /
 Disallow: /admin/
-Disallow: /api/admin/
+Disallow: /api/
 
 # Sitemap
 Sitemap: https://djyoungster.com/sitemap.xml
-Sitemap: https://djyoungster.com/sitemap-songs.xml
-Sitemap: https://djyoungster.com/sitemap-artists.xml
-Sitemap: https://djyoungster.com/sitemap-albums.xml
-Sitemap: https://djyoungster.com/sitemap-movies.xml
-Sitemap: https://djyoungster.com/sitemap-genres.xml
-Sitemap: https://djyoungster.com/sitemap-categories.xml
-Sitemap: https://djyoungster.com/sitemap-tags.xml

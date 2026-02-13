@@ -9,11 +9,27 @@ const nextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: '**',
+        hostname: 'i.scdn.co',
       },
       {
-        protocol: 'http',
-        hostname: '**',
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'images.genius.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'djyoungster.com',
       },
     ],
   },
@@ -33,9 +49,23 @@ const nextConfig = {
       },
     ]
   },
-  // Add cache headers for static assets
   async headers() {
+    const securityHeaders = [
+      { key: 'X-Frame-Options', value: 'DENY' },
+      { key: 'X-Content-Type-Options', value: 'nosniff' },
+      { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+      { key: 'X-XSS-Protection', value: '1; mode=block' },
+      { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
+      { key: 'Strict-Transport-Security', value: 'max-age=31536000; includeSubDomains' },
+    ]
+
     return [
+      // Global security headers
+      {
+        source: '/(.*)',
+        headers: securityHeaders,
+      },
+      // Cache headers for static assets
       {
         source: '/:all*(svg|jpg|jpeg|png|gif|ico|webp|woff|woff2)',
         headers: [

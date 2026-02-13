@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { headers } from 'next/headers'
+import { rateLimit, rateLimitResponse } from '@/lib/rateLimit'
 
 function getClientIP(headersList) {
   const forwardedFor = headersList.get('x-forwarded-for')
@@ -64,6 +65,10 @@ export async function POST(request, { params }) {
     const { slug } = await params
     const headersList = await headers()
     const clientIP = getClientIP(headersList)
+
+    const { success } = rateLimit(`song-rate:${clientIP}`, 10, 60 * 1000)
+    if (!success) return rateLimitResponse()
+
     const body = await request.json()
     const { rating } = body
 

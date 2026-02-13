@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiMusic, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiCheck, FiX, FiEye, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown } from 'react-icons/fi'
 
 const ITEMS_PER_PAGE = 10
@@ -28,9 +29,11 @@ export default function SongsList() {
 
   const fetchSongs = async () => {
     try {
-      const res = await fetch('/api/admin/songs')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/songs', { headers: { 'Authorization': `Bearer ${token}` } })
+      if (!res.ok) return
       const data = await res.json()
-      setSongs(data)
+      setSongs(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching songs:', error)
     } finally {
@@ -40,8 +43,10 @@ export default function SongsList() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/songs/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setSongs(songs.filter(song => song.id !== id))
@@ -216,7 +221,7 @@ export default function SongsList() {
                       <td className="px-4 sm:px-6 py-4">
                         <div className="flex items-center gap-3">
                           {song.coverImage ? (
-                            <img src={song.coverImage} alt={song.title} className="w-10 h-10 rounded-lg object-cover" />
+                            <Image src={song.coverImage} alt={song.title} width={40} height={40} className="w-10 h-10 rounded-lg object-cover" unoptimized />
                           ) : (
                             <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center">
                               <FiMusic className="text-blue-400" />

@@ -35,10 +35,15 @@ export default function EditAlbum() {
 
   const fetchData = async () => {
     try {
+      const token = localStorage.getItem('adminToken')
       // Fetch artists and album in parallel
       const [artistsRes, albumRes] = await Promise.all([
-        fetch('/api/admin/artists'),
-        fetch(`/api/admin/albums/${params.id}`)
+        fetch('/api/admin/artists', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`/api/admin/albums/${params.id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
       ])
 
       const artistsData = await artistsRes.json()
@@ -102,8 +107,10 @@ export default function EditAlbum() {
     formDataUpload.append('file', file)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload
       })
 
@@ -135,9 +142,10 @@ export default function EditAlbum() {
     setLoading(true)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/albums/${params.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 

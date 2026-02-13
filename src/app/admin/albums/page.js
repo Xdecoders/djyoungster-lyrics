@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiDisc, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic, FiCalendar } from 'react-icons/fi'
 
 export default function AlbumsList() {
@@ -23,9 +24,11 @@ export default function AlbumsList() {
 
   const fetchAlbums = async () => {
     try {
-      const res = await fetch('/api/admin/albums')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/albums', { headers: { 'Authorization': `Bearer ${token}` } })
+      if (!res.ok) return
       const data = await res.json()
-      setAlbums(data)
+      setAlbums(Array.isArray(data) ? data : [])
     } catch (error) {
       console.error('Error fetching albums:', error)
     } finally {
@@ -35,8 +38,10 @@ export default function AlbumsList() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/albums/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setAlbums(albums.filter(album => album.id !== id))
@@ -116,7 +121,7 @@ export default function AlbumsList() {
             {filteredAlbums.map((album) => (
               <div key={album.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
                 {album.coverImage ? (
-                  <img src={album.coverImage} alt={album.title} className="w-full h-36 sm:h-48 object-cover" />
+                  <Image src={album.coverImage} alt={album.title} width={400} height={192} className="w-full h-36 sm:h-48 object-cover" unoptimized />
                 ) : (
                   <div className="w-full h-36 sm:h-48 bg-emerald-50 flex items-center justify-center">
                     <FiDisc className="w-12 h-12 text-emerald-300" />

@@ -58,6 +58,11 @@ model Song {
 
   @@index([slug])
   @@index([title])
+  @@index([views])
+  @@index([createdAt])
+  @@index([status])
+  @@index([albumId])
+  @@index([movieId])
 }
 
 model SongLike {
@@ -85,10 +90,12 @@ model Artist {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  songs  SongArtist[]
-  albums Album[]
+  songs   SongArtist[]
+  albums  Album[]
+  ratings ArtistRating[]
 
   @@index([slug])
+  @@index([name])
 }
 
 model Album {
@@ -106,8 +113,10 @@ model Album {
   artist   Artist @relation(fields: [artistId], references: [id])
   artistId String
   songs    Song[]
+  ratings  AlbumRating[]
 
   @@index([slug])
+  @@index([title])
 }
 
 model Genre {
@@ -173,9 +182,12 @@ model Movie {
   metaDescription String?  @db.Text
   createdAt       DateTime @default(now())
 
-  songs Song[]
+  songs   Song[]
+  ratings MovieRating[]
 
   @@index([slug])
+  @@index([title])
+  @@index([year])
 }
 
 model Admin {
@@ -349,4 +361,43 @@ model SongReaction {
 
   @@unique([songId, ipAddress, emoji])
   @@index([songId])
+}
+
+model ArtistRating {
+  id        String   @id @default(uuid())
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId  String
+  ipAddress String
+  rating    Int      // 1-5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([artistId, ipAddress])
+  @@index([artistId])
+}
+
+model AlbumRating {
+  id        String   @id @default(uuid())
+  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId   String
+  ipAddress String
+  rating    Int      // 1-5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([albumId, ipAddress])
+  @@index([albumId])
+}
+
+model MovieRating {
+  id        String   @id @default(uuid())
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId   String
+  ipAddress String
+  rating    Int      // 1-5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([movieId, ipAddress])
+  @@index([movieId])
 }

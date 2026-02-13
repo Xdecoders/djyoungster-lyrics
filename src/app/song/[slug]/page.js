@@ -7,6 +7,17 @@ import SongPageClient from './SongPageClient'
 // ISR - Cache pages and revalidate every 60 seconds for fresh data
 export const revalidate = 60
 
+// Pre-render top 50 songs by views at build time
+export async function generateStaticParams() {
+  const songs = await prisma.song.findMany({
+    where: { status: 'published' },
+    select: { slug: true },
+    orderBy: { views: 'desc' },
+    take: 200
+  })
+  return songs.map(song => ({ slug: song.slug }))
+}
+
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }) {
   const { slug } = await params
@@ -131,9 +142,13 @@ export async function generateMetadata({ params }) {
     }
   } catch (error) {
     console.error('Error generating metadata:', error)
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     return {
       title: 'Song Lyrics | DJYoungster',
       description: 'Find song lyrics on DJYoungster - Your favorite lyrics destination.',
+      alternates: {
+        canonical: `${siteUrl}/song/${slug}`,
+      },
     }
   }
 }

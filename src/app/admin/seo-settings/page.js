@@ -54,7 +54,10 @@ export default function SeoSettingsPage() {
 
   const fetchGlobalSettings = async () => {
     try {
-      const res = await fetch('/api/admin/site-settings')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/site-settings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       if (res.ok) {
         const data = await res.json()
         if (data.favicon) {
@@ -92,11 +95,13 @@ export default function SeoSettingsPage() {
 
     setUploadingFavicon(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const formData = new FormData()
       formData.append('file', file)
 
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       })
 
@@ -134,11 +139,13 @@ export default function SeoSettingsPage() {
 
     setUploadingOgImage(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const formData = new FormData()
       formData.append('file', file)
 
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       })
 
@@ -168,9 +175,10 @@ export default function SeoSettingsPage() {
   const handleSaveGlobal = async () => {
     setSavingGlobal(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/site-settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           favicon: faviconUrl,
           ogImage: ogImageUrl,
@@ -203,7 +211,10 @@ export default function SeoSettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      const res = await fetch('/api/admin/seo-settings')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/seo-settings', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       const data = await res.json()
       setSettings(data)
 
@@ -251,11 +262,13 @@ export default function SeoSettingsPage() {
 
     setUploadingPageOgImage(prev => ({ ...prev, [pageKey]: true }))
     try {
+      const token = localStorage.getItem('adminToken')
       const formData = new FormData()
       formData.append('file', file)
 
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData
       })
 
@@ -281,9 +294,10 @@ export default function SeoSettingsPage() {
     setSaving(prev => ({ ...prev, [pageKey]: true }))
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/seo-settings', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(editedSettings[pageKey])
       })
 

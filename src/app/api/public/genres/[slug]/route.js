@@ -91,7 +91,7 @@ export async function GET(request, { params }) {
       take: 5
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       genre: {
         ...genre,
         totalSongs
@@ -106,6 +106,8 @@ export async function GET(request, { params }) {
         hasMore: skip + songs.length < totalSongs
       }
     })
+    response.headers.set('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=300')
+    return response
 
   } catch (error) {
     console.error('Error fetching genre:', error)

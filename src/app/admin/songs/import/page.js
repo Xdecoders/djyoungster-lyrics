@@ -55,9 +55,10 @@ export default function ImportSongs() {
 
     for (const song of songs) {
       try {
+        const token = localStorage.getItem('adminToken')
         const res = await fetch('/api/admin/songs', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify(song)
         })
 

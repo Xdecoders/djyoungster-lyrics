@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   FiMail,
   FiSend,
@@ -77,10 +78,17 @@ export default function NewsletterPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
+      const token = localStorage.getItem('adminToken')
       const [newslettersRes, subscribersRes, songsRes] = await Promise.all([
-        fetch('/api/admin/newsletter'),
-        fetch('/api/admin/newsletter/subscribers'),
-        fetch('/api/admin/songs')
+        fetch('/api/admin/newsletter', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('/api/admin/newsletter/subscribers', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch('/api/admin/songs', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
       ])
 
       if (newslettersRes.ok) {
@@ -216,6 +224,7 @@ export default function NewsletterPage() {
 
     setSaving(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const url = editingNewsletter
         ? `/api/admin/newsletter/${editingNewsletter.id}`
         : '/api/admin/newsletter'
@@ -227,7 +236,7 @@ export default function NewsletterPage() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(body)
       })
 
@@ -252,8 +261,10 @@ export default function NewsletterPage() {
 
   const handleDelete = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/newsletter/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setDeleteConfirm(null)
@@ -266,8 +277,10 @@ export default function NewsletterPage() {
 
   const handleDeleteSubscriber = async (id) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/newsletter/subscribers?id=${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
       })
       if (res.ok) {
         setSubscribers(subscribers.filter(s => s.id !== id))
@@ -466,9 +479,10 @@ export default function NewsletterPage() {
                           <button
                             onClick={async () => {
                               if (confirm('Send this newsletter to all subscribers?')) {
+                                const token = localStorage.getItem('adminToken')
                                 const res = await fetch(`/api/admin/newsletter/${newsletter.id}`, {
                                   method: 'PUT',
-                                  headers: { 'Content-Type': 'application/json' },
+                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                                   body: JSON.stringify({ action: 'send' })
                                 })
                                 if (res.ok) fetchData()
@@ -549,7 +563,7 @@ export default function NewsletterPage() {
                             className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 transition text-left"
                           >
                             {song.coverImage ? (
-                              <img src={song.coverImage} alt="" className="w-10 h-10 rounded-lg object-cover" />
+                              <Image src={song.coverImage} alt="" width={40} height={40} className="w-10 h-10 rounded-lg object-cover" unoptimized />
                             ) : (
                               <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
                                 <FiMusic className="w-4 h-4 text-slate-400" />
@@ -569,7 +583,7 @@ export default function NewsletterPage() {
                     {selectedSong && (
                       <div className="mt-3 flex items-center gap-3 p-3 bg-purple-50 rounded-xl">
                         {selectedSong.coverImage ? (
-                          <img src={selectedSong.coverImage} alt="" className="w-12 h-12 rounded-lg object-cover" />
+                          <Image src={selectedSong.coverImage} alt="" width={48} height={48} className="w-12 h-12 rounded-lg object-cover" unoptimized />
                         ) : (
                           <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                             <FiMusic className="w-5 h-5 text-purple-500" />

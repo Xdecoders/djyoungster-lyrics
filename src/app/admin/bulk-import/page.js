@@ -44,7 +44,10 @@ export default function BulkImportPage() {
 
   const fetchImports = async () => {
     try {
-      const res = await fetch('/api/admin/bulk-import')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/bulk-import', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
       if (res.ok) {
         const data = await res.json()
         setImports(data)
@@ -60,9 +63,10 @@ export default function BulkImportPage() {
   const handleDiscover = async (site) => {
     setDiscovering(site)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/bulk-import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'discover', site })
       })
       const data = await res.json()
@@ -73,7 +77,10 @@ export default function BulkImportPage() {
       const pollDiscovery = async () => {
         for (let i = 0; i < 120; i++) { // max ~4 minutes
           await new Promise(r => setTimeout(r, 2000))
-          const pollRes = await fetch('/api/admin/bulk-import')
+          const pollToken = localStorage.getItem('adminToken')
+          const pollRes = await fetch('/api/admin/bulk-import', {
+            headers: { 'Authorization': `Bearer ${pollToken}` }
+          })
           if (!pollRes.ok) continue
           const imports = await pollRes.json()
           const imp = imports.find(m => m.id === importId)
@@ -107,9 +114,10 @@ export default function BulkImportPage() {
     if (urls.length === 0) return alert('Paste at least one URL')
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/bulk-import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'add-urls', site: siteKey, urls })
       })
       const data = await res.json()
@@ -126,9 +134,10 @@ export default function BulkImportPage() {
   // Process next URL (called by polling)
   const processNext = useCallback(async (importId) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/bulk-import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'process-next', importId })
       })
       const data = await res.json()
@@ -192,9 +201,10 @@ export default function BulkImportPage() {
   const handlePause = async (importId) => {
     stopPolling(importId)
     try {
+      const token = localStorage.getItem('adminToken')
       await fetch('/api/admin/bulk-import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'pause', importId })
       })
       setImports(prev => prev.map(imp =>
@@ -208,9 +218,10 @@ export default function BulkImportPage() {
   // Resume import
   const handleResume = async (importId) => {
     try {
+      const token = localStorage.getItem('adminToken')
       await fetch('/api/admin/bulk-import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'resume', importId })
       })
       startPolling(importId)
@@ -229,9 +240,10 @@ export default function BulkImportPage() {
     if (!confirm('Delete this import and all its URLs?')) return
     stopPolling(importId)
     try {
+      const token = localStorage.getItem('adminToken')
       await fetch('/api/admin/bulk-import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'delete', importId })
       })
       setImports(prev => prev.filter(imp => imp.id !== importId))
@@ -243,9 +255,10 @@ export default function BulkImportPage() {
   // Retry failed
   const handleRetryFailed = async (importId) => {
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/bulk-import', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ action: 'retry-failed', importId })
       })
       const data = await res.json()

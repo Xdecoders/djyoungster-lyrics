@@ -74,12 +74,14 @@ function getFirstVerseOrChorus(lyrics) {
  * Generate MusicRecording schema for song pages
  */
 export function generateSongSchema(song, artistNames) {
-  // Use createdAt date if available, fallback to releaseYear
+  // Use createdAt date if available, fallback to releaseYear, then current date
   let datePublished
   if (song.createdAt) {
     datePublished = new Date(song.createdAt).toISOString().split('T')[0]
   } else if (song.releaseYear) {
     datePublished = `${song.releaseYear}-01-01`
+  } else {
+    datePublished = new Date().toISOString().split('T')[0]
   }
 
   const schema = {
@@ -127,15 +129,14 @@ export function generateSongSchema(song, artistNames) {
 
   // Add only first verse/chorus in schema (full lyrics in HTML)
   if (song.lyrics) {
+    const authorName = song.lyricist || artistNames || 'Unknown'
     schema.lyrics = {
       '@type': 'CreativeWork',
       text: getFirstVerseOrChorus(song.lyrics),
-      inLanguage: song.language || 'en'
-    }
-    if (song.lyricist) {
-      schema.lyrics.author = {
+      inLanguage: song.language || 'en',
+      author: {
         '@type': 'Person',
-        name: song.lyricist
+        name: authorName
       }
     }
   }
@@ -343,7 +344,7 @@ export function generateBreadcrumbSchema(breadcrumbs) {
       '@type': 'ListItem',
       position: index + 1,
       name: crumb.name,
-      item: crumb.url ? { '@type': 'WebPage', '@id': `${SITE_URL}${crumb.url}` } : undefined
+      item: crumb.url ? `${SITE_URL}${crumb.url}` : undefined
     }))
   }
 }

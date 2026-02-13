@@ -35,7 +35,8 @@ export default function EditArtist() {
 
   const fetchArtist = async () => {
     try {
-      const res = await fetch(`/api/admin/artists/${params.id}`)
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch(`/api/admin/artists/${params.id}`, { headers: { 'Authorization': `Bearer ${token}` } })
       if (!res.ok) {
         alert('Artist not found')
         router.push('/admin/artists')
@@ -91,8 +92,10 @@ export default function EditArtist() {
     formDataUpload.append('file', file)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formDataUpload
       })
 
@@ -123,9 +126,10 @@ export default function EditArtist() {
     setLoading(true)
 
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch(`/api/admin/artists/${params.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(formData)
       })
 
