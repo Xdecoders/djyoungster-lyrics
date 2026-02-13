@@ -35,8 +35,8 @@ export async function POST(request) {
         bio: data.bio || null,
         imageUrl: data.imageUrl || null,
         country: data.country || null,
-        metaTitle: data.metaTitle || data.name,
-        metaDescription: data.metaDescription || null
+        metaTitle: data.metaTitle || `${data.name} Songs Lyrics with English Translation - DJYoungster`,
+        metaDescription: data.metaDescription || `Explore ${data.name} song lyrics with meanings and translations. Read ${data.name} lyrics in English, Hindi, and Punjabi on DJYoungster.`
       }
     })
 

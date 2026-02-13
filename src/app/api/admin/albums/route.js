@@ -37,8 +37,8 @@ export async function POST(request) {
         releaseDate: data.releaseDate ? new Date(data.releaseDate) : null,
         label: data.label || null,
         artistId: data.artistId,
-        metaTitle: data.metaTitle || data.title,
-        metaDescription: data.metaDescription || null
+        metaTitle: data.metaTitle || `${data.title} Songs Lyrics with English Translation - DJYoungster`,
+        metaDescription: data.metaDescription || `Explore ${data.title} album song lyrics with meanings and translations on DJYoungster.`
       }
     })
 

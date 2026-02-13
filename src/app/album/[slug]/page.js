@@ -23,7 +23,8 @@ export async function generateMetadata({ params }) {
       where: { slug },
       include: {
         artist: { select: { name: true } },
-        _count: { select: { songs: true } }
+        _count: { select: { songs: true } },
+        songs: { orderBy: { createdAt: 'desc' }, take: 1, select: { coverImage: true } }
       }
     })
 
@@ -44,7 +45,8 @@ export async function generateMetadata({ params }) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/album/${slug}`
     // Convert relative image URL to absolute URL
-    const imageUrl = getAbsoluteUrl(album.coverImage) || `${siteUrl}/og-image.jpg`
+    const latestSongImage = album.songs?.[0]?.coverImage
+    const imageUrl = getAbsoluteUrl(album.coverImage) || getAbsoluteUrl(latestSongImage) || 'https://djyoungster.com/uploads/1769674444129-djyoungster.webp'
 
     return {
       title,

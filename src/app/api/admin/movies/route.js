@@ -63,7 +63,9 @@ export async function POST(request) {
         musicDirector: data.musicDirector || null,
         writer: data.writer || null,
         genre: data.genre || null,
-        language: data.language || null
+        language: data.language || null,
+        metaTitle: data.metaTitle || `${data.title}${data.year ? ` (${data.year})` : ''} Songs Lyrics - DJYoungster`,
+        metaDescription: data.metaDescription || `Explore ${data.title} movie song lyrics with meanings and translations on DJYoungster.`
       }
     })
 

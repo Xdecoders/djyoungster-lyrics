@@ -47,7 +47,7 @@ export async function generateMetadata({ params }) {
     const pageUrl = `${siteUrl}/movie/${slug}`
     // Use latest song's cover image or posterUrl or default - convert to absolute URL
     const latestSongImage = movie.songs?.[0]?.coverImage
-    const imageUrl = getAbsoluteUrl(movie.posterUrl) || getAbsoluteUrl(latestSongImage) || `${siteUrl}/og-image.jpg`
+    const imageUrl = getAbsoluteUrl(movie.posterUrl) || getAbsoluteUrl(latestSongImage) || 'https://djyoungster.com/uploads/1769674444129-djyoungster.webp'
 
     return {
       title,

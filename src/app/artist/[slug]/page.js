@@ -22,7 +22,8 @@ export async function generateMetadata({ params }) {
     const artist = await prisma.artist.findUnique({
       where: { slug },
       include: {
-        _count: { select: { songs: true, albums: true } }
+        _count: { select: { songs: true, albums: true } },
+        songs: { orderBy: { song: { createdAt: 'desc' } }, take: 1, select: { song: { select: { coverImage: true } } } }
       }
     })
 
@@ -40,7 +41,8 @@ export async function generateMetadata({ params }) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/artist/${slug}`
     // Convert relative image URL to absolute URL
-    const imageUrl = getAbsoluteUrl(artist.imageUrl) || `${siteUrl}/og-image.jpg`
+    const latestSongImage = artist.songs?.[0]?.song?.coverImage
+    const imageUrl = getAbsoluteUrl(artist.imageUrl) || getAbsoluteUrl(latestSongImage) || 'https://djyoungster.com/uploads/1769674444129-djyoungster.webp'
 
     return {
       title,
