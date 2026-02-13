@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { getSearchIndexes } from '@/lib/searchIndex'
 
 export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const query = searchParams.get('q') || ''
-    const type = searchParams.get('type') || 'all' // all, songs, artists, albums, movies
+    const type = searchParams.get('type') || 'all'
     const page = parseInt(searchParams.get('page')) || 1
     const limit = parseInt(searchParams.get('limit')) || 20
     const skip = (page - 1) * limit
@@ -16,11 +16,12 @@ export async function GET(request) {
         artists: [],
         albums: [],
         movies: [],
-        totalResults: 0
+        counts: { songs: 0, artists: 0, albums: 0, movies: 0, total: 0 }
       })
     }
 
     const searchTerm = query.trim()
+    const { songsFuse, artistsFuse, albumsFuse, moviesFuse } = await getSearchIndexes()
 
     let songs = []
     let artists = []
@@ -31,138 +32,44 @@ export async function GET(request) {
     let totalAlbums = 0
     let totalMovies = 0
 
-    // Search songs - search in title, lyrics, artist names, lyricist, composer
+    // Fuzzy search songs
     if (type === 'all' || type === 'songs') {
-      const songWhere = {
-        OR: [
-          { title: { contains: searchTerm } },
-          { lyrics: { contains: searchTerm } },
-          { lyricsRomanized: { contains: searchTerm } },
-          { lyricsTranslated: { contains: searchTerm } },
-          { lyricist: { contains: searchTerm } },
-          { composer: { contains: searchTerm } },
-          { singers: { contains: searchTerm } },
-          { artists: { some: { artist: { name: { contains: searchTerm } } } } },
-          { album: { title: { contains: searchTerm } } },
-          { movie: { title: { contains: searchTerm } } },
-        ],
-        status: 'published'
-      }
-
-      ;[songs, totalSongs] = await Promise.all([
-        prisma.song.findMany({
-          where: songWhere,
-          select: {
-            id: true,
-            title: true,
-            slug: true,
-            coverImage: true,
-            views: true,
-            createdAt: true,
-            artists: {
-              select: {
-                artist: { select: { id: true, name: true, slug: true } }
-              }
-            },
-            album: { select: { id: true, title: true, slug: true, coverImage: true } },
-            movie: { select: { id: true, title: true, slug: true } },
-            genres: {
-              select: {
-                genre: { select: { id: true, name: true, slug: true } }
-              }
-            }
-          },
-          orderBy: [
-            { views: 'desc' }
-          ],
-          skip: type === 'songs' ? skip : 0,
-          take: type === 'songs' ? limit : 10
-        }),
-        prisma.song.count({ where: songWhere })
-      ])
+      const songResults = songsFuse.search(searchTerm)
+      totalSongs = songResults.length
+      const sliced = type === 'songs'
+        ? songResults.slice(skip, skip + limit)
+        : songResults.slice(0, 10)
+      songs = sliced.map(r => r.item)
     }
 
-    // Search artists
+    // Fuzzy search artists
     if (type === 'all' || type === 'artists') {
-      const artistWhere = {
-        OR: [
-          { name: { contains: searchTerm } },
-          { bio: { contains: searchTerm } },
-        ]
-      }
-
-      ;[artists, totalArtists] = await Promise.all([
-        prisma.artist.findMany({
-          where: artistWhere,
-          include: {
-            _count: { select: { songs: true } }
-          },
-          orderBy: { name: 'asc' },
-          skip: type === 'artists' ? skip : 0,
-          take: type === 'artists' ? limit : 6
-        }),
-        prisma.artist.count({ where: artistWhere })
-      ])
+      const artistResults = artistsFuse.search(searchTerm)
+      totalArtists = artistResults.length
+      const sliced = type === 'artists'
+        ? artistResults.slice(skip, skip + limit)
+        : artistResults.slice(0, 6)
+      artists = sliced.map(r => r.item)
     }
 
-    // Search albums
+    // Fuzzy search albums
     if (type === 'all' || type === 'albums') {
-      const albumWhere = {
-        OR: [
-          { title: { contains: searchTerm } },
-          { artist: { name: { contains: searchTerm } } },
-        ]
-      }
-
-      ;[albums, totalAlbums] = await Promise.all([
-        prisma.album.findMany({
-          where: albumWhere,
-          include: {
-            artist: { select: { id: true, name: true, slug: true } },
-            _count: { select: { songs: true } }
-          },
-          orderBy: { releaseDate: 'desc' },
-          skip: type === 'albums' ? skip : 0,
-          take: type === 'albums' ? limit : 6
-        }),
-        prisma.album.count({ where: albumWhere })
-      ])
+      const albumResults = albumsFuse.search(searchTerm)
+      totalAlbums = albumResults.length
+      const sliced = type === 'albums'
+        ? albumResults.slice(skip, skip + limit)
+        : albumResults.slice(0, 6)
+      albums = sliced.map(r => r.item)
     }
 
-    // Search movies
+    // Fuzzy search movies
     if (type === 'all' || type === 'movies') {
-      const movieWhere = {
-        OR: [
-          { title: { contains: searchTerm } },
-          { director: { contains: searchTerm } },
-          { cast: { contains: searchTerm } },
-          { musicDirector: { contains: searchTerm } },
-        ]
-      }
-
-      ;[movies, totalMovies] = await Promise.all([
-        prisma.movie.findMany({
-          where: movieWhere,
-          include: {
-            _count: { select: { songs: true } },
-            songs: {
-              select: { coverImage: true },
-              take: 1,
-              orderBy: { createdAt: 'desc' }
-            }
-          },
-          orderBy: { year: 'desc' },
-          skip: type === 'movies' ? skip : 0,
-          take: type === 'movies' ? limit : 6
-        }),
-        prisma.movie.count({ where: movieWhere })
-      ])
-
-      // Add thumbnail to movies
-      movies = movies.map(movie => ({
-        ...movie,
-        thumbnail: movie.posterUrl || movie.songs?.[0]?.coverImage || null
-      }))
+      const movieResults = moviesFuse.search(searchTerm)
+      totalMovies = movieResults.length
+      const sliced = type === 'movies'
+        ? movieResults.slice(skip, skip + limit)
+        : movieResults.slice(0, 6)
+      movies = sliced.map(r => r.item)
     }
 
     const totalResults = totalSongs + totalArtists + totalAlbums + totalMovies
