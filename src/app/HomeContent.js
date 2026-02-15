@@ -87,40 +87,35 @@ export default function HomeContent({ data, siteSettings }) {
                     <Link
                       key={song.id}
                       href={`/song/${song.slug}`}
-                      className="flex-shrink-0 w-[280px] sm:w-[320px] group"
+                      className="flex-shrink-0 w-40 sm:w-48 group relative rounded-2xl overflow-hidden aspect-[3/4]"
                     >
-                      <div className="relative rounded-2xl overflow-hidden bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/80 dark:border-white/10 hover:shadow-xl hover:shadow-primary/5 transition-all duration-300">
-                        <div className="relative h-44 sm:h-48 overflow-hidden">
-                          {song.coverImage ? (
-                            <Image src={song.coverImage} alt={song.title} fill sizes="320px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={index < 4} />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                              <FiMusic className="w-10 h-10 text-slate-300 dark:text-slate-600" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+                      {song.coverImage ? (
+                        <Image src={song.coverImage} alt={song.title} fill sizes="192px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={index < 4} />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                          <FiMusic className="w-12 h-12 text-slate-400/50" />
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-                          {/* Rank badge - glass */}
-                          <div className="absolute top-3 left-3">
-                            <div className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-sm ${isTop3 ? `bg-gradient-to-br ${accents[index]} text-white shadow-lg` : 'bg-white/70 dark:bg-black/40 backdrop-blur-md text-slate-700 dark:text-slate-200'}`}>
-                              #{index + 1}
-                            </div>
-                          </div>
+                      {/* Rank badge */}
+                      <div className="absolute top-3 left-3">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${isTop3 ? `bg-gradient-to-br ${accents[index]} text-white shadow-lg` : 'bg-white/20 backdrop-blur-md border border-white/20 text-white'}`}>
+                          #{index + 1}
+                        </div>
+                      </div>
 
-                          {/* Play button */}
-                          <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                            <div className="w-10 h-10 bg-white/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center shadow-lg">
-                              <FiPlay className="w-4 h-4 text-white ml-0.5" />
-                            </div>
-                          </div>
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300">
+                          <FiPlay className="w-5 h-5 text-white ml-0.5" />
+                        </div>
+                      </div>
 
-                          {/* Glass info bar */}
-                          <div className="absolute bottom-0 left-0 right-0 p-3">
-                            <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
-                              <h3 className="font-semibold text-white text-sm truncate">{song.title}</h3>
-                              <p className="text-white/70 text-xs truncate mt-0.5">{artistNames}</p>
-                            </div>
-                          </div>
+                      {/* Glass info bar */}
+                      <div className="absolute bottom-0 left-0 right-0 p-3">
+                        <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
+                          <h3 className="font-semibold text-white text-sm truncate">{song.title}</h3>
+                          <p className="text-white/70 text-xs truncate mt-0.5">{artistNames}</p>
                         </div>
                       </div>
                     </Link>
