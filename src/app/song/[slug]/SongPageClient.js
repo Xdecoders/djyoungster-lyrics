@@ -17,7 +17,6 @@ import {
   FiGlobe,
   FiEye,
   FiClock,
-  FiHeart,
   FiShare2,
   FiCopy,
   FiCheck,
@@ -25,7 +24,6 @@ import {
   FiChevronRight,
   FiChevronDown,
   FiX,
-  FiTwitter,
   FiEdit3,
   FiMic,
   FiHeadphones,
@@ -44,7 +42,8 @@ import {
   FiStar
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
-import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube } from 'react-icons/fa'
+import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest } from 'react-icons/fa'
+import { FaXTwitter } from 'react-icons/fa6'
 
 // Apple Music Icon Component
 function AppleMusicIcon({ className }) {
@@ -446,6 +445,30 @@ function RelatedSongCard({ song }) {
   )
 }
 
+// Live Readers indicator
+function LiveReaders({ songTitle }) {
+  const [count, setCount] = useState(null)
+
+  useEffect(() => {
+    setCount(Math.floor(Math.random() * 40) + 12)
+    const interval = setInterval(() => {
+      setCount(prev => {
+        const delta = Math.random() < 0.5 ? -1 : 1
+        return Math.max(8, Math.min(55, prev + delta))
+      })
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  if (count === null) return null
+
+  return (
+    <p className="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg mb-3 text-center sm:text-left">
+      <span className="font-semibold">{count} people</span> reading {songTitle} lyrics right now
+    </p>
+  )
+}
+
 // Share Modal Component
 function ShareModal({ isOpen, onClose, song, url, selectedText }) {
   const [copied, setCopied] = useState(false)
@@ -464,16 +487,22 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
       url: `https://wa.me/?text=${encodeURIComponent(`${shareText}\n${url}`)}`
     },
     {
-      name: 'Twitter',
-      icon: FiTwitter,
-      color: 'bg-sky-500 hover:bg-sky-600',
-      url: `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`
+      name: 'X',
+      icon: FaXTwitter,
+      color: 'bg-black hover:bg-neutral-800',
+      url: `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(url)}`
     },
     {
       name: 'Facebook',
       icon: FaFacebook,
       color: 'bg-blue-600 hover:bg-blue-700',
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
+    },
+    {
+      name: 'Pinterest',
+      icon: FaPinterest,
+      color: 'bg-red-600 hover:bg-red-700',
+      url: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(shareText)}`
     },
   ]
 
@@ -1040,10 +1069,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const [song] = useState(initialSong)
   const [relatedSongs] = useState(initialRelatedSongs)
   const [copied, setCopied] = useState(false)
-  const [isLiked, setIsLiked] = useState(false)
-  const [likeCount, setLikeCount] = useState(initialSong?.likes || 0)
   const [viewCount, setViewCount] = useState(initialSong?.views || 0)
-  const [isLikeLoading, setIsLikeLoading] = useState(false)
   const [showShareModal, setShowShareModal] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
   const [lyricsMode, setLyricsMode] = useState('original')
@@ -1178,7 +1204,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                       </span>
                     </button>
 
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-4">
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
                       {song.artists?.map(({ artist }) => (
                         <Link
                           key={artist.id}
@@ -1194,7 +1220,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                     </div>
 
                     {/* Meta Info */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400 mb-6">
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400 mb-3">
                       {song.album && (
                         <Link href={`/album/${song.album.slug}`} className="flex items-center gap-1.5 hover:text-primary transition">
                           <FiDisc className="w-4 h-4" />
@@ -1217,38 +1243,11 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                       )}
                     </div>
 
+                    {/* Live Readers */}
+                    <LiveReaders songTitle={song.title} />
+
                     {/* Action Buttons */}
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
-                      <button
-                        onClick={async () => {
-                          if (isLikeLoading) return
-                          setIsLikeLoading(true)
-                          try {
-                            const res = await fetch(`/api/public/songs/${params.slug}/interact`, {
-                              method: 'PUT'
-                            })
-                            if (res.ok) {
-                              const data = await res.json()
-                              setIsLiked(data.hasLiked)
-                              setLikeCount(data.likes)
-                            }
-                          } catch (err) {
-                            console.error('Error toggling like:', err)
-                          } finally {
-                            setIsLikeLoading(false)
-                          }
-                        }}
-                        disabled={isLikeLoading}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition ${
-                          isLiked
-                            ? 'bg-gradient-to-r from-rose-500 to-pink-500 text-white'
-                            : 'bg-gradient-to-r from-rose-500 to-pink-600 text-white hover:from-rose-600 hover:to-pink-700'
-                        } ${isLikeLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      >
-                        <FiHeart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                        <span>{likeCount}</span>
-                        <span className="hidden sm:inline">{isLiked ? 'Liked' : 'Like'}</span>
-                      </button>
                       <button
                         onClick={() => setShowShareModal(true)}
                         className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
@@ -1400,7 +1399,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
             </div>
 
             {/* Sidebar */}
-            <aside className="lg:col-span-1 lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto lg:scrollbar-thin">
+            <aside className="lg:col-span-1 lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto scrollbar-hide">
               {/* Categories/Languages */}
               {categories.length > 0 && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">

@@ -127,7 +127,7 @@ async function getHomepageData() {
       prisma.song.findMany({
         where: { status: 'published' },
         orderBy: { views: 'desc' },
-        take: 10,
+        take: 30,
         select: songSelectFields
       }),
       prisma.category.findMany({
@@ -149,17 +149,21 @@ async function getHomepageData() {
         include: { _count: { select: { songs: true } } },
         orderBy: { songs: { _count: 'desc' } }
       }),
-      getSiteSettings()
+      getSiteSettings(),
     ])
+
+    // Shuffle and pick 10 for Editor's Pick
+    const shuffled = trendingSongs.sort(() => Math.random() - 0.5)
+    const editorsPicks = shuffled.slice(0, 10)
 
     return {
       latestSongs,
-      trendingSongs,
+      editorsPicks,
       categories,
       artists,
       tags,
       siteSettings: {
-        heroHeading: siteSettings.heroHeading || 'Discover Your Favorite Song Lyrics',
+        heroHeading: siteSettings.heroHeading || 'Discover Your Favorite *Song Lyrics*',
         heroDescription: siteSettings.heroDescription || 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
       }
     }
@@ -167,12 +171,12 @@ async function getHomepageData() {
     console.error('Error fetching homepage data:', error)
     return {
       latestSongs: [],
-      trendingSongs: [],
+      editorsPicks: [],
       categories: [],
       artists: [],
       tags: [],
       siteSettings: {
-        heroHeading: 'Discover Your Favorite Song Lyrics',
+        heroHeading: 'Discover Your Favorite *Song Lyrics*',
         heroDescription: 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
       }
     }

@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiFolder, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX } from 'react-icons/fi'
+import Image from 'next/image'
+import { FiFolder, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX, FiUpload, FiImage } from 'react-icons/fi'
 
 export default function CategoriesPage() {
   const router = useRouter()
@@ -17,11 +18,15 @@ export default function CategoriesPage() {
     name: '',
     slug: '',
     description: '',
+    imageUrl: '',
     metaTitle: '',
     metaDescription: ''
   })
   const [submitting, setSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [imagePreview, setImagePreview] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -69,8 +74,56 @@ export default function CategoriesPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      setErrorMessage('Invalid file type. Only JPEG, PNG, and WebP are allowed.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('File too large. Maximum size is 5MB.')
+      return
+    }
+
+    setImagePreview(URL.createObjectURL(file))
+    setUploading(true)
+    setErrorMessage('')
+
+    try {
+      const token = localStorage.getItem('adminToken')
+      const uploadData = new FormData()
+      uploadData.append('file', file)
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: uploadData
+      })
+
+      if (res.ok) {
+        const { url } = await res.json()
+        setFormData(prev => ({ ...prev, imageUrl: url }))
+      } else {
+        const data = await res.json()
+        setErrorMessage(data.message || 'Failed to upload image.')
+        setImagePreview('')
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      setErrorMessage('Failed to upload image.')
+      setImagePreview('')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const resetForm = () => {
-    setFormData({ name: '', slug: '', description: '', metaTitle: '', metaDescription: '' })
+    setFormData({ name: '', slug: '', description: '', imageUrl: '', metaTitle: '', metaDescription: '' })
+    setImagePreview('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
     setShowForm(false)
     setEditingId(null)
   }
@@ -119,9 +172,11 @@ export default function CategoriesPage() {
       name: category.name,
       slug: category.slug,
       description: category.description || '',
+      imageUrl: category.imageUrl || '',
       metaTitle: category.metaTitle || '',
       metaDescription: category.metaDescription || ''
     })
+    setImagePreview(category.imageUrl || '')
     setEditingId(category.id)
     setShowForm(true)
   }
@@ -242,6 +297,42 @@ export default function CategoriesPage() {
                   placeholder="Write a description about this language/category for SEO..."
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Image</label>
+                <div className="flex items-start gap-4">
+                  {(imagePreview || formData.imageUrl) && (
+                    <div className="relative w-16 h-[85px] sm:w-20 sm:h-[107px] rounded-lg overflow-hidden border border-slate-200 flex-shrink-0">
+                      <Image src={imagePreview || formData.imageUrl} alt="Preview" fill className="object-cover" unoptimized />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full px-4 py-3 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-primary hover:bg-emerald-50/50 transition flex items-center gap-3"
+                    >
+                      {uploading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm text-slate-500">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FiUpload className="w-5 h-5 text-slate-400" />
+                          <span className="text-sm text-slate-500">{formData.imageUrl ? 'Change image' : 'Click to upload image'}</span>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <p className="text-xs text-slate-400 mt-1.5">Recommended: 800 x 1067px (3:4 ratio) &middot; Max 5MB</p>
+                  </div>
+                </div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">Meta Title (SEO)</label>
@@ -315,9 +406,13 @@ export default function CategoriesPage() {
               {categories.map((category) => (
                 <div key={category.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
-                      <FiFolder className="w-5 h-5 text-amber-500" />
-                    </div>
+                    {category.imageUrl ? (
+                      <Image src={category.imageUrl} alt={category.name} width={40} height={53} className="w-10 h-[53px] rounded-xl object-cover" unoptimized />
+                    ) : (
+                      <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
+                        <FiFolder className="w-5 h-5 text-amber-500" />
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-medium text-slate-800">{category.name}</h3>
                       <p className="text-sm text-slate-400">/{category.slug}</p>

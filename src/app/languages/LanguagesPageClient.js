@@ -2,35 +2,30 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiGlobe, FiChevronRight, FiMusic } from 'react-icons/fi'
 
-function LanguageCard({ category, index }) {
-  // Light pastel colors for light mode, darker muted colors for dark mode
-  const colors = [
-    { light: 'bg-orange-100', dark: 'dark:bg-orange-900/40', accent: 'text-orange-600 dark:text-orange-400' },
-    { light: 'bg-emerald-100', dark: 'dark:bg-emerald-900/40', accent: 'text-emerald-600 dark:text-emerald-400' },
-    { light: 'bg-blue-100', dark: 'dark:bg-blue-900/40', accent: 'text-blue-600 dark:text-blue-400' },
-    { light: 'bg-purple-100', dark: 'dark:bg-purple-900/40', accent: 'text-purple-600 dark:text-purple-400' },
-    { light: 'bg-pink-100', dark: 'dark:bg-pink-900/40', accent: 'text-pink-600 dark:text-pink-400' },
-    { light: 'bg-teal-100', dark: 'dark:bg-teal-900/40', accent: 'text-teal-600 dark:text-teal-400' },
-    { light: 'bg-amber-100', dark: 'dark:bg-amber-900/40', accent: 'text-amber-600 dark:text-amber-400' },
-    { light: 'bg-indigo-100', dark: 'dark:bg-indigo-900/40', accent: 'text-indigo-600 dark:text-indigo-400' },
-  ]
-
-  const color = colors[index % colors.length]
-
+function LanguageCard({ category }) {
   return (
     <Link
       href={`/category/${category.slug}`}
-      className={`group relative overflow-hidden rounded-2xl aspect-square ${color.light} ${color.dark} shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-200/50 dark:border-slate-700/50`}
+      className="group relative overflow-hidden rounded-2xl aspect-[3/4] bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800"
     >
-      <div className="relative h-full flex flex-col justify-between p-4 sm:p-5">
-        <div className={`w-10 h-10 rounded-xl bg-white/60 dark:bg-slate-800/60 flex items-center justify-center ${color.accent}`}>
-          <FiGlobe className="w-5 h-5" />
+      {category.imageUrl && (
+        <Image src={category.imageUrl} alt={category.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" unoptimized />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      {!category.imageUrl && (
+        <div className="absolute top-4 left-4">
+          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center">
+            <FiGlobe className="w-5 h-5 text-white" />
+          </div>
         </div>
-        <div>
-          <h3 className="text-slate-800 dark:text-white font-bold text-lg sm:text-xl mb-1">{category.name}</h3>
-          <p className="text-slate-500 dark:text-slate-400 text-sm">{category._count?.songs || 0} songs</p>
+      )}
+      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+        <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
+          <h3 className="font-semibold text-white text-sm">{category.name}</h3>
+          <p className="text-white/70 text-xs mt-0.5">{category._count?.songs || 0} songs</p>
         </div>
       </div>
     </Link>
@@ -61,7 +56,7 @@ export default function LanguagesPageClient({ initialData }) {
         </div>
 
         {categories.length > 0 ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
             {categories.map((category, index) => (
               <LanguageCard key={category.id} category={category} index={index} />
             ))}

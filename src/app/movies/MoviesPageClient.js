@@ -6,23 +6,24 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilm, FiChevronRight } from 'react-icons/fi'
 
 function MovieCard({ movie }) {
-  // Get poster image - use posterUrl, or fallback to first song's cover
   const posterImage = movie.posterUrl || movie.songs?.[0]?.coverImage || null
 
   return (
-    <Link href={`/movie/${movie.slug || movie.id}`} className="group">
-      <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
-        {posterImage ? (
-          <Image src={posterImage} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover" />
-        ) : (
-          <FiFilm className="w-16 h-16 text-rose-400" />
-        )}
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4">
-          <p className="text-white/80 text-sm">{movie.year || 'Unknown'}</p>
+    <Link href={`/movie/${movie.slug || movie.id}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
+      {posterImage ? (
+        <Image src={posterImage} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+          <FiFilm className="w-12 h-12 text-slate-400/50" />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+        <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
+          <h3 className="font-semibold text-white text-sm truncate">{movie.title}</h3>
+          <p className="text-white/70 text-xs mt-0.5">{movie.year || 'Unknown'} · {movie._count?.songs || 0} songs</p>
         </div>
       </div>
-      <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">{movie.title}</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400">{movie._count?.songs || 0} {movie._count?.songs === 1 ? 'song' : 'songs'}</p>
     </Link>
   )
 }

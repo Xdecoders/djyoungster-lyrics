@@ -2,29 +2,30 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { FiTag, FiChevronRight, FiMusic } from 'react-icons/fi'
 
-function GenreCard({ genre, index }) {
-  const colors = [
-    'from-rose-500 to-pink-500',
-    'from-primary to-emerald-600',
-    'from-blue-500 to-cyan-500',
-    'from-amber-500 to-orange-500',
-    'from-purple-500 to-violet-500',
-    'from-teal-500 to-emerald-500',
-    'from-red-500 to-rose-500',
-    'from-indigo-500 to-blue-500',
-  ]
-
+function GenreCard({ genre }) {
   return (
     <Link
       href={`/genre/${genre.slug}`}
-      className="group relative overflow-hidden rounded-xl aspect-[3/2] bg-gradient-to-br"
+      className="group relative overflow-hidden rounded-2xl aspect-[3/4] bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800"
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${colors[index % colors.length]} transition-transform duration-300 group-hover:scale-105`}></div>
-      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition"></div>
-      <div className="relative h-full flex flex-col justify-end p-3 sm:p-4">
-        <h3 className="text-white font-semibold text-sm sm:text-base">{genre.name}</h3>
+      {genre.imageUrl && (
+        <Image src={genre.imageUrl} alt={genre.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" unoptimized />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      {!genre.imageUrl && (
+        <div className="absolute top-4 left-4">
+          <div className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-md border border-white/20 flex items-center justify-center">
+            <FiTag className="w-5 h-5 text-white" />
+          </div>
+        </div>
+      )}
+      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+        <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
+          <h3 className="font-semibold text-white text-sm">{genre.name}</h3>
+        </div>
       </div>
     </Link>
   )
@@ -53,7 +54,7 @@ export default function GenresPageClient({ initialData }) {
           <p className="text-slate-500 dark:text-slate-400 mt-2">Explore songs by your favorite genres</p>
         </div>
 
-        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
           {genres.map((genre, index) => (
             <GenreCard key={genre.id} genre={genre} index={index} />
           ))}

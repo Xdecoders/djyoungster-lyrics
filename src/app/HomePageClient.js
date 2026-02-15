@@ -410,32 +410,28 @@ function Carousel({ children, title, icon: Icon, iconBg, viewAllLink }) {
 // Song Card Component
 function SongCard({ song, index, priority = false }) {
   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
-  const pastelColors = [
-    'from-rose-100 to-pink-100 dark:from-rose-900/40 dark:to-pink-900/40',
-    'from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40',
-    'from-blue-100 to-cyan-100 dark:from-blue-900/40 dark:to-cyan-900/40',
-    'from-emerald-100 to-teal-100 dark:from-emerald-900/40 dark:to-teal-900/40',
-    'from-amber-100 to-yellow-100 dark:from-amber-900/40 dark:to-yellow-900/40',
-    'from-orange-100 to-red-100 dark:from-orange-900/40 dark:to-red-900/40',
-  ]
-  const bgColor = pastelColors[index % pastelColors.length]
 
   return (
-    <Link href={`/song/${song.slug}`} className="flex-shrink-0 w-44 group">
-      <div className={`aspect-square rounded-2xl bg-gradient-to-br ${bgColor} flex items-center justify-center mb-3 overflow-hidden relative shadow-sm group-hover:shadow-md transition-all duration-300`}>
-        {song.coverImage ? (
-          <Image src={song.coverImage} alt={song.title} fill sizes="176px" className="object-cover" priority={priority} />
-        ) : (
-          <FiMusic className="w-12 h-12 text-slate-400" />
-        )}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
-          <div className="w-12 h-12 bg-white/90 dark:bg-slate-800/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-300 shadow-lg">
-            <FiPlay className="w-5 h-5 text-primary ml-0.5" />
-          </div>
+    <Link href={`/song/${song.slug}`} className="flex-shrink-0 w-44 group relative rounded-2xl overflow-hidden aspect-[3/4]">
+      {song.coverImage ? (
+        <Image src={song.coverImage} alt={song.title} fill sizes="176px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+          <FiMusic className="w-12 h-12 text-slate-400/50" />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+        <div className="w-12 h-12 bg-white/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300">
+          <FiPlay className="w-5 h-5 text-white ml-0.5" />
         </div>
       </div>
-      <h3 className="font-medium text-slate-800 dark:text-white truncate text-sm">{song.title}</h3>
-      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{artistNames}</p>
+      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+        <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
+          <h3 className="font-semibold text-white text-sm truncate">{song.title}</h3>
+          <p className="text-white/70 text-xs truncate mt-0.5">{artistNames}</p>
+        </div>
+      </div>
     </Link>
   )
 }
@@ -694,18 +690,56 @@ export default function HomePageClient({ initialData }) {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
 
-        {/* Trending Songs */}
-        {data?.trendingSongs?.length > 0 && (
-          <Carousel
-            title="Trending Now"
-            icon={FiTrendingUp}
-            iconBg="bg-rose-100"
-            viewAllLink="/songs?sort=trending"
-          >
-            {data.trendingSongs.map((song, index) => (
-              <SongCard key={song.id} song={song} index={index} priority={index < 4} />
-            ))}
-          </Carousel>
+        {/* Top Charts */}
+        {data?.editorsPicks?.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900/30 dark:to-orange-900/30">
+                  <FiTrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                </div>
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Top Charts</h2>
+              </div>
+              <Link href="/songs?sort=trending" className="text-sm text-primary hover:text-primary-hover font-medium">
+                View All
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {data.editorsPicks.map((song, index) => {
+                const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+                const views = song.views || 0
+                const formattedViews = views >= 1000000 ? (views / 1000000).toFixed(1) + 'M' : views >= 1000 ? (views / 1000).toFixed(1) + 'K' : views.toString()
+                const isTop3 = index < 3
+                const medalColors = ['from-amber-400 to-yellow-500', 'from-slate-300 to-slate-400', 'from-amber-600 to-amber-700']
+
+                return (
+                  <Link
+                    key={song.id}
+                    href={`/song/${song.slug}`}
+                    className={`group flex items-center gap-3 p-3 rounded-xl transition-all duration-200 ${isTop3 ? 'bg-white dark:bg-slate-800 shadow-sm hover:shadow-md border border-slate-100 dark:border-slate-700' : 'hover:bg-white dark:hover:bg-slate-800 hover:shadow-sm'}`}
+                  >
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold text-sm ${isTop3 ? `bg-gradient-to-br ${medalColors[index]} text-white shadow-sm` : 'bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400'}`}>
+                      {index + 1}
+                    </div>
+                    <div className="w-11 h-11 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 shrink-0 relative">
+                      {song.coverImage ? (
+                        <Image src={song.coverImage} alt={song.title} fill sizes="44px" className="object-cover" priority={index < 3} />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <FiMusic className="w-4 h-4 text-slate-400" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium text-sm text-slate-800 dark:text-white truncate group-hover:text-primary transition">{song.title}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{artistNames}</p>
+                    </div>
+                    <span className="text-xs text-slate-400 dark:text-slate-500 shrink-0 font-medium">{formattedViews} reads</span>
+                  </Link>
+                )
+              })}
+            </div>
+          </section>
         )}
 
         {/* Latest Songs */}

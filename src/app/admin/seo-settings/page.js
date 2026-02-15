@@ -554,10 +554,10 @@ export default function SeoSettingsPage() {
                 type="text"
                 value={heroHeading}
                 onChange={(e) => setHeroHeading(e.target.value)}
-                placeholder="Discover Your Favorite Song Lyrics"
+                placeholder="Discover Your Favorite *Song Lyrics*"
                 className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
               />
-              <p className="text-xs text-slate-400 mt-1">Main heading displayed on the homepage</p>
+              <p className="text-xs text-slate-400 mt-1">Wrap words in *asterisks* to highlight them in green gradient. E.g. Discover Your Favorite *Song Lyrics*</p>
             </div>
 
             <div>

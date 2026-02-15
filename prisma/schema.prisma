@@ -139,6 +139,7 @@ model Category {
   name            String   @unique
   slug            String   @unique
   description     String?  @db.Text
+  imageUrl        String?
   metaTitle       String?
   metaDescription String?  @db.Text
   createdAt       DateTime @default(now())

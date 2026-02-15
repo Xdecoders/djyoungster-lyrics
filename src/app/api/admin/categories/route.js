@@ -33,6 +33,7 @@ export async function POST(request) {
         name: data.name,
         slug: data.slug || data.name.toLowerCase().replace(/\s+/g, '-'),
         description: data.description || null,
+        imageUrl: data.imageUrl || null,
         metaTitle: data.metaTitle || null,
         metaDescription: data.metaDescription || null
       }

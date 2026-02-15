@@ -8,16 +8,21 @@ import { FiUser, FiChevronRight } from 'react-icons/fi'
 function ArtistCard({ artist }) {
   const displayImage = artist.imageUrl || artist.thumbnail
   return (
-    <Link href={`/artist/${artist.slug}`} className="group text-center">
-      <div className="w-32 h-32 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md group-hover:scale-105 transition relative">
-        {displayImage ? (
-          <Image src={displayImage} alt={artist.name} fill sizes="128px" className="object-cover" />
-        ) : (
-          <FiUser className="w-12 h-12 text-emerald-400" />
-        )}
+    <Link href={`/artist/${artist.slug}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
+      {displayImage ? (
+        <Image src={displayImage} alt={artist.name} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+          <FiUser className="w-12 h-12 text-slate-400/50" />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+        <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
+          <h3 className="font-semibold text-white text-sm truncate">{artist.name}</h3>
+          <p className="text-white/70 text-xs mt-0.5">{artist._count?.songs || 0} {artist._count?.songs === 1 ? 'song' : 'songs'}</p>
+        </div>
       </div>
-      <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">{artist.name}</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400">{artist._count?.songs || 0} {artist._count?.songs === 1 ? 'song' : 'songs'}</p>
     </Link>
   )
 }

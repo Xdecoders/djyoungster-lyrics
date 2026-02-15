@@ -134,7 +134,7 @@ export default function SearchWithAutocomplete() {
             onFocus={() => query.length >= 2 && setIsOpen(true)}
             onKeyDown={handleKeyDown}
             placeholder={`Search for ${filter === 'all' ? 'songs, artists, albums...' : filter}...`}
-            className="w-full pl-14 pr-32 py-4 rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg shadow-slate-100 dark:shadow-slate-900/50 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
+            className="w-full pl-14 pr-32 py-4 rounded-2xl border-none bg-[#e8ecef] dark:bg-slate-800 shadow-[inset_3px_3px_6px_#c5c9cc,inset_-3px_-3px_6px_#ffffff] dark:shadow-[inset_3px_3px_6px_#0f172a,inset_-3px_-3px_6px_#1e293b] focus:outline-none focus:shadow-[inset_3px_3px_6px_#c5c9cc,inset_-3px_-3px_6px_#ffffff,0_0_0_2px_#1DB954] dark:focus:shadow-[inset_3px_3px_6px_#0f172a,inset_-3px_-3px_6px_#1e293b,0_0_0_2px_#1DB954] text-slate-700 dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
           />
           {query && (
             <button

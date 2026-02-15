@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiTag, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX } from 'react-icons/fi'
+import { FiTag, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX, FiUpload } from 'react-icons/fi'
 
 export default function GenresPage() {
   const router = useRouter()
@@ -21,6 +21,10 @@ export default function GenresPage() {
     metaTitle: '',
     metaDescription: ''
   })
+  const [imagePreview, setImagePreview] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -68,8 +72,56 @@ export default function GenresPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
   }
 
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp']
+    if (!validTypes.includes(file.type)) {
+      setErrorMessage('Invalid file type. Only JPEG, PNG, and WebP are allowed.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMessage('File too large. Maximum size is 5MB.')
+      return
+    }
+
+    setImagePreview(URL.createObjectURL(file))
+    setUploading(true)
+    setErrorMessage('')
+
+    try {
+      const token = localStorage.getItem('adminToken')
+      const uploadData = new FormData()
+      uploadData.append('file', file)
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: uploadData
+      })
+
+      if (res.ok) {
+        const { url } = await res.json()
+        setFormData(prev => ({ ...prev, imageUrl: url }))
+      } else {
+        const data = await res.json()
+        setErrorMessage(data.message || 'Failed to upload image.')
+        setImagePreview('')
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      setErrorMessage('Failed to upload image.')
+      setImagePreview('')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   const resetForm = () => {
     setFormData({ name: '', slug: '', description: '', imageUrl: '', metaTitle: '', metaDescription: '' })
+    setImagePreview('')
+    if (fileInputRef.current) fileInputRef.current.value = ''
     setShowForm(false)
     setEditingId(null)
   }
@@ -108,6 +160,7 @@ export default function GenresPage() {
       metaTitle: genre.metaTitle || '',
       metaDescription: genre.metaDescription || ''
     })
+    setImagePreview(genre.imageUrl || '')
     setEditingId(genre.id)
     setShowForm(true)
   }
@@ -161,6 +214,17 @@ export default function GenresPage() {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Error Message */}
+        {errorMessage && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+            <FiX className="w-5 h-5 text-red-600" />
+            <span className="text-red-700 font-medium">{errorMessage}</span>
+            <button onClick={() => setErrorMessage('')} className="ml-auto p-1 hover:bg-red-100 rounded">
+              <FiX className="w-4 h-4 text-red-500" />
+            </button>
+          </div>
+        )}
+
         {/* Add/Edit Form */}
         {showForm && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
@@ -210,15 +274,40 @@ export default function GenresPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Image URL</label>
-                <input
-                  type="text"
-                  name="imageUrl"
-                  value={formData.imageUrl}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
-                  placeholder="https://example.com/image.jpg"
-                />
+                <label className="block text-sm font-medium text-slate-700 mb-2">Image</label>
+                <div className="flex items-start gap-4">
+                  {(imagePreview || formData.imageUrl) && (
+                    <div className="relative w-16 h-[85px] sm:w-20 sm:h-[107px] rounded-lg overflow-hidden border border-slate-200 flex-shrink-0">
+                      <Image src={imagePreview || formData.imageUrl} alt="Preview" fill className="object-cover" unoptimized />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <div
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full px-4 py-3 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:border-primary hover:bg-emerald-50/50 transition flex items-center gap-3"
+                    >
+                      {uploading ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                          <span className="text-sm text-slate-500">Uploading...</span>
+                        </>
+                      ) : (
+                        <>
+                          <FiUpload className="w-5 h-5 text-slate-400" />
+                          <span className="text-sm text-slate-500">{formData.imageUrl ? 'Change image' : 'Click to upload image'}</span>
+                        </>
+                      )}
+                    </div>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                    <p className="text-xs text-slate-400 mt-1.5">Recommended: 800 x 1067px (3:4 ratio) &middot; Max 5MB</p>
+                  </div>
+                </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
