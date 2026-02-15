@@ -54,7 +54,7 @@ export const STORY_TEMPLATES = [
   },
 ]
 
-async function ensureGoogleFont(fontFamily) {
+export async function ensureGoogleFont(fontFamily) {
   const id = 'google-font-' + fontFamily.replace(/\s+/g, '-').toLowerCase()
   if (!document.getElementById(id)) {
     const link = document.createElement('link')
@@ -71,7 +71,7 @@ async function ensureGoogleFont(fontFamily) {
   }
 }
 
-function loadImage(src) {
+export function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new window.Image()
     img.crossOrigin = 'anonymous'
@@ -81,7 +81,7 @@ function loadImage(src) {
   })
 }
 
-function wrapText(ctx, text, maxWidth) {
+export function wrapText(ctx, text, maxWidth) {
   const words = text.split(' ')
   const lines = []
   let currentLine = ''
@@ -99,17 +99,7 @@ function wrapText(ctx, text, maxWidth) {
   return lines
 }
 
-export async function generateStoryImage({ selectedLines, songTitle, artistNames, coverImageUrl, template = STORY_TEMPLATES[0] }) {
-  const W = 1080
-  const H = 1920
-  const canvas = document.createElement('canvas')
-  canvas.width = W
-  canvas.height = H
-  const ctx = canvas.getContext('2d')
-
-  const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-
-  // Background: try blurred cover image (unless template skips it), fallback to gradient
+export async function paintBackground(ctx, W, H, template, coverImageUrl) {
   let hasCoverBg = false
   if (coverImageUrl && !template.skipCoverImage) {
     try {
@@ -134,7 +124,6 @@ export async function generateStoryImage({ selectedLines, songTitle, artistNames
     ctx.fillStyle = grad
     ctx.fillRect(0, 0, W, H)
 
-    // Subtle texture for light backgrounds
     if (template.skipCoverImage) {
       ctx.globalAlpha = 0.04
       for (let i = 0; i < 300; i++) {
@@ -150,22 +139,23 @@ export async function generateStoryImage({ selectedLines, songTitle, artistNames
     }
   }
 
-  // Overlay gradient for text readability
   const overlay = ctx.createLinearGradient(0, 0, 0, H)
   overlay.addColorStop(0, `rgba(0,0,0,${template.overlayOpacity[0]})`)
   overlay.addColorStop(0.5, `rgba(0,0,0,${template.overlayOpacity[1]})`)
   overlay.addColorStop(1, `rgba(0,0,0,${template.overlayOpacity[2]})`)
   ctx.fillStyle = overlay
   ctx.fillRect(0, 0, W, H)
+}
 
-  // Decorative emoji above song title
+export function paintTitleArea(ctx, W, H, template, songTitle, artistNames) {
+  const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+
   ctx.textAlign = 'center'
   ctx.globalAlpha = template.emojiOpacity ?? 0.18
   ctx.font = `80px ${fontSystem}`
   ctx.fillText(template.emoji, W / 2, 350)
   ctx.globalAlpha = 1
 
-  // Song title & artist
   ctx.font = `bold 34px ${fontSystem}`
   ctx.fillStyle = template.textColor
   ctx.fillText(songTitle, W / 2, 420)
@@ -174,6 +164,18 @@ export async function generateStoryImage({ selectedLines, songTitle, artistNames
   ctx.globalAlpha = 0.7
   ctx.fillText('by ' + artistNames, W / 2, 463)
   ctx.globalAlpha = 1
+}
+
+export async function generateStoryImage({ selectedLines, songTitle, artistNames, coverImageUrl, template = STORY_TEMPLATES[0] }) {
+  const W = 1080
+  const H = 1920
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+
+  await paintBackground(ctx, W, H, template, coverImageUrl)
+  paintTitleArea(ctx, W, H, template, songTitle, artistNames)
 
   // Lyrics lines
   ctx.font = `${template.fontWeight} 52px ${template.font}`

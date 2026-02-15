@@ -6,8 +6,10 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
 import { useStoryMode } from './StoryCreator'
+import { useClipMode } from './ClipMaker'
 
 const StoryPreviewModal = dynamic(() => import('./StoryCreator').then(mod => ({ default: mod.StoryPreviewModal })), { ssr: false })
+const ClipPreviewModal = dynamic(() => import('./ClipMaker').then(mod => ({ default: mod.ClipPreviewModal })), { ssr: false })
 import {
   FiMusic,
   FiUser,
@@ -764,7 +766,7 @@ function LyricsToggle({ lyricsMode, setLyricsMode, hasRomanized, hasTranslated, 
 }
 
 // Lyrics Display Component - All versions rendered in HTML for SEO, CSS controls visibility
-function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize, isStoryMode, selectedLines, onLineToggle }) {
+function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize, isStoryMode, selectedLines, onLineToggle, selectColor = 'purple' }) {
   const modeLabels = {
     romanized: { icon: FiType, text: 'Showing Romanized/Transliterated lyrics for easier reading' },
     translated: { icon: MdTranslate, text: 'Showing English Translation of the lyrics' },
@@ -814,13 +816,16 @@ function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize, isStoryMode, sel
                   const trimmed = line.trim()
                   if (!trimmed) return <div key={idx} className="h-4" />
                   const isSelected = selectedLines?.some(l => l.index === idx)
+                  const selectedClass = selectColor === 'cyan'
+                    ? 'border-l-4 border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30 text-slate-800 dark:text-white'
+                    : 'border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-slate-800 dark:text-white'
                   return (
                     <div
                       key={idx}
                       onClick={() => onLineToggle?.(idx, trimmed)}
                       className={`cursor-pointer px-3 py-1 rounded-lg transition-all select-none ${
                         isSelected
-                          ? 'border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-slate-800 dark:text-white'
+                          ? selectedClass
                           : 'border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200'
                       }`}
                     >
@@ -1090,11 +1095,42 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
     handleTemplateChange, exitStoryMode,
   } = useStoryMode({ initialSong })
 
-  // Reset selected lines when lyrics mode changes during story mode
+  // Clip mode
+  const {
+    isClipMode, setIsClipMode,
+    selectedLines: clipSelectedLines, setSelectedLines: setClipSelectedLines,
+    showClipPreview, setShowClipPreview,
+    clipVideoBlob, setClipVideoBlob,
+    clipPreviewImage,
+    isGeneratingClip, clipProgress, clipTemplate,
+    handleLineToggle: handleClipLineToggle,
+    handleCreateClip,
+    handleClipTemplateChange,
+    exitClipMode,
+  } = useClipMode({ initialSong })
+
+  // Mutual exclusivity helpers
+  const enterStoryMode = useCallback(() => {
+    if (isClipMode) exitClipMode()
+    setIsStoryMode(true)
+    setSelectedLines([])
+  }, [isClipMode, exitClipMode, setIsStoryMode, setSelectedLines])
+
+  const enterClipMode = useCallback(() => {
+    if (isStoryMode) exitStoryMode()
+    setIsClipMode(true)
+    setClipSelectedLines([])
+  }, [isStoryMode, exitStoryMode, setIsClipMode, setClipSelectedLines])
+
+  // Active mode state for LyricsDisplay
+  const isAnySelectMode = isStoryMode || isClipMode
+  const activeSelectedLines = isClipMode ? clipSelectedLines : selectedLines
+  const activeLineToggle = isClipMode ? handleClipLineToggle : handleLineToggle
+
+  // Reset selected lines when lyrics mode changes during story/clip mode
   useEffect(() => {
-    if (isStoryMode) {
-      setSelectedLines([])
-    }
+    if (isStoryMode) setSelectedLines([])
+    if (isClipMode) setClipSelectedLines([])
   }, [lyricsMode])
 
   const copyLyrics = () => {
@@ -1281,15 +1317,25 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   <FontSizeControl fontSize={lyricsFontSize} setFontSize={setLyricsFontSize} />
                 </div>
 
-                {!isStoryMode && (
-                  <button
-                    onClick={() => { setIsStoryMode(true); setSelectedLines([]) }}
-                    className="flex items-center gap-2 px-4 py-2 mb-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition"
-                  >
-                    <FiCamera className="w-4 h-4" />
-                    <span className="hidden sm:inline">Create Story</span>
-                    <span className="sm:hidden">IG Story</span>
-                  </button>
+                {!isAnySelectMode && (
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    <button
+                      onClick={enterStoryMode}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition"
+                    >
+                      <FiCamera className="w-4 h-4" />
+                      <span className="hidden sm:inline">Create Story</span>
+                      <span className="sm:hidden">IG Story</span>
+                    </button>
+                    <button
+                      onClick={enterClipMode}
+                      className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-medium hover:from-cyan-700 hover:to-blue-700 transition"
+                    >
+                      <FiVideo className="w-4 h-4" />
+                      <span className="hidden sm:inline">Create Clip</span>
+                      <span className="sm:hidden">Clip</span>
+                    </button>
+                  </div>
                 )}
 
                 <LyricsToggle
@@ -1311,15 +1357,26 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   </div>
                 )}
 
-                <div className={isStoryMode ? 'pb-24' : ''}>
+                {/* Clip Mode Banner */}
+                {isClipMode && (
+                  <div className="mb-4 px-4 py-3 bg-gradient-to-r from-cyan-600/10 to-blue-600/10 dark:from-cyan-600/20 dark:to-blue-600/20 rounded-xl border border-cyan-200 dark:border-cyan-800">
+                    <p className="text-sm text-cyan-700 dark:text-cyan-300 font-medium flex items-center gap-2">
+                      <FiVideo className="w-4 h-4 flex-shrink-0" />
+                      Tap 2-8 lines to create an animated lyrics clip
+                    </p>
+                  </div>
+                )}
+
+                <div className={isAnySelectMode ? 'pb-24' : ''}>
                   <LyricsDisplay
                     song={song}
                     lyricsMode={lyricsMode}
                     lyricsRef={lyricsRef}
                     fontSize={lyricsFontSize}
-                    isStoryMode={isStoryMode}
-                    selectedLines={selectedLines}
-                    onLineToggle={handleLineToggle}
+                    isStoryMode={isAnySelectMode}
+                    selectedLines={activeSelectedLines}
+                    onLineToggle={activeLineToggle}
+                    selectColor={isClipMode ? 'cyan' : 'purple'}
                   />
                 </div>
               </section>
@@ -1574,6 +1631,17 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         onTemplateChange={handleTemplateChange}
         selectedTemplate={storyTemplate}
       />
+      <ClipPreviewModal
+        isOpen={showClipPreview}
+        onClose={() => { setShowClipPreview(false); setClipVideoBlob(null) }}
+        clipVideoBlob={clipVideoBlob}
+        clipPreviewImage={clipPreviewImage}
+        isGenerating={isGeneratingClip}
+        clipProgress={clipProgress}
+        songTitle={song.title}
+        onTemplateChange={handleClipTemplateChange}
+        selectedTemplate={clipTemplate}
+      />
 
       {/* Story Mode Floating Bottom Bar */}
       {isStoryMode && (
@@ -1600,6 +1668,37 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
               >
                 <FiCamera className="w-4 h-4" />
                 Preview Story
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clip Mode Floating Bottom Bar */}
+      {isClipMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 shadow-lg px-4 py-3">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+            <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
+              {clipSelectedLines.length} / 8 lines selected
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={exitClipMode}
+                className="px-4 py-2 text-sm font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateClip}
+                disabled={clipSelectedLines.length < 2}
+                className={`px-4 py-2 text-sm font-medium rounded-xl transition flex items-center gap-2 ${
+                  clipSelectedLines.length >= 2
+                    ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-700 hover:to-blue-700'
+                    : 'bg-slate-200 dark:bg-slate-600 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                }`}
+              >
+                <FiVideo className="w-4 h-4" />
+                Preview Clip
               </button>
             </div>
           </div>
