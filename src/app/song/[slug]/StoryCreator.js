@@ -316,7 +316,7 @@ export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGeneratin
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 animate-slideUp max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 animate-slideUp max-h-[90vh] flex flex-col">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition z-10"
@@ -324,7 +324,7 @@ export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGeneratin
           <FiX className="w-5 h-5" />
         </button>
 
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2 flex-shrink-0">
           <FiCamera className="w-5 h-5 text-purple-500" />
           Story Preview
         </h3>
@@ -336,9 +336,9 @@ export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGeneratin
           </div>
         ) : blobUrl ? (
           <>
-            <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg bg-slate-900">
+            <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg bg-slate-900 flex-1 min-h-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={blobUrl} alt="Story preview" className="w-full h-auto" />
+              <img src={blobUrl} alt="Story preview" className="w-full h-full object-contain" />
               {isRegenerating && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
                   <div className="w-10 h-10 border-4 border-white/30 border-t-white rounded-full animate-spin" />
@@ -347,7 +347,7 @@ export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGeneratin
             </div>
 
             {/* Template selector chips */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-1 flex-shrink-0">
               {STORY_TEMPLATES.map((tmpl) => (
                 <button
                   key={tmpl.id}
@@ -369,7 +369,7 @@ export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGeneratin
               ))}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-shrink-0">
               <button
                 onClick={handleDownload}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition"

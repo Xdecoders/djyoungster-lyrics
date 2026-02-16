@@ -494,7 +494,7 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 animate-slideUp max-h-[90vh] overflow-y-auto">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 animate-slideUp max-h-[90vh] flex flex-col">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition z-10"
@@ -502,20 +502,20 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
           <FiX className="w-5 h-5" />
         </button>
 
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2 flex-shrink-0">
           <FiVideo className="w-5 h-5 text-cyan-500" />
           Clip Preview
         </h3>
 
         {isGenerating ? (
-          <div className="relative rounded-xl overflow-hidden mb-4 bg-slate-900">
+          <div className="relative rounded-xl overflow-hidden mb-4 bg-slate-900 flex-1 min-h-0">
             {/* Blurred preview image behind spinner */}
             {previewUrl && (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
                 src={previewUrl}
                 alt=""
-                className="w-full h-auto opacity-60"
+                className="w-full h-full object-contain opacity-60"
                 style={{ filter: 'blur(8px) brightness(0.5)', transform: 'scale(1.05)' }}
               />
             )}
@@ -534,14 +534,14 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
           </div>
         ) : blobUrl ? (
           <>
-            <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg bg-slate-900">
+            <div className="relative rounded-xl overflow-hidden mb-4 shadow-lg bg-slate-900 flex-1 min-h-0">
               <video
                 src={blobUrl}
                 controls
                 autoPlay
                 loop
                 playsInline
-                className="w-full h-auto max-h-[50vh] object-contain"
+                className="w-full h-full max-h-full object-contain"
               />
               {isRegenerating && (
                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
@@ -551,7 +551,7 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
             </div>
 
             {/* Template selector chips */}
-            <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+            <div className="flex gap-2 mb-4 overflow-x-auto pb-1 flex-shrink-0">
               {STORY_TEMPLATES.map((tmpl) => (
                 <button
                   key={tmpl.id}
@@ -573,7 +573,7 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
               ))}
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex gap-3 flex-shrink-0">
               <button
                 onClick={handleDownload}
                 className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-medium hover:from-cyan-700 hover:to-blue-700 transition"
