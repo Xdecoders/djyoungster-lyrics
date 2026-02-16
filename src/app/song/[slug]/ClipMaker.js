@@ -6,10 +6,10 @@ import { STORY_TEMPLATES, ensureGoogleFont, paintBackground, wrapText } from './
 
 // ── Video Generation ─────────────────────────────────────────────────────────
 
-function paintWatermark(ctx, W, H, template) {
+function paintWatermark(ctx, W, H, template, s = 1) {
   const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
   const brandAlpha = template.brandingOpacity ?? 1
-  const divY = H - 500
+  const divY = H - Math.round(500 * s)
 
   ctx.save()
   ctx.textAlign = 'center'
@@ -19,26 +19,26 @@ function paintWatermark(ctx, W, H, template) {
   ctx.lineWidth = 2
   ctx.globalAlpha = 0.5 * brandAlpha
   ctx.beginPath()
-  ctx.moveTo(W / 2 - 60, divY)
-  ctx.lineTo(W / 2 + 60, divY)
+  ctx.moveTo(W / 2 - Math.round(60 * s), divY)
+  ctx.lineTo(W / 2 + Math.round(60 * s), divY)
   ctx.stroke()
 
   // Brand name
-  ctx.font = `bold 34px ${fontSystem}`
+  ctx.font = `bold ${Math.round(34 * s)}px ${fontSystem}`
   ctx.fillStyle = template.brandColor || template.accent
   ctx.globalAlpha = brandAlpha
-  ctx.fillText('DJYoungster', W / 2, divY + 55)
+  ctx.fillText('DJYoungster', W / 2, divY + Math.round(55 * s))
 
   // Tagline
-  ctx.font = `28px ${fontSystem}`
+  ctx.font = `${Math.round(28 * s)}px ${fontSystem}`
   ctx.fillStyle = template.textColor
   ctx.globalAlpha = 0.5 * brandAlpha
-  ctx.fillText('Created at djyoungster.com', W / 2, divY + 100)
+  ctx.fillText('Created at djyoungster.com', W / 2, divY + Math.round(100 * s))
 
   ctx.restore()
 }
 
-function paintEndCard(ctx, W, H, template, songTitle, artistNames) {
+function paintEndCard(ctx, W, H, template, songTitle, artistNames, s = 1) {
   const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
   const brandAlpha = template.brandingOpacity ?? 1
 
@@ -46,7 +46,7 @@ function paintEndCard(ctx, W, H, template, songTitle, artistNames) {
   ctx.textAlign = 'center'
 
   // Song title
-  ctx.font = `bold 56px ${fontSystem}`
+  ctx.font = `bold ${Math.round(56 * s)}px ${fontSystem}`
   ctx.fillStyle = template.textColor
   ctx.globalAlpha = 1
   if (template.textShadow !== false) {
@@ -54,34 +54,34 @@ function paintEndCard(ctx, W, H, template, songTitle, artistNames) {
     ctx.shadowBlur = 8
     ctx.shadowOffsetY = 3
   }
-  ctx.fillText(songTitle, W / 2, H / 2 - 40)
+  ctx.fillText(songTitle, W / 2, H / 2 - Math.round(40 * s))
 
   // Artist names
   ctx.shadowColor = 'transparent'
   ctx.shadowBlur = 0
-  ctx.font = `36px ${fontSystem}`
+  ctx.font = `${Math.round(36 * s)}px ${fontSystem}`
   ctx.globalAlpha = 0.7
-  ctx.fillText(artistNames, W / 2, H / 2 + 30)
+  ctx.fillText(artistNames, W / 2, H / 2 + Math.round(30 * s))
 
   // Divider
   ctx.globalAlpha = 0.4 * brandAlpha
   ctx.strokeStyle = template.accent
   ctx.lineWidth = 2
   ctx.beginPath()
-  ctx.moveTo(W / 2 - 60, H / 2 + 80)
-  ctx.lineTo(W / 2 + 60, H / 2 + 80)
+  ctx.moveTo(W / 2 - Math.round(60 * s), H / 2 + Math.round(80 * s))
+  ctx.lineTo(W / 2 + Math.round(60 * s), H / 2 + Math.round(80 * s))
   ctx.stroke()
 
   // Brand
-  ctx.font = `bold 32px ${fontSystem}`
+  ctx.font = `bold ${Math.round(32 * s)}px ${fontSystem}`
   ctx.fillStyle = template.brandColor || template.accent
   ctx.globalAlpha = brandAlpha
-  ctx.fillText('DJYoungster', W / 2, H / 2 + 135)
+  ctx.fillText('DJYoungster', W / 2, H / 2 + Math.round(135 * s))
 
-  ctx.font = `26px ${fontSystem}`
+  ctx.font = `${Math.round(26 * s)}px ${fontSystem}`
   ctx.fillStyle = template.textColor
   ctx.globalAlpha = 0.5 * brandAlpha
-  ctx.fillText('djyoungster.com', W / 2, H / 2 + 175)
+  ctx.fillText('djyoungster.com', W / 2, H / 2 + Math.round(175 * s))
 
   ctx.restore()
 }
@@ -92,9 +92,11 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
     throw new Error('WebCodecs API is not supported in this browser. Please use Chrome 94+ or Edge 94+.')
   }
 
-  const W = 1080
-  const H = 1920
-  const FPS = 30
+  // Detect mobile and reduce resolution/FPS to prevent crashes
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+  const W = isMobile ? 720 : 1080
+  const H = isMobile ? 1280 : 1920
+  const FPS = isMobile ? 24 : 30
 
   const numLines = selectedLines.length
   const perLineDuration = Math.min(3500, Math.max(2500, (22000 - 1500) / numLines))
@@ -123,12 +125,16 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
   frameCanvas.height = H
   const frameCtx = frameCanvas.getContext('2d')
 
-  // Pre-wrap all lines and compute per-block heights
-  const maxTextWidth = W - 160
-  const wrapLineHeight = 76
-  const blockGap = 30
+  // Scale factor for text sizes when rendering at lower resolution
+  const scale = W / 1080
 
-  frameCtx.font = `${template.fontWeight} 52px ${template.font}`
+  // Pre-wrap all lines and compute per-block heights
+  const maxTextWidth = W - Math.round(160 * scale)
+  const wrapLineHeight = Math.round(76 * scale)
+  const blockGap = Math.round(30 * scale)
+  const fontSize = Math.round(52 * scale)
+
+  frameCtx.font = `${template.fontWeight} ${fontSize}px ${template.font}`
   const wrappedBlocks = selectedLines.map(text => wrapText(frameCtx, text, maxTextWidth))
   const blockHeights = wrappedBlocks.map(lines => lines.length * wrapLineHeight)
 
@@ -141,17 +147,17 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
   }
 
   // Center anchor
-  const anchorY = H / 2 + 60
+  const anchorY = H / 2 + Math.round(60 * scale)
 
   // ── Generate blurred preview image ───────────────────────────────────────
   if (onPreview) {
     // Draw a preview frame: background + watermark + first line dimly visible
     frameCtx.drawImage(bgCanvas, 0, 0)
-    paintWatermark(frameCtx, W, H, template)
+    paintWatermark(frameCtx, W, H, template, scale)
 
     // Draw first line at center, dimmed
     frameCtx.save()
-    frameCtx.font = `${template.fontWeight} 52px ${template.font}`
+    frameCtx.font = `${template.fontWeight} ${fontSize}px ${template.font}`
     frameCtx.fillStyle = template.textColor
     frameCtx.textAlign = 'center'
     frameCtx.globalAlpha = 0.5
@@ -203,7 +209,7 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
     codec: 'avc1.640028',
     width: W,
     height: H,
-    bitrate: 4_000_000,
+    bitrate: isMobile ? 2_000_000 : 4_000_000,
     framerate: FPS,
   })
 
@@ -228,11 +234,11 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
 
       frameCtx.save()
       frameCtx.globalAlpha = fadeIn
-      paintEndCard(frameCtx, W, H, template, songTitle, artistNames)
+      paintEndCard(frameCtx, W, H, template, songTitle, artistNames, scale)
       frameCtx.restore()
     } else {
       // Draw watermark only during lyrics section
-      paintWatermark(frameCtx, W, H, template)
+      paintWatermark(frameCtx, W, H, template, scale)
 
       let activeIdx = 0
       for (let i = 0; i < numLines; i++) {
@@ -260,7 +266,7 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
 
       // Draw each visible line
       frameCtx.save()
-      frameCtx.font = `${template.fontWeight} 52px ${template.font}`
+      frameCtx.font = `${template.fontWeight} ${fontSize}px ${template.font}`
       frameCtx.fillStyle = template.textColor
       frameCtx.textAlign = 'center'
 
@@ -308,8 +314,15 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
       onProgress(Math.round((encodedFrames / totalFrames) * 100))
     }
 
-    if (f % 10 === 0) {
+    // Yield to event loop — more frequently on mobile to prevent crashes
+    const yieldInterval = isMobile ? 3 : 10
+    if (f % yieldInterval === 0) {
       await new Promise(r => setTimeout(r, 0))
+    }
+
+    // Flush encoder periodically on mobile to free memory
+    if (isMobile && f % (FPS * 2) === 0 && f > 0) {
+      await encoder.flush()
     }
   }
 

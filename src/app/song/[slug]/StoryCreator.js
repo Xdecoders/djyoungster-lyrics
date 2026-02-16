@@ -169,6 +169,7 @@ export function paintTitleArea(ctx, W, H, template, songTitle, artistNames) {
 export async function generateStoryImage({ selectedLines, songTitle, artistNames, coverImageUrl, template = STORY_TEMPLATES[0] }) {
   const W = 1080
   const H = 1920
+  const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
   const canvas = document.createElement('canvas')
   canvas.width = W
   canvas.height = H
