@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiUser, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
+import { FiUser, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic, FiChevronLeft, FiChevronRight, FiEye } from 'react-icons/fi'
 
 const ITEMS_PER_PAGE = 10
 
@@ -160,6 +160,14 @@ export default function ArtistsList() {
                       <span>{artist._count?.songs || 0} songs</span>
                     </div>
                     <div className="flex gap-1">
+                      <Link
+                        href={`/artist/${artist.slug}`}
+                        target="_blank"
+                        className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                        title="View artist page"
+                      >
+                        <FiEye className="w-4 h-4" />
+                      </Link>
                       <Link
                         href={`/admin/artists/${artist.id}`}
                         className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"

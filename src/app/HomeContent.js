@@ -35,14 +35,14 @@ export default function HomeContent({ data, siteSettings }) {
           {/* Trust indicators - glass pills */}
           <div className="flex flex-wrap items-center justify-center gap-2.5">
             {[
-              { icon: FiUsers, text: '35,000+ Active Users', color: 'text-primary' },
-              { icon: FiVideo, text: 'IG Reel Creator', color: 'text-rose-500' },
-              { icon: FiGlobe, text: 'Meaning & Translation', color: 'text-blue-500' },
-              { icon: FiCamera, text: 'IG Story Creator', color: 'text-purple-500' },
+              { icon: FiUsers, text: '35,000+ Active Users', color: 'text-primary', bold: false },
+              { icon: FiCamera, text: 'IG Story Creator', color: 'text-purple-500', bold: true },
+              { icon: FiVideo, text: 'IG Reel Creator', color: 'text-rose-500', bold: true },
+              { icon: FiGlobe, text: 'Meaning & Translation', color: 'text-blue-500', bold: false },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/80 dark:border-white/10 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
                 <item.icon className={`w-3.5 h-3.5 ${item.color}`} />
-                <span>{item.text}</span>
+                <span className={item.bold ? 'font-bold' : ''}>{item.text}</span>
               </div>
             ))}
           </div>

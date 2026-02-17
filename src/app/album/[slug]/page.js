@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateAlbumSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { toTitleCase } from '@/lib/utils'
 import AlbumPageClient from './AlbumPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -35,12 +36,13 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const artistName = album.artist?.name || 'Various Artists'
+    const artistName = toTitleCase(album.artist?.name) || 'Various Artists'
+    const albumTitle = toTitleCase(album.title)
     const releaseYear = album.releaseDate ? new Date(album.releaseDate).getFullYear() : ''
 
-    const title = album.metaTitle || `${album.title} Songs Lyrics with English Translation - DJYoungster`
+    const title = album.metaTitle || `${albumTitle} Songs Lyrics with English Translation - DJYoungster`
     const description = album.metaDescription ||
-      `Explore ${album.title} by ${artistName} song lyrics and meanings. Djyoungster provides ${album.title} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `Explore ${albumTitle} by ${artistName} song lyrics and meanings. Djyoungster provides ${albumTitle} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/album/${slug}`
@@ -52,10 +54,10 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords: [
-        album.title,
-        `${album.title} album`,
-        `${album.title} songs`,
-        `${album.title} lyrics`,
+        albumTitle,
+        `${albumTitle} album`,
+        `${albumTitle} songs`,
+        `${albumTitle} lyrics`,
         artistName,
         `${artistName} albums`,
         album.label,
@@ -75,7 +77,7 @@ export async function generateMetadata({ params }) {
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: `${album.title} by ${artistName}`,
+            alt: `${albumTitle} by ${artistName}`,
           },
         ],
         locale: 'en_US',

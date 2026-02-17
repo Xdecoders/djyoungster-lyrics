@@ -111,6 +111,27 @@ html {
   animation: slideUp 0.3s ease-out;
 }
 
+/* Auto-capitalize entity names (song, artist, album, movie, genre, tag titles) */
+h1, h2, h3, h4,
+[itemprop="name"],
+nav ol li span,
+nav ol li a {
+  text-transform: capitalize;
+}
+
+/* Preserve original case for lyrics, descriptions, and form elements */
+.lyrics-content p,
+.lyrics-content div,
+.whitespace-pre-line,
+.whitespace-pre-wrap,
+textarea,
+input,
+select,
+code,
+pre {
+  text-transform: none;
+}
+
 /* Live ticker transitions */
 .ticker-message {
   transition: opacity 0.3s, transform 0.3s;

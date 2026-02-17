@@ -31,6 +31,7 @@ async function getMoviesPageData(searchParams) {
           posterUrl: true,
           songs: {
             select: { coverImage: true },
+            orderBy: { createdAt: 'desc' },
             take: 1
           },
           _count: { select: { songs: true } }

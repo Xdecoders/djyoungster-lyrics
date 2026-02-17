@@ -1,8 +1,45 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { FiX, FiDownload, FiShare2, FiVideo } from 'react-icons/fi'
+import { FiX, FiDownload, FiShare2, FiVideo, FiCheck } from 'react-icons/fi'
 import { STORY_TEMPLATES, ensureGoogleFont, paintBackground, wrapText } from './StoryCreator'
+
+// ── Particles ────────────────────────────────────────────────────────────────
+
+function initParticles(count, W, H) {
+  const particles = []
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 2.5 + 0.8,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: -(Math.random() * 0.4 + 0.1),
+      alpha: Math.random() * 0.06 + 0.02,
+    })
+  }
+  return particles
+}
+
+function paintParticles(ctx, W, H, particles, accentColor) {
+  ctx.save()
+  for (const p of particles) {
+    // Update position
+    p.x += p.vx
+    p.y += p.vy
+    // Wrap around edges
+    if (p.y < -5) p.y = H + 5
+    if (p.x < -5) p.x = W + 5
+    if (p.x > W + 5) p.x = -5
+
+    ctx.globalAlpha = p.alpha
+    ctx.fillStyle = accentColor
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.restore()
+}
 
 // ── Video Generation ─────────────────────────────────────────────────────────
 
@@ -99,15 +136,14 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
   const FPS = isMobile ? 24 : 30
 
   const numLines = selectedLines.length
-  const perLineDuration = Math.min(3500, Math.max(2500, (22000 - 1500) / numLines))
-  const fadeInMs = 500
-  const scrollMs = 600
-  const outroMs = 5000 // 5 second end card with song title + artist + branding
+  const displayMs = 15000
+  const fadeAllMs = 600
+  const outroMs = 5000
 
-  const totalMs = numLines * perLineDuration + outroMs
+  const totalMs = displayMs + outroMs
   const totalFrames = Math.ceil((totalMs / 1000) * FPS)
 
-  // Prepare background canvas (cached, painted once) — no title/emoji
+  // Prepare background canvas (cached, painted once)
   const bgCanvas = document.createElement('canvas')
   bgCanvas.width = W
   bgCanvas.height = H
@@ -128,7 +164,7 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
   // Scale factor for text sizes when rendering at lower resolution
   const scale = W / 1080
 
-  // Pre-wrap all lines and compute per-block heights
+  // Pre-wrap all lines and compute total content height
   const maxTextWidth = W - Math.round(160 * scale)
   const wrapLineHeight = Math.round(76 * scale)
   const blockGap = Math.round(30 * scale)
@@ -138,24 +174,24 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
   const wrappedBlocks = selectedLines.map(text => wrapText(frameCtx, text, maxTextWidth))
   const blockHeights = wrappedBlocks.map(lines => lines.length * wrapLineHeight)
 
-  // Cumulative Y offsets for each block (in virtual scroll space)
-  const blockY = []
-  let cumY = 0
+  // Total content height
+  let totalContentH = 0
   for (let i = 0; i < numLines; i++) {
-    blockY.push(cumY)
-    cumY += blockHeights[i] + blockGap
+    totalContentH += blockHeights[i]
+    if (i < numLines - 1) totalContentH += blockGap
   }
 
-  // Center anchor
-  const anchorY = H / 2 + Math.round(60 * scale)
+  // Initialize particles
+  const particleCount = isMobile ? 60 : 120
+  const particles = initParticles(particleCount, W, H)
 
   // ── Generate blurred preview image ───────────────────────────────────────
   if (onPreview) {
-    // Draw a preview frame: background + watermark + first line dimly visible
     frameCtx.drawImage(bgCanvas, 0, 0)
+    paintParticles(frameCtx, W, H, particles, template.accent)
     paintWatermark(frameCtx, W, H, template, scale)
 
-    // Draw first line at center, dimmed
+    // Draw all lines centered, dimmed
     frameCtx.save()
     frameCtx.font = `${template.fontWeight} ${fontSize}px ${template.font}`
     frameCtx.fillStyle = template.textColor
@@ -168,15 +204,16 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
       frameCtx.shadowOffsetY = 4
     }
 
-    const firstBlock = wrappedBlocks[0]
-    const firstBlockH = blockHeights[0]
-    const previewY = anchorY - firstBlockH / 2
-    firstBlock.forEach((wLine, wi) => {
-      frameCtx.fillText(wLine, W / 2, previewY + wi * wrapLineHeight + wrapLineHeight * 0.7)
-    })
+    const startY = (H / 2) - (totalContentH / 2)
+    let curY = startY
+    for (let i = 0; i < numLines; i++) {
+      wrappedBlocks[i].forEach((wLine, wi) => {
+        frameCtx.fillText(wLine, W / 2, curY + wi * wrapLineHeight + wrapLineHeight * 0.7)
+      })
+      curY += blockHeights[i] + blockGap
+    }
     frameCtx.restore()
 
-    // Convert to blob and send preview
     const previewBlob = await new Promise(resolve => frameCanvas.toBlob(resolve, 'image/jpeg', 0.6))
     onPreview(previewBlob)
   }
@@ -213,23 +250,19 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
     framerate: FPS,
   })
 
-  // Easing function for smooth scroll
-  const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3)
-
   // Render loop
   for (let f = 0; f < totalFrames; f++) {
     const timeMs = (f / FPS) * 1000
 
-    // Draw cached background (includes watermark)
+    // Draw cached background
     frameCtx.drawImage(bgCanvas, 0, 0)
 
-    // ── Lyrics scroll-up animation / End card ──────────────────────────────
-    const lyricsEndMs = numLines * perLineDuration
+    // Animated particles
+    paintParticles(frameCtx, W, H, particles, template.accent)
 
-    if (timeMs >= lyricsEndMs) {
-      // End card only — no watermark
-      // End card: song title + artist + branding
-      const outroT = timeMs - lyricsEndMs
+    if (timeMs >= displayMs) {
+      // End card
+      const outroT = timeMs - displayMs
       const fadeIn = Math.min(1, outroT / 600)
 
       frameCtx.save()
@@ -237,38 +270,17 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
       paintEndCard(frameCtx, W, H, template, songTitle, artistNames, scale)
       frameCtx.restore()
     } else {
-      // Draw watermark only during lyrics section
+      // Watermark during lyrics section
       paintWatermark(frameCtx, W, H, template, scale)
 
-      let activeIdx = 0
-      for (let i = 0; i < numLines; i++) {
-        if (timeMs >= i * perLineDuration) activeIdx = i
-      }
+      // All lines at once with single fade-in
+      const alpha = Math.min(1, timeMs / fadeAllMs)
 
-      // Compute smooth scroll offset
-      const activeBlockCenter = blockY[activeIdx] + blockHeights[activeIdx] / 2
-      const targetScroll = activeBlockCenter
-
-      let scrollOffset
-      if (activeIdx === 0) {
-        const entryProgress = easeOutCubic(Math.min(1, timeMs / scrollMs))
-        scrollOffset = targetScroll * entryProgress
-      } else {
-        const lineLocalTime = timeMs - activeIdx * perLineDuration
-        const prevBlockCenter = blockY[activeIdx - 1] + blockHeights[activeIdx - 1] / 2
-        if (lineLocalTime < scrollMs) {
-          const scrollProgress = easeOutCubic(lineLocalTime / scrollMs)
-          scrollOffset = prevBlockCenter + (targetScroll - prevBlockCenter) * scrollProgress
-        } else {
-          scrollOffset = targetScroll
-        }
-      }
-
-      // Draw each visible line
       frameCtx.save()
       frameCtx.font = `${template.fontWeight} ${fontSize}px ${template.font}`
       frameCtx.fillStyle = template.textColor
       frameCtx.textAlign = 'center'
+      frameCtx.globalAlpha = alpha
 
       if (template.textShadow !== false) {
         frameCtx.shadowColor = 'rgba(0,0,0,0.5)'
@@ -277,23 +289,19 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
         frameCtx.shadowOffsetY = 4
       }
 
-      for (let i = 0; i <= activeIdx; i++) {
-        const lineStartMs = i * perLineDuration
-        const lineAge = timeMs - lineStartMs
+      // Neon glow effect for neonGlow templates
+      if (template.neonGlow) {
+        frameCtx.shadowColor = template.accent
+        frameCtx.shadowBlur = 20
+      }
 
-        let fadeAlpha = Math.min(1, lineAge / fadeInMs)
-        const alpha = fadeAlpha
-
-        if (alpha <= 0) continue
-
-        const visualY = anchorY + blockY[i] - scrollOffset
-        const blockBottom = visualY + blockHeights[i]
-        if (blockBottom < 150 || visualY > H - 100) continue
-
-        frameCtx.globalAlpha = alpha
+      const startY = (H / 2) - (totalContentH / 2)
+      let curY = startY
+      for (let i = 0; i < numLines; i++) {
         wrappedBlocks[i].forEach((wLine, wi) => {
-          frameCtx.fillText(wLine, W / 2, visualY + wi * wrapLineHeight + wrapLineHeight * 0.7)
+          frameCtx.fillText(wLine, W / 2, curY + wi * wrapLineHeight + wrapLineHeight * 0.7)
         })
+        curY += blockHeights[i] + blockGap
       }
 
       frameCtx.restore()
@@ -336,11 +344,78 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
 }
 
 
+// ── Template Thumbnail Generator ─────────────────────────────────────────────
+
+export async function generateTemplateThumbnail(template, sampleLines, coverImageUrl) {
+  const W = 270
+  const H = 480
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+
+  if (template.fontGoogle) {
+    await ensureGoogleFont(template.fontGoogle)
+  }
+
+  await paintBackground(ctx, W, H, template, coverImageUrl)
+
+  // Static particles
+  const thumbParticles = initParticles(30, W, H)
+  paintParticles(ctx, W, H, thumbParticles, template.accent)
+
+  // Sample text
+  const scale = W / 1080
+  const fontSize = Math.round(52 * scale)
+  const wrapLineHeight = Math.round(76 * scale)
+  const blockGap = Math.round(20 * scale)
+  const maxTextWidth = W - Math.round(40 * scale)
+
+  ctx.font = `${template.fontWeight} ${fontSize}px ${template.font}`
+  const wrappedBlocks = sampleLines.slice(0, 3).map(text => wrapText(ctx, text, maxTextWidth))
+  const blockHeights = wrappedBlocks.map(lines => lines.length * wrapLineHeight)
+
+  let totalH = 0
+  for (let i = 0; i < wrappedBlocks.length; i++) {
+    totalH += blockHeights[i]
+    if (i < wrappedBlocks.length - 1) totalH += blockGap
+  }
+
+  ctx.save()
+  ctx.fillStyle = template.textColor
+  ctx.textAlign = 'center'
+  ctx.globalAlpha = 0.9
+
+  if (template.textShadow !== false) {
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'
+    ctx.shadowBlur = 6
+    ctx.shadowOffsetY = 2
+  }
+
+  if (template.neonGlow) {
+    ctx.shadowColor = template.accent
+    ctx.shadowBlur = 12
+  }
+
+  let curY = (H / 2) - (totalH / 2)
+  for (let i = 0; i < wrappedBlocks.length; i++) {
+    wrappedBlocks[i].forEach((wLine, wi) => {
+      ctx.fillText(wLine, W / 2, curY + wi * wrapLineHeight + wrapLineHeight * 0.7)
+    })
+    curY += blockHeights[i] + blockGap
+  }
+  ctx.restore()
+
+  return canvas.toDataURL('image/jpeg', 0.7)
+}
+
+
 // ── useClipMode Hook ─────────────────────────────────────────────────────────
 
 export function useClipMode({ initialSong }) {
   const [isClipMode, setIsClipMode] = useState(false)
   const [selectedLines, setSelectedLines] = useState([])
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
   const [showClipPreview, setShowClipPreview] = useState(false)
   const [clipVideoBlob, setClipVideoBlob] = useState(null)
   const [clipPreviewImage, setClipPreviewImage] = useState(null)
@@ -359,8 +434,17 @@ export function useClipMode({ initialSong }) {
     })
   }, [])
 
-  const handleCreateClip = useCallback(async () => {
+  // Opens template picker instead of generating immediately
+  const handlePreviewClip = useCallback(() => {
     if (selectedLines.length < 2) return
+    setShowTemplatePicker(true)
+  }, [selectedLines])
+
+  // Generates clip after template is chosen
+  const handleCreateClip = useCallback(async (template) => {
+    const tmpl = template || clipTemplate
+    setClipTemplate(tmpl)
+    setShowTemplatePicker(false)
     setShowClipPreview(true)
     setIsGeneratingClip(true)
     setClipProgress(0)
@@ -372,7 +456,7 @@ export function useClipMode({ initialSong }) {
         songTitle: initialSong.title,
         artistNames: initialSong.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist',
         coverImageUrl: initialSong.coverImage || null,
-        template: clipTemplate,
+        template: tmpl,
         onProgress: setClipProgress,
         onPreview: setClipPreviewImage,
       })
@@ -419,6 +503,8 @@ export function useClipMode({ initialSong }) {
     setIsClipMode,
     selectedLines,
     setSelectedLines,
+    showTemplatePicker,
+    setShowTemplatePicker,
     showClipPreview,
     setShowClipPreview,
     clipVideoBlob,
@@ -428,10 +514,116 @@ export function useClipMode({ initialSong }) {
     clipProgress,
     clipTemplate,
     handleLineToggle,
+    handlePreviewClip,
     handleCreateClip,
     handleClipTemplateChange,
     exitClipMode,
   }
+}
+
+
+// ── TemplatePickerModal Component ────────────────────────────────────────────
+
+export function TemplatePickerModal({ isOpen, onClose, onSelect, sampleLines, coverImageUrl }) {
+  const [thumbnails, setThumbnails] = useState({})
+  const [selectedId, setSelectedId] = useState(STORY_TEMPLATES[0].id)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!isOpen) return
+    setLoading(true)
+    setSelectedId(STORY_TEMPLATES[0].id)
+
+    const lines = sampleLines?.length ? sampleLines : ['Sample lyrics line', 'Another line here']
+
+    Promise.all(
+      STORY_TEMPLATES.map(async (tmpl) => {
+        const url = await generateTemplateThumbnail(tmpl, lines, tmpl.skipCoverImage ? null : coverImageUrl)
+        return [tmpl.id, url]
+      })
+    ).then((results) => {
+      const map = {}
+      for (const [id, url] of results) map[id] = url
+      setThumbnails(map)
+      setLoading(false)
+    }).catch(() => setLoading(false))
+  }, [isOpen, sampleLines, coverImageUrl])
+
+  if (!isOpen) return null
+
+  const selected = STORY_TEMPLATES.find(t => t.id === selectedId) || STORY_TEMPLATES[0]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full p-5 animate-slideUp max-h-[90vh] flex flex-col">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition z-10"
+        >
+          <FiX className="w-5 h-5" />
+        </button>
+
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2 flex-shrink-0">
+          <FiVideo className="w-5 h-5 text-cyan-500" />
+          Choose a Style
+        </h3>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-10 h-10 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3 mb-5 overflow-y-auto flex-1 min-h-0">
+            {STORY_TEMPLATES.map((tmpl) => (
+              <button
+                key={tmpl.id}
+                onClick={() => setSelectedId(tmpl.id)}
+                className={`relative rounded-xl overflow-hidden border-2 transition-all aspect-[9/16] ${
+                  selectedId === tmpl.id
+                    ? 'border-cyan-500 shadow-lg shadow-cyan-500/30 scale-[1.02]'
+                    : 'border-transparent hover:border-slate-300 dark:hover:border-slate-600'
+                }`}
+              >
+                {thumbnails[tmpl.id] ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={thumbnails[tmpl.id]}
+                    alt={tmpl.label}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-slate-200 dark:bg-slate-700" />
+                )}
+                {/* Label overlay */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
+                  <span className="text-white text-xs font-medium flex items-center gap-1">
+                    <span>{tmpl.emoji}</span>
+                    <span>{tmpl.label}</span>
+                  </span>
+                </div>
+                {/* Selected check */}
+                {selectedId === tmpl.id && (
+                  <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-cyan-500 rounded-full flex items-center justify-center">
+                    <FiCheck className="w-3 h-3 text-white" />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={() => onSelect(selected)}
+          disabled={loading}
+          className="w-full py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-medium hover:from-cyan-700 hover:to-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2 flex-shrink-0"
+        >
+          <FiVideo className="w-4 h-4" />
+          Generate Clip
+        </button>
+      </div>
+    </div>
+  )
 }
 
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiDisc, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic, FiCalendar } from 'react-icons/fi'
+import { FiDisc, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic, FiCalendar, FiEye } from 'react-icons/fi'
 
 export default function AlbumsList() {
   const router = useRouter()
@@ -145,6 +145,15 @@ export default function AlbumsList() {
                   </div>
 
                   <div className="flex justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
+                    <Link
+                      href={`/album/${album.slug}`}
+                      target="_blank"
+                      aria-label="View album"
+                      className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                      title="View album page"
+                    >
+                      <FiEye className="w-4 h-4" />
+                    </Link>
                     <Link
                       href={`/admin/albums/${album.id}`}
                       aria-label="Edit album"

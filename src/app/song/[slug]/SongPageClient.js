@@ -9,7 +9,9 @@ import { useStoryMode } from './StoryCreator'
 import { useClipMode } from './ClipMaker'
 
 const StoryPreviewModal = dynamic(() => import('./StoryCreator').then(mod => ({ default: mod.StoryPreviewModal })), { ssr: false })
+const StoryTemplatePickerModal = dynamic(() => import('./StoryCreator').then(mod => ({ default: mod.StoryTemplatePickerModal })), { ssr: false })
 const ClipPreviewModal = dynamic(() => import('./ClipMaker').then(mod => ({ default: mod.ClipPreviewModal })), { ssr: false })
+const TemplatePickerModal = dynamic(() => import('./ClipMaker').then(mod => ({ default: mod.TemplatePickerModal })), { ssr: false })
 import {
   FiMusic,
   FiUser,
@@ -352,7 +354,22 @@ function FAQSection({ song }) {
     })
   }
 
-  // Q5: Genre (conditional)
+  // Q5: IG Story & Reel Creator — always shown with varied answers
+  const getStoryReelAnswer = () => {
+    const phrases = [
+      `Yes! On DJYoungster, you can create beautiful Instagram Stories and Reels directly from "${song.title}" lyrics. Just tap "Create Story" or "Create Reel" on the lyrics page, select your favorite lines by ${firstArtist}, pick a template style, and download a ready-to-share image or animated video clip.`,
+      `Absolutely! DJYoungster lets you turn "${song.title}" lyrics into stunning IG Stories and animated Reels. Choose 2-4 lines for a story image or up to 8 lines for a video reel, select from 6 unique templates, and share your creation with friends — no extra apps needed.`,
+      `DJYoungster makes it easy to share "${song.title}" lyrics on Instagram. Use "Create Story" to generate a gorgeous lyrics poster or "Create Reel" to create an animated 20-second video clip. Pick your favorite lines by ${firstArtist}, choose a style that fits the mood, and download instantly.`,
+    ]
+    return phrases[(song.title.length + artistNames.length) % phrases.length]
+  }
+
+  faqs.push({
+    question: `Can I create an Instagram Story or Reel with "${song.title}" lyrics?`,
+    answer: getStoryReelAnswer()
+  })
+
+  // Q6: Genre (conditional)
   if (genres) {
     faqs.push({
       question: `What type of song is "${song.title}"?`,
@@ -360,13 +377,13 @@ function FAQSection({ song }) {
     })
   }
 
-  // Q6: Streaming
+  // Q7: Streaming
   faqs.push({
     question: `Where can I stream "${song.title}"?`,
     answer: `"${song.title}" is available on major platforms including Spotify, Apple Music, YouTube Music, Gaana, and JioSaavn.${song.youtubeUrl ? ' The official video is on YouTube.' : ''} For the complete lyrics, you're already in the right place!`
   })
 
-  // Q7: Producer (if available)
+  // Q8: Producer (if available)
   if (song.producer) {
     faqs.push({
       question: `Who produced "${song.title}"?`,
@@ -374,7 +391,7 @@ function FAQSection({ song }) {
     })
   }
 
-  // Q8: Music Video Cast (if available)
+  // Q9: Music Video Cast (if available)
   if (song.starring) {
     faqs.push({
       question: `Who appears in the "${song.title}" music video?`,
@@ -389,7 +406,7 @@ function FAQSection({ song }) {
         Frequently Asked Questions about {song.title}
       </h2>
       <div className="space-y-3" itemScope itemType="https://schema.org/FAQPage">
-        {faqs.slice(0, 4).map((faq, index) => (
+        {faqs.slice(0, 5).map((faq, index) => (
           <div
             key={index}
             itemScope
@@ -1088,10 +1105,11 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const {
     isStoryMode, setIsStoryMode,
     selectedLines, setSelectedLines,
+    showTemplatePicker: showStoryTemplatePicker, setShowTemplatePicker: setShowStoryTemplatePicker,
     showStoryPreview, setShowStoryPreview,
     storyImageBlob, setStoryImageBlob,
     isGeneratingStory, storyTemplate,
-    handleLineToggle, handleCreateStory,
+    handleLineToggle, handlePreviewStory, handleCreateStory,
     handleTemplateChange, exitStoryMode,
   } = useStoryMode({ initialSong })
 
@@ -1099,11 +1117,13 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const {
     isClipMode, setIsClipMode,
     selectedLines: clipSelectedLines, setSelectedLines: setClipSelectedLines,
+    showTemplatePicker, setShowTemplatePicker,
     showClipPreview, setShowClipPreview,
     clipVideoBlob, setClipVideoBlob,
     clipPreviewImage,
     isGeneratingClip, clipProgress, clipTemplate,
     handleLineToggle: handleClipLineToggle,
+    handlePreviewClip,
     handleCreateClip,
     handleClipTemplateChange,
     exitClipMode,
@@ -1332,8 +1352,8 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                       className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-medium hover:from-cyan-700 hover:to-blue-700 transition"
                     >
                       <FiVideo className="w-4 h-4" />
-                      <span className="hidden sm:inline">Create Clip</span>
-                      <span className="sm:hidden">Clip</span>
+                      <span className="hidden sm:inline">Create Reel</span>
+                      <span className="sm:hidden">IG Reel</span>
                     </button>
                   </div>
                 )}
@@ -1622,6 +1642,13 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         songTitle={song.title}
         songId={song.id}
       />
+      <StoryTemplatePickerModal
+        isOpen={showStoryTemplatePicker}
+        onClose={() => setShowStoryTemplatePicker(false)}
+        onSelect={handleCreateStory}
+        sampleLines={selectedLines.map(l => l.text)}
+        coverImageUrl={song.coverImage || null}
+      />
       <StoryPreviewModal
         isOpen={showStoryPreview}
         onClose={() => { setShowStoryPreview(false); setStoryImageBlob(null) }}
@@ -1630,6 +1657,13 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         songTitle={song.title}
         onTemplateChange={handleTemplateChange}
         selectedTemplate={storyTemplate}
+      />
+      <TemplatePickerModal
+        isOpen={showTemplatePicker}
+        onClose={() => setShowTemplatePicker(false)}
+        onSelect={handleCreateClip}
+        sampleLines={clipSelectedLines.map(l => l.text)}
+        coverImageUrl={song.coverImage || null}
       />
       <ClipPreviewModal
         isOpen={showClipPreview}
@@ -1658,7 +1692,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 Cancel
               </button>
               <button
-                onClick={handleCreateStory}
+                onClick={handlePreviewStory}
                 disabled={selectedLines.length < 2}
                 className={`px-4 py-2 text-sm font-medium rounded-xl transition flex items-center gap-2 ${
                   selectedLines.length >= 2
@@ -1689,7 +1723,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 Cancel
               </button>
               <button
-                onClick={handleCreateClip}
+                onClick={handlePreviewClip}
                 disabled={clipSelectedLines.length < 2}
                 className={`px-4 py-2 text-sm font-medium rounded-xl transition flex items-center gap-2 ${
                   clipSelectedLines.length >= 2

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiTag, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX, FiSearch } from 'react-icons/fi'
+import { FiTag, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX, FiSearch, FiEye } from 'react-icons/fi'
 
 export default function TagsPage() {
   const router = useRouter()
@@ -348,6 +348,14 @@ export default function TagsPage() {
                       {tag._count?.songs || 0}
                     </span>
                     <div className="flex gap-1">
+                      <Link
+                        href={`/tag/${tag.slug}`}
+                        target="_blank"
+                        className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                        title="View tag page"
+                      >
+                        <FiEye className="w-4 h-4" />
+                      </Link>
                       <button
                         onClick={() => handleEdit(tag)}
                         className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"

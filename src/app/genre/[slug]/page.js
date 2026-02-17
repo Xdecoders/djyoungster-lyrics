@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { toTitleCase } from '@/lib/utils'
 import GenrePageClient from './GenrePageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -33,8 +34,7 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    // Capitalize genre name for display
-    const capitalizedName = genre.name.charAt(0).toUpperCase() + genre.name.slice(1)
+    const capitalizedName = toTitleCase(genre.name)
     const title = genre.metaTitle || `${capitalizedName} Songs Lyrics with English Translation - DJYoungster`
     const description = genre.metaDescription ||
       `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
@@ -47,10 +47,10 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords: [
-        genre.name,
-        `${genre.name} songs`,
-        `${genre.name} lyrics`,
-        `${genre.name} music`,
+        capitalizedName,
+        `${capitalizedName} songs`,
+        `${capitalizedName} lyrics`,
+        `${capitalizedName} music`,
         'lyrics',
         'songs',
         'music',
@@ -66,7 +66,7 @@ export async function generateMetadata({ params }) {
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: `${genre.name} Songs`,
+            alt: `${capitalizedName} Songs`,
           },
         ],
         locale: 'en_US',

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateArtistSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { toTitleCase } from '@/lib/utils'
 import ArtistPageClient from './ArtistPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -34,9 +35,10 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const title = artist.metaTitle || `${artist.name} Songs Lyrics with English Translation - DJYoungster`
+    const artistName = toTitleCase(artist.name)
+    const title = artist.metaTitle || `${artistName} Songs Lyrics with English Translation - DJYoungster`
     const description = artist.metaDescription ||
-      `${artist.name} through his song lyrics and meanings. Djyoungster provides ${artist.name} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `${artistName} through his song lyrics and meanings. Djyoungster provides ${artistName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/artist/${slug}`
@@ -48,10 +50,10 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords: [
-        artist.name,
-        `${artist.name} songs`,
-        `${artist.name} lyrics`,
-        `${artist.name} albums`,
+        artistName,
+        `${artistName} songs`,
+        `${artistName} lyrics`,
+        `${artistName} albums`,
         'lyrics',
         'songs',
         'music',
@@ -67,7 +69,7 @@ export async function generateMetadata({ params }) {
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: artist.name,
+            alt: artistName,
           },
         ],
         locale: 'en_US',

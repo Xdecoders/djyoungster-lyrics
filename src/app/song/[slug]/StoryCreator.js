@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { FiX, FiDownload, FiShare2, FiCamera } from 'react-icons/fi'
+import { FiX, FiDownload, FiShare2, FiCamera, FiCheck } from 'react-icons/fi'
 
 // Story Templates
 export const STORY_TEMPLATES = [
@@ -50,6 +50,52 @@ export const STORY_TEMPLATES = [
     accent: '#e11d48',
     textColor: '#1c1917',
     textShadow: false,
+    skipCoverImage: true,
+  },
+  {
+    id: 'neon-glow',
+    label: 'Neon',
+    emoji: '\u{1F4A0}',
+    emojiOpacity: 0.8,
+    font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontGoogle: null,
+    fontWeight: 'bold',
+    bgGradient: ['#0a0a0f', '#111118', '#0a0a0f'],
+    overlayOpacity: [0.0, 0.0, 0.0],
+    accent: '#22d3ee',
+    textColor: '#ffffff',
+    textShadow: true,
+    skipCoverImage: true,
+    neonGlow: true,
+  },
+  {
+    id: 'golden-sunset',
+    label: 'Sunset',
+    emoji: '\u{1F305}',
+    emojiOpacity: 0.9,
+    font: "'Lora', Georgia, serif",
+    fontGoogle: 'Lora',
+    fontWeight: 'normal',
+    bgGradient: ['#78350f', '#c2410c', '#d97706'],
+    overlayOpacity: [0.15, 0.1, 0.15],
+    accent: '#fbbf24',
+    textColor: '#fffbeb',
+    textShadow: true,
+    skipCoverImage: true,
+  },
+  {
+    id: 'deep-ocean',
+    label: 'Ocean',
+    emoji: '\u{1F30A}',
+    emojiOpacity: 0.85,
+    font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontGoogle: null,
+    fontWeight: 'bold',
+    bgGradient: ['#0c1445', '#134e4a', '#0f766e'],
+    overlayOpacity: [0.1, 0.15, 0.1],
+    accent: '#06b6d4',
+    textColor: 'rgba(255,255,255,0.95)',
+    textShadow: true,
     skipCoverImage: true,
   },
 ]
@@ -268,6 +314,171 @@ export async function generateStoryImage({ selectedLines, songTitle, artistNames
   })
 }
 
+// ── Story Template Thumbnail Generator ────────────────────────────────────────
+
+export async function generateStoryThumbnail(template, sampleLines, coverImageUrl) {
+  const W = 270
+  const H = 480
+  const canvas = document.createElement('canvas')
+  canvas.width = W
+  canvas.height = H
+  const ctx = canvas.getContext('2d')
+
+  if (template.fontGoogle) {
+    await ensureGoogleFont(template.fontGoogle)
+  }
+
+  await paintBackground(ctx, W, H, template, coverImageUrl)
+
+  // Sample text
+  const scale = W / 1080
+  const fontSize = Math.round(52 * scale)
+  const lineHeight = Math.round(76 * scale)
+  const blockGap = Math.round(20 * scale)
+  const maxTextWidth = W - Math.round(40 * scale)
+
+  ctx.font = `${template.fontWeight} ${fontSize}px ${template.font}`
+  const wrappedBlocks = sampleLines.slice(0, 3).map(text => wrapText(ctx, text, maxTextWidth))
+  const blockHeights = wrappedBlocks.map(lines => lines.length * lineHeight)
+
+  let totalH = 0
+  for (let i = 0; i < wrappedBlocks.length; i++) {
+    totalH += blockHeights[i]
+    if (i < wrappedBlocks.length - 1) totalH += blockGap
+  }
+
+  ctx.save()
+  ctx.fillStyle = template.textColor
+  ctx.textAlign = 'center'
+  ctx.globalAlpha = 0.9
+
+  if (template.textShadow !== false) {
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'
+    ctx.shadowBlur = 6
+    ctx.shadowOffsetY = 2
+  }
+
+  if (template.neonGlow) {
+    ctx.shadowColor = template.accent
+    ctx.shadowBlur = 12
+  }
+
+  let curY = (H / 2) - (totalH / 2)
+  for (let i = 0; i < wrappedBlocks.length; i++) {
+    wrappedBlocks[i].forEach((wLine, wi) => {
+      ctx.fillText(wLine, W / 2, curY + wi * lineHeight + lineHeight * 0.7)
+    })
+    curY += blockHeights[i] + blockGap
+  }
+  ctx.restore()
+
+  return canvas.toDataURL('image/jpeg', 0.7)
+}
+
+
+// ── StoryTemplatePickerModal Component ───────────────────────────────────────
+
+export function StoryTemplatePickerModal({ isOpen, onClose, onSelect, sampleLines, coverImageUrl }) {
+  const [thumbnails, setThumbnails] = useState({})
+  const [selectedId, setSelectedId] = useState(STORY_TEMPLATES[0].id)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!isOpen) return
+    setLoading(true)
+    setSelectedId(STORY_TEMPLATES[0].id)
+
+    const lines = sampleLines?.length ? sampleLines : ['Sample lyrics line', 'Another line here']
+
+    Promise.all(
+      STORY_TEMPLATES.map(async (tmpl) => {
+        const url = await generateStoryThumbnail(tmpl, lines, tmpl.skipCoverImage ? null : coverImageUrl)
+        return [tmpl.id, url]
+      })
+    ).then((results) => {
+      const map = {}
+      for (const [id, url] of results) map[id] = url
+      setThumbnails(map)
+      setLoading(false)
+    }).catch(() => setLoading(false))
+  }, [isOpen, sampleLines, coverImageUrl])
+
+  if (!isOpen) return null
+
+  const selected = STORY_TEMPLATES.find(t => t.id === selectedId) || STORY_TEMPLATES[0]
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full p-5 animate-slideUp max-h-[90vh] flex flex-col">
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition z-10"
+        >
+          <FiX className="w-5 h-5" />
+        </button>
+
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2 flex-shrink-0">
+          <FiCamera className="w-5 h-5 text-purple-500" />
+          Choose a Style
+        </h3>
+
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-3 mb-5 overflow-y-auto flex-1 min-h-0">
+            {STORY_TEMPLATES.map((tmpl) => (
+              <button
+                key={tmpl.id}
+                onClick={() => setSelectedId(tmpl.id)}
+                className={`relative rounded-xl overflow-hidden border-2 transition-all aspect-[9/16] ${
+                  selectedId === tmpl.id
+                    ? 'border-purple-500 shadow-lg shadow-purple-500/30 scale-[1.02]'
+                    : 'border-transparent hover:border-slate-300 dark:hover:border-slate-600'
+                }`}
+              >
+                {thumbnails[tmpl.id] ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={thumbnails[tmpl.id]}
+                    alt={tmpl.label}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-slate-200 dark:bg-slate-700" />
+                )}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-2 py-1.5">
+                  <span className="text-white text-xs font-medium flex items-center gap-1">
+                    <span>{tmpl.emoji}</span>
+                    <span>{tmpl.label}</span>
+                  </span>
+                </div>
+                {selectedId === tmpl.id && (
+                  <div className="absolute top-1.5 right-1.5 w-5 h-5 bg-purple-500 rounded-full flex items-center justify-center">
+                    <FiCheck className="w-3 h-3 text-white" />
+                  </div>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <button
+          onClick={() => onSelect(selected)}
+          disabled={loading}
+          className="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-medium hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 flex items-center justify-center gap-2 flex-shrink-0"
+        >
+          <FiCamera className="w-4 h-4" />
+          Generate Story
+        </button>
+      </div>
+    </div>
+  )
+}
+
+
 // Story Preview Modal Component
 export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGenerating, songTitle, onTemplateChange, selectedTemplate }) {
   const [blobUrl, setBlobUrl] = useState(null)
@@ -396,6 +607,7 @@ export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGeneratin
 export function useStoryMode({ initialSong }) {
   const [isStoryMode, setIsStoryMode] = useState(false)
   const [selectedLines, setSelectedLines] = useState([])
+  const [showTemplatePicker, setShowTemplatePicker] = useState(false)
   const [showStoryPreview, setShowStoryPreview] = useState(false)
   const [storyImageBlob, setStoryImageBlob] = useState(null)
   const [isGeneratingStory, setIsGeneratingStory] = useState(false)
@@ -412,20 +624,29 @@ export function useStoryMode({ initialSong }) {
     })
   }, [])
 
-  const handleCreateStory = useCallback(async () => {
+  // Opens template picker instead of generating immediately
+  const handlePreviewStory = useCallback(() => {
     if (selectedLines.length < 2) return
+    setShowTemplatePicker(true)
+  }, [selectedLines])
+
+  // Generates story after template is chosen
+  const handleCreateStory = useCallback(async (template) => {
+    const tmpl = template || storyTemplate
+    setStoryTemplate(tmpl)
+    setShowTemplatePicker(false)
     setShowStoryPreview(true)
     setIsGeneratingStory(true)
     try {
-      if (storyTemplate.fontGoogle) {
-        await ensureGoogleFont(storyTemplate.fontGoogle)
+      if (tmpl.fontGoogle) {
+        await ensureGoogleFont(tmpl.fontGoogle)
       }
       const blob = await generateStoryImage({
         selectedLines: selectedLines.map(l => l.text),
         songTitle: initialSong.title,
         artistNames: initialSong.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist',
         coverImageUrl: initialSong.coverImage || null,
-        template: storyTemplate
+        template: tmpl
       })
       setStoryImageBlob(blob)
     } catch (err) {
@@ -464,6 +685,8 @@ export function useStoryMode({ initialSong }) {
     setIsStoryMode,
     selectedLines,
     setSelectedLines,
+    showTemplatePicker,
+    setShowTemplatePicker,
     showStoryPreview,
     setShowStoryPreview,
     storyImageBlob,
@@ -471,6 +694,7 @@ export function useStoryMode({ initialSong }) {
     isGeneratingStory,
     storyTemplate,
     handleLineToggle,
+    handlePreviewStory,
     handleCreateStory,
     handleTemplateChange,
     exitStoryMode,

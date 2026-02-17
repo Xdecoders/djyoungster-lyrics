@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateSongSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { toTitleCase } from '@/lib/utils'
 import SongPageClient from './SongPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds for fresh data
@@ -48,28 +49,31 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
-    const genres = song.genres?.map(sg => sg.genre.name).join(', ')
+    const artistNames = song.artists?.map(sa => toTitleCase(sa.artist.name)).join(', ') || 'Unknown Artist'
+    const genres = song.genres?.map(sg => toTitleCase(sg.genre.name)).join(', ')
+    const songTitle = toTitleCase(song.title)
+    const movieTitle = toTitleCase(song.movie?.title)
+    const albumTitle = toTitleCase(song.album?.title)
 
     // Build SEO title: Song Name + Lyrics + Artist Name + Movie Name (if available)
-    let title = `${song.title} Lyrics - ${artistNames}`
-    if (song.movie?.title) {
-      title += ` | ${song.movie.title}`
+    let title = `${songTitle} Lyrics - ${artistNames}`
+    if (movieTitle) {
+      title += ` | ${movieTitle}`
     }
     title += ' | DJYoungster'
 
     // Build meta description
-    let description = `Read ${song.title} lyrics by ${artistNames}.`
-    if (song.movie?.title) {
-      description += ` From the movie ${song.movie.title}${song.movie.year ? ` (${song.movie.year})` : ''}.`
-    } else if (song.album?.title) {
-      description += ` From the album ${song.album.title}.`
+    let description = `Read ${songTitle} lyrics by ${artistNames}.`
+    if (movieTitle) {
+      description += ` From the movie ${movieTitle}${song.movie.year ? ` (${song.movie.year})` : ''}.`
+    } else if (albumTitle) {
+      description += ` From the album ${albumTitle}.`
     }
     if (genres) {
       description += ` Genre: ${genres}.`
     }
     if (song.lyricist) {
-      description += ` Written by ${song.lyricist}.`
+      description += ` Written by ${toTitleCase(song.lyricist)}.`
     }
     description += ' Full lyrics with music video on DJYoungster.'
 
@@ -86,12 +90,12 @@ export async function generateMetadata({ params }) {
       title: metaTitle,
       description: metaDescription,
       keywords: [
-        song.title,
-        `${song.title} lyrics`,
+        songTitle,
+        `${songTitle} lyrics`,
         artistNames,
         `${artistNames} songs`,
-        song.movie?.title,
-        song.album?.title,
+        movieTitle,
+        albumTitle,
         genres,
         'lyrics',
         'song lyrics',
@@ -109,7 +113,7 @@ export async function generateMetadata({ params }) {
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: `${song.title} by ${artistNames}`,
+            alt: `${songTitle} by ${artistNames}`,
           },
         ],
         locale: 'en_US',

@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateMovieSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { toTitleCase } from '@/lib/utils'
 import MoviePageClient from './MoviePageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -39,9 +40,10 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const title = movie.metaTitle || `${movie.title}${movie.year ? ` (${movie.year})` : ''} Songs Lyrics with English Translation - DJYoungster`
+    const movieTitle = toTitleCase(movie.title)
+    const title = movie.metaTitle || `${movieTitle}${movie.year ? ` (${movie.year})` : ''} Songs Lyrics with English Translation - DJYoungster`
     const description = movie.metaDescription ||
-      `Explore ${movie.title} movie song lyrics and meanings. Djyoungster provides ${movie.title} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `Explore ${movieTitle} movie song lyrics and meanings. Djyoungster provides ${movieTitle} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/movie/${slug}`
@@ -53,12 +55,12 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords: [
-        movie.title,
-        `${movie.title} songs`,
-        `${movie.title} lyrics`,
-        `${movie.title} soundtrack`,
-        `${movie.title} movie songs`,
-        movie.director,
+        movieTitle,
+        `${movieTitle} songs`,
+        `${movieTitle} lyrics`,
+        `${movieTitle} soundtrack`,
+        `${movieTitle} movie songs`,
+        toTitleCase(movie.director),
         movie.year?.toString(),
         'movie songs',
         'soundtrack',
@@ -76,7 +78,7 @@ export async function generateMetadata({ params }) {
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: `${movie.title} Soundtrack`,
+            alt: `${movieTitle} Soundtrack`,
           },
         ],
         locale: 'en_US',

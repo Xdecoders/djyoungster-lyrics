@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { toTitleCase } from '@/lib/utils'
 import TagPageClient from './TagPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -31,8 +32,7 @@ export async function generateMetadata({ params }) {
   const ogImageUrl = getAbsoluteUrl(siteSettings.ogImage) || `${siteUrl}/og-image.jpg`
   const pageUrl = `${siteUrl}/tag/${slug}`
 
-  // Capitalize tag name for display
-  const capitalizedName = tag.name.charAt(0).toUpperCase() + tag.name.slice(1)
+  const capitalizedName = toTitleCase(tag.name)
   const title = tag.metaTitle || `${capitalizedName} Songs Lyrics with English Translation - DJYoungster`
   const description = tag.metaDescription || `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
@@ -50,7 +50,7 @@ export async function generateMetadata({ params }) {
           url: ogImageUrl,
           width: 1200,
           height: 630,
-          alt: `${tag.name} Songs`,
+          alt: `${capitalizedName} Songs`,
         },
       ],
     },

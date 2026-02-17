@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { toTitleCase } from '@/lib/utils'
 import CategoryPageClient from './CategoryPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -34,9 +35,10 @@ export async function generateMetadata({ params }) {
       }
     }
 
-    const title = category.metaTitle || `${category.name} Songs Lyrics with English Translation - DJYoungster`
+    const categoryName = toTitleCase(category.name)
+    const title = category.metaTitle || `${categoryName} Songs Lyrics with English Translation - DJYoungster`
     const description = category.metaDescription ||
-      `Explore ${category.name} song lyrics and meanings. Djyoungster provides ${category.name} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `Explore ${categoryName} song lyrics and meanings. Djyoungster provides ${categoryName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/category/${slug}`
@@ -47,10 +49,10 @@ export async function generateMetadata({ params }) {
       title,
       description,
       keywords: [
-        category.name,
-        `${category.name} songs`,
-        `${category.name} lyrics`,
-        `${category.name} music`,
+        categoryName,
+        `${categoryName} songs`,
+        `${categoryName} lyrics`,
+        `${categoryName} music`,
         'lyrics',
         'songs',
         'music',
@@ -66,7 +68,7 @@ export async function generateMetadata({ params }) {
             url: imageUrl,
             width: 1200,
             height: 630,
-            alt: `${category.name} Songs`,
+            alt: `${categoryName} Songs`,
           },
         ],
         locale: 'en_US',
