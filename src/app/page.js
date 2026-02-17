@@ -76,6 +76,10 @@ const homepageFAQs = [
     answer: 'Yes! DJYoungster features a unique Instagram Story creator that allows you to select your favorite lyrics (2-4 lines) from any song and generate beautiful, shareable story images. Choose from multiple stunning templates including Sad, Happy, Romantic, and Neon styles. Simply click the "Create Story" button on any song page, select your lines, preview with different templates, and download or share directly to Instagram.'
   },
   {
+    question: 'What is the IG Reel Creator on DJYoungster?',
+    answer: 'The IG Reel Creator is DJYoungster\'s innovative tool that lets you turn your favorite song lyrics into animated video clips perfect for Instagram Reels, TikTok, and YouTube Shorts. Select 2-4 lines from any song, choose from stunning animated templates, and download a ready-to-share video clip. It\'s completely free and a great way to express yourself through music on social media.'
+  },
+  {
     question: 'Is DJYoungster free to use?',
     answer: 'Yes! DJYoungster is completely free to use. You can browse, search, and read unlimited lyrics, create Instagram story images, and access all features without any subscription or hidden charges.'
   },

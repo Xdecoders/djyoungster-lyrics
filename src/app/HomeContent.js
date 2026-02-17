@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
-import { FiMusic, FiPlay, FiUser, FiTrendingUp, FiClock, FiTag, FiCheckCircle, FiUsers, FiGlobe, FiCamera } from 'react-icons/fi'
+import { FiMusic, FiPlay, FiUser, FiTrendingUp, FiClock, FiTag, FiUsers, FiGlobe, FiCamera, FiVideo } from 'react-icons/fi'
 import SearchWithAutocomplete from './SearchClient'
 import LiveTicker from './LiveTicker'
 import Carousel from './Carousel'
@@ -36,8 +36,8 @@ export default function HomeContent({ data, siteSettings }) {
           <div className="flex flex-wrap items-center justify-center gap-2.5">
             {[
               { icon: FiUsers, text: '35,000+ Active Users', color: 'text-primary' },
-              { icon: FiCheckCircle, text: 'Verified Lyrics', color: 'text-emerald-500' },
-              { icon: FiGlobe, text: '10+ Languages', color: 'text-blue-500' },
+              { icon: FiVideo, text: 'IG Reel Creator', color: 'text-rose-500' },
+              { icon: FiGlobe, text: 'Meaning & Translation', color: 'text-blue-500' },
               { icon: FiCamera, text: 'IG Story Creator', color: 'text-purple-500' },
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/80 dark:border-white/10 text-xs sm:text-sm text-slate-600 dark:text-slate-400">
