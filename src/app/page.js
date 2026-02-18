@@ -121,17 +121,21 @@ async function getHomepageData() {
     }
 
     // Run all queries in parallel
-    const [latestSongs, trendingSongs, categories, artists, tags, siteSettings] = await Promise.all([
+    const [latestSongs, instagramViralSongs, categories, artists, tags, siteSettings] = await Promise.all([
       prisma.song.findMany({
         where: { status: 'published' },
         orderBy: { createdAt: 'desc' },
         take: 10,
         select: songSelectFields
       }),
+      // Fetch Instagram Viral category songs
       prisma.song.findMany({
-        where: { status: 'published' },
+        where: {
+          status: 'published',
+          categories: { some: { category: { slug: 'instagram-viral' } } }
+        },
         orderBy: { views: 'desc' },
-        take: 30,
+        take: 10,
         select: songSelectFields
       }),
       prisma.category.findMany({
@@ -156,13 +160,9 @@ async function getHomepageData() {
       getSiteSettings(),
     ])
 
-    // Shuffle and pick 10 for Editor's Pick
-    const shuffled = trendingSongs.sort(() => Math.random() - 0.5)
-    const editorsPicks = shuffled.slice(0, 10)
-
     return {
       latestSongs,
-      editorsPicks,
+      instagramViralSongs,
       categories,
       artists,
       tags,
@@ -175,7 +175,7 @@ async function getHomepageData() {
     console.error('Error fetching homepage data:', error)
     return {
       latestSongs: [],
-      editorsPicks: [],
+      instagramViralSongs: [],
       categories: [],
       artists: [],
       tags: [],

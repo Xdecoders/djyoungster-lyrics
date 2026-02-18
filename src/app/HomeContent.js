@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
-import { FiMusic, FiPlay, FiUser, FiTrendingUp, FiClock, FiTag, FiUsers, FiGlobe, FiCamera, FiVideo } from 'react-icons/fi'
+import { FiMusic, FiPlay, FiUser, FiTrendingUp, FiClock, FiTag, FiUsers, FiGlobe, FiCamera, FiVideo, FiInstagram } from 'react-icons/fi'
 import SearchWithAutocomplete from './SearchClient'
 import LiveTicker from './LiveTicker'
 import Carousel from './Carousel'
@@ -51,38 +51,32 @@ export default function HomeContent({ data, siteSettings }) {
 
       {/* Live Activity Ticker */}
       <LiveTicker songs={[
-        ...(data?.editorsPicks || []),
+        ...(data?.instagramViralSongs || []),
         ...(data?.latestSongs || []),
       ].filter((song, i, arr) => arr.findIndex(s => s.id === song.id) === i)} />
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
 
-        {/* Top Charts */}
-        {data?.editorsPicks?.length > 0 && (
+        {/* Instagram Viral */}
+        {data?.instagramViralSongs?.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/80 dark:border-white/10">
-                  <FiTrendingUp className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 shadow-lg">
+                  <FiInstagram className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Top Charts</h2>
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Instagram Viral</h2>
               </div>
-              <Link href="/songs?sort=trending" className="text-sm text-primary hover:text-primary-hover font-medium">
+              <Link href="/category/instagram-viral" className="text-sm text-primary hover:text-primary-hover font-medium">
                 View All
               </Link>
             </div>
 
             <Carousel>
               <div className="flex gap-3 w-max">
-                {data.editorsPicks.map((song, index) => {
+                {data.instagramViralSongs.map((song, index) => {
                   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
-                  const isTop3 = index < 3
-                  const accents = [
-                    'from-amber-400 to-yellow-500',
-                    'from-slate-300 to-slate-400',
-                    'from-amber-600 to-amber-700',
-                  ]
                   return (
                     <Link
                       key={song.id}
@@ -92,17 +86,15 @@ export default function HomeContent({ data, siteSettings }) {
                       {song.coverImage ? (
                         <Image src={song.coverImage} alt={song.title} fill sizes="192px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={index < 4} />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                          <FiMusic className="w-12 h-12 text-slate-400/50" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-pink-200 to-purple-300 dark:from-pink-900 dark:to-purple-900 flex items-center justify-center">
+                          <FiMusic className="w-12 h-12 text-purple-400/50" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-                      {/* Rank badge */}
+                      {/* Viral badge */}
                       <div className="absolute top-3 left-3">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${isTop3 ? `bg-gradient-to-br ${accents[index]} text-white shadow-lg` : 'bg-white/20 backdrop-blur-md border border-white/20 text-white'}`}>
-                          #{index + 1}
-                        </div>
+                        <span className="px-2 py-0.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">Viral</span>
                       </div>
 
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
