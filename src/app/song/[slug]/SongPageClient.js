@@ -1547,6 +1547,27 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 </div>
               )}
 
+              {/* Lyric Annotations - After Meaning */}
+              {song.annotations?.length > 0 && (
+                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
+                  <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+                    <FiEdit3 className="w-5 h-5 text-amber-500" />
+                    Lyric Annotations
+                  </h2>
+                  {song.annotations.map(ann => {
+                    const plainLyrics = stripHtml(song.lyrics)
+                    const lines = plainLyrics.split('\n')
+                    const quoted = lines.slice(ann.startLine, ann.endLine + 1).filter(l => l.trim()).join(' / ')
+                    return (
+                      <details key={ann.id} className="mb-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl p-4">
+                        <summary className="cursor-pointer font-medium text-slate-700 dark:text-slate-200 italic">&ldquo;{quoted}&rdquo;</summary>
+                        <p className="mt-3 text-slate-600 dark:text-slate-300 leading-relaxed text-sm">{ann.content}</p>
+                      </details>
+                    )
+                  })}
+                </div>
+              )}
+
               {/* Report Button - Always visible after lyrics */}
               <div className="mb-6">
                 <button
