@@ -134,7 +134,7 @@ async function getHomepageData() {
           status: 'published',
           categories: { some: { category: { slug: 'instagram-viral' } } }
         },
-        orderBy: { views: 'desc' },
+        orderBy: { createdAt: 'desc' },
         take: 10,
         select: songSelectFields
       }),

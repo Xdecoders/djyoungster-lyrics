@@ -19,14 +19,17 @@ const songFuseOptions = {
   keys: [
     { name: 'title', weight: 1.0 },
     { name: 'artistNames', weight: 0.8 },
-    { name: 'singers', weight: 0.6 },
-    { name: 'lyricist', weight: 0.4 },
-    { name: 'composer', weight: 0.4 },
-    { name: 'albumTitle', weight: 0.5 },
-    { name: 'movieTitle', weight: 0.5 },
+    { name: 'singers', weight: 0.7 },
+    { name: 'starring', weight: 0.6 },
+    { name: 'lyricist', weight: 0.5 },
+    { name: 'composer', weight: 0.5 },
+    { name: 'albumTitle', weight: 0.6 },
+    { name: 'movieTitle', weight: 0.6 },
+    { name: 'label', weight: 0.3 },
+    { name: 'lyricsSnippet', weight: 0.3 },
   ],
-  threshold: 0.4,
-  distance: 200,
+  threshold: 0.35,
+  distance: 300,
   minMatchCharLength: 2,
   includeScore: true,
 }
@@ -35,8 +38,8 @@ const artistFuseOptions = {
   keys: [
     { name: 'name', weight: 1.0 },
   ],
-  threshold: 0.4,
-  distance: 200,
+  threshold: 0.35,
+  distance: 300,
   minMatchCharLength: 2,
   includeScore: true,
 }
@@ -46,8 +49,8 @@ const albumFuseOptions = {
     { name: 'title', weight: 1.0 },
     { name: 'artistName', weight: 0.8 },
   ],
-  threshold: 0.4,
-  distance: 200,
+  threshold: 0.35,
+  distance: 300,
   minMatchCharLength: 2,
   includeScore: true,
 }
@@ -56,11 +59,13 @@ const movieFuseOptions = {
   keys: [
     { name: 'title', weight: 1.0 },
     { name: 'director', weight: 0.5 },
-    { name: 'cast', weight: 0.3 },
-    { name: 'musicDirector', weight: 0.3 },
+    { name: 'cast', weight: 0.4 },
+    { name: 'musicDirector', weight: 0.4 },
+    { name: 'writer', weight: 0.3 },
+    { name: 'producer', weight: 0.3 },
   ],
-  threshold: 0.4,
-  distance: 200,
+  threshold: 0.35,
+  distance: 300,
   minMatchCharLength: 2,
   includeScore: true,
 }
@@ -79,6 +84,9 @@ async function loadData() {
         lyricist: true,
         composer: true,
         singers: true,
+        starring: true,
+        label: true,
+        lyrics: true,
         artists: {
           select: {
             artist: { select: { id: true, name: true, slug: true } }
@@ -127,6 +135,8 @@ async function loadData() {
         director: true,
         cast: true,
         musicDirector: true,
+        writer: true,
+        producer: true,
         _count: { select: { songs: true } },
         songs: {
           select: { coverImage: true },
@@ -139,12 +149,20 @@ async function loadData() {
   ])
 
   // Flatten fields for Fuse.js searching
-  const songsFlat = songs.map(s => ({
-    ...s,
-    artistNames: s.artists?.map(sa => sa.artist.name).join(', ') || '',
-    albumTitle: s.album?.title || '',
-    movieTitle: s.movie?.title || '',
-  }))
+  const songsFlat = songs.map(s => {
+    // Create a short lyrics snippet for search (strip HTML, first 200 chars)
+    const lyricsSnippet = s.lyrics
+      ? s.lyrics.replace(/<[^>]*>/g, '').substring(0, 200)
+      : ''
+    return {
+      ...s,
+      lyrics: undefined, // Don't store full lyrics in memory
+      artistNames: s.artists?.map(sa => sa.artist.name).join(', ') || '',
+      albumTitle: s.album?.title || '',
+      movieTitle: s.movie?.title || '',
+      lyricsSnippet,
+    }
+  })
 
   const albumsFlat = albums.map(a => ({
     ...a,
