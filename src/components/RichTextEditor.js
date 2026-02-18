@@ -65,6 +65,21 @@ export default function RichTextEditor({ value, onChange, placeholder, rows = 10
     }
   }, [execCommand, handleInput])
 
+  const handlePaste = useCallback((e) => {
+    e.preventDefault()
+    const text = e.clipboardData.getData('text/plain')
+    if (!text) return
+
+    // Convert plain text line breaks to <br> tags to preserve lyrics formatting
+    const html = text
+      .split('\n')
+      .map(line => line || '<br>')
+      .join('<br>')
+
+    document.execCommand('insertHTML', false, html)
+    handleInput()
+  }, [handleInput])
+
   const handleKeyDown = useCallback((e) => {
     if (e.ctrlKey || e.metaKey) {
       if (e.key === 'b') { e.preventDefault(); toggleBold() }
@@ -132,6 +147,7 @@ export default function RichTextEditor({ value, onChange, placeholder, rows = 10
         contentEditable
         suppressContentEditableWarning
         onInput={handleInput}
+        onPaste={handlePaste}
         onKeyDown={handleKeyDown}
         onSelect={updateActiveFormats}
         onClick={updateActiveFormats}
