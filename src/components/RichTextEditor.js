@@ -8,11 +8,21 @@ export default function RichTextEditor({ value, onChange, placeholder, rows = 10
   const isInternalChange = useRef(false)
   const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false, link: false })
 
+  // Convert plain \n newlines to <br> for proper HTML display
+  const toHtml = (val) => {
+    if (!val) return ''
+    // If value already contains HTML tags like <br> or <p>, return as-is
+    if (/<[a-z][\s\S]*>/i.test(val)) return val
+    // Plain text with newlines — convert to <br>
+    return val.replace(/\n/g, '<br>')
+  }
+
   // Set initial content
   useEffect(() => {
     if (editorRef.current && !isInternalChange.current) {
-      if (editorRef.current.innerHTML !== (value || '')) {
-        editorRef.current.innerHTML = value || ''
+      const html = toHtml(value)
+      if (editorRef.current.innerHTML !== html) {
+        editorRef.current.innerHTML = html
       }
     }
   }, [value])
