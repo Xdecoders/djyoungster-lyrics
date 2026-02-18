@@ -55,6 +55,7 @@ model Song {
   reports    Report[]
   ratings    SongRating[]
   reactions  SongReaction[]
+  annotations Annotation[]
 
   @@index([slug])
   @@index([title])
@@ -401,4 +402,17 @@ model MovieRating {
 
   @@unique([movieId, ipAddress])
   @@index([movieId])
+}
+
+model Annotation {
+  id        String   @id @default(uuid())
+  songId    String
+  startLine Int
+  endLine   Int
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  @@index([songId])
 }

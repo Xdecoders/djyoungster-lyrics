@@ -49,6 +49,15 @@ import { MdTranslate } from 'react-icons/md'
 import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest } from 'react-icons/fa'
 import { FaXTwitter } from 'react-icons/fa6'
 
+// HTML helpers for backward-compatible rendering
+function stripHtml(html) {
+  return html?.replace(/<[^>]*>/g, '') || ''
+}
+
+function isHtml(text) {
+  return /<[a-z][\s\S]*>/i.test(text)
+}
+
 // Apple Music Icon Component
 function AppleMusicIcon({ className }) {
   return (
@@ -228,10 +237,9 @@ function SongMeaning({ song }) {
   if (!song.meaning) return null
 
   const meaningText = song.meaning
-  const shouldTruncate = meaningText.length > 300
-  const displayText = shouldTruncate && !isExpanded
-    ? meaningText.substring(0, 300) + '...'
-    : meaningText
+  const meaningPlain = stripHtml(meaningText)
+  const shouldTruncate = meaningPlain.length > 300
+  const htmlContent = isHtml(meaningText)
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
@@ -240,7 +248,14 @@ function SongMeaning({ song }) {
         {song.title} Song Meaning
       </h3>
       <div className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-        <p className="whitespace-pre-line">{displayText}</p>
+        {htmlContent ? (
+          <div
+            className={`prose prose-sm max-w-none dark:prose-invert ${shouldTruncate && !isExpanded ? 'line-clamp-6' : ''}`}
+            dangerouslySetInnerHTML={{ __html: shouldTruncate && !isExpanded ? meaningText.substring(0, 500) + '...' : meaningText }}
+          />
+        ) : (
+          <p className="whitespace-pre-line">{shouldTruncate && !isExpanded ? meaningPlain.substring(0, 300) + '...' : meaningText}</p>
+        )}
         {shouldTruncate && (
           <button
             onClick={() => setIsExpanded(!isExpanded)}
@@ -399,6 +414,19 @@ function FAQSection({ song }) {
     })
   }
 
+  // Q10-Q11: Annotation FAQs (only when annotations exist)
+  if (song.annotations?.length > 0) {
+    const annotationCount = song.annotations.length
+    faqs.push({
+      question: `What do the highlighted lyrics in "${song.title}" mean?`,
+      answer: `"${song.title}" has ${annotationCount} annotated ${annotationCount === 1 ? 'section' : 'sections'} where our editors have broken down the meaning behind specific lines. Look for the highlighted text in the lyrics — tap any highlighted line to reveal a detailed explanation of the wordplay, cultural references, and deeper meaning behind ${firstArtist}'s words.`
+    })
+    faqs.push({
+      question: `Does "${song.title}" have lyrics annotations like Genius?`,
+      answer: `Yes! DJYoungster provides Genius-style annotations for "${song.title}." Our editors have analyzed ${annotationCount} key ${annotationCount === 1 ? 'passage' : 'passages'} in the song, explaining the imagery, emotions, and cultural context. Simply click on any highlighted lyric line to read the annotation — no account or login needed.`
+    })
+  }
+
   return (
     <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
       <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
@@ -406,7 +434,7 @@ function FAQSection({ song }) {
         Frequently Asked Questions about {song.title}
       </h2>
       <div className="space-y-3" itemScope itemType="https://schema.org/FAQPage">
-        {faqs.slice(0, 5).map((faq, index) => (
+        {faqs.slice(0, 7).map((faq, index) => (
           <div
             key={index}
             itemScope
@@ -783,7 +811,7 @@ function LyricsToggle({ lyricsMode, setLyricsMode, hasRomanized, hasTranslated, 
 }
 
 // Lyrics Display Component - All versions rendered in HTML for SEO, CSS controls visibility
-function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize, isStoryMode, selectedLines, onLineToggle, selectColor = 'purple' }) {
+function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize, isStoryMode, selectedLines, onLineToggle, selectColor = 'purple', openAnnotationId, onAnnotationToggle }) {
   const modeLabels = {
     romanized: { icon: FiType, text: 'Showing Romanized/Transliterated lyrics for easier reading' },
     translated: { icon: MdTranslate, text: 'Showing English Translation of the lyrics' },
@@ -827,38 +855,124 @@ function LyricsDisplay({ song, lyricsMode, lyricsRef, fontSize, isStoryMode, sel
             <h3 className={isActive && version.id !== 'original' ? 'sr-only' : version.id === 'original' ? 'sr-only' : 'text-lg font-semibold text-slate-700 dark:text-slate-300 mb-3'}>
               {version.label}
             </h3>
-            {isActive && isStoryMode ? (
-              <div style={{ fontSize: `${fontSize}px`, lineHeight: '1.8' }}>
-                {version.content.split('\n').map((line, idx) => {
-                  const trimmed = line.trim()
-                  if (!trimmed) return <div key={idx} className="h-4" />
-                  const isSelected = selectedLines?.some(l => l.index === idx)
-                  const selectedClass = selectColor === 'cyan'
-                    ? 'border-l-4 border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30 text-slate-800 dark:text-white'
-                    : 'border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-slate-800 dark:text-white'
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => onLineToggle?.(idx, trimmed)}
-                      className={`cursor-pointer px-3 py-1 rounded-lg transition-all select-none ${
-                        isSelected
-                          ? selectedClass
-                          : 'border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200'
-                      }`}
-                    >
-                      {trimmed}
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <p
-                className="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200 leading-relaxed"
-                style={{ fontSize: isActive ? `${fontSize}px` : '16px', lineHeight: '1.8' }}
-              >
-                {version.content}
-              </p>
-            )}
+            {(() => {
+              // Strip HTML to get plain text lines for line-based modes
+              const plainContent = stripHtml(version.content)
+              const contentIsHtml = isHtml(version.content)
+
+              if (isActive && isStoryMode) {
+                const lines = plainContent.split('\n')
+                return (
+                  <div style={{ fontSize: `${fontSize}px`, lineHeight: '1.8' }}>
+                    {lines.map((line, idx) => {
+                      const trimmed = line.trim()
+                      if (!trimmed) return <div key={idx} className="h-4" />
+                      const isSelected = selectedLines?.some(l => l.index === idx)
+                      const selectedClass = selectColor === 'cyan'
+                        ? 'border-l-4 border-cyan-500 bg-cyan-50 dark:bg-cyan-900/30 text-slate-800 dark:text-white'
+                        : 'border-l-4 border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-slate-800 dark:text-white'
+                      return (
+                        <div
+                          key={idx}
+                          onClick={() => onLineToggle?.(idx, trimmed)}
+                          className={`cursor-pointer px-3 py-1 rounded-lg transition-all select-none ${
+                            isSelected
+                              ? selectedClass
+                              : 'border-l-4 border-transparent hover:bg-slate-50 dark:hover:bg-slate-700/50 text-slate-700 dark:text-slate-200'
+                          }`}
+                        >
+                          {trimmed}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )
+              }
+
+              if (isActive && version.id === 'original' && !isStoryMode && song.annotations?.length > 0) {
+                const annMap = {}
+                song.annotations.forEach(ann => {
+                  for (let i = ann.startLine; i <= ann.endLine; i++) {
+                    annMap[i] = ann
+                  }
+                })
+                const contentLines = plainContent.split('\n')
+                const rendered = []
+                let i = 0
+                while (i < contentLines.length) {
+                  const trimmed = contentLines[i].trim()
+                  if (!trimmed) {
+                    rendered.push(<div key={i} className="h-4" />)
+                    i++
+                    continue
+                  }
+                  const ann = annMap[i]
+                  if (ann) {
+                    const isOpen = openAnnotationId === ann.id
+                    const groupLines = []
+                    for (let j = ann.startLine; j <= ann.endLine && j < contentLines.length; j++) {
+                      if (contentLines[j].trim()) {
+                        groupLines.push(
+                          <div
+                            key={j}
+                            onClick={() => onAnnotationToggle?.(ann.id)}
+                            className="cursor-pointer px-3 py-1 bg-amber-50 dark:bg-amber-900/20 border-b border-amber-100 dark:border-amber-800/30 text-slate-700 dark:text-slate-200 underline decoration-dotted decoration-amber-400 underline-offset-4 hover:bg-amber-100 dark:hover:bg-amber-900/40 transition-colors"
+                          >
+                            {contentLines[j].trim()}
+                          </div>
+                        )
+                      } else {
+                        groupLines.push(<div key={j} className="h-4" />)
+                      }
+                    }
+                    rendered.push(
+                      <div key={`ann-${ann.id}`}>
+                        {groupLines}
+                        {isOpen && (
+                          <div className="mt-2 mb-3 px-4 py-3 bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-400 rounded-r-xl text-sm leading-relaxed">
+                            <p className="text-slate-700 dark:text-slate-200">{ann.content}</p>
+                            <button onClick={() => onAnnotationToggle?.(null)} className="mt-2 text-xs text-amber-700 dark:text-amber-400 hover:underline">Close</button>
+                          </div>
+                        )}
+                      </div>
+                    )
+                    i = ann.endLine + 1
+                  } else {
+                    rendered.push(
+                      <div key={i} className="px-3 py-1 text-slate-700 dark:text-slate-200">
+                        {trimmed}
+                      </div>
+                    )
+                    i++
+                  }
+                }
+                return (
+                  <div style={{ fontSize: isActive ? `${fontSize}px` : '16px', lineHeight: '1.8' }} className="font-sans leading-relaxed">
+                    {rendered}
+                  </div>
+                )
+              }
+
+              // Default rendering
+              if (contentIsHtml) {
+                return (
+                  <div
+                    className="prose prose-sm max-w-none dark:prose-invert font-sans text-slate-700 dark:text-slate-200 leading-relaxed"
+                    style={{ fontSize: isActive ? `${fontSize}px` : '16px', lineHeight: '1.8' }}
+                    dangerouslySetInnerHTML={{ __html: version.content }}
+                  />
+                )
+              }
+
+              return (
+                <p
+                  className="whitespace-pre-wrap font-sans text-slate-700 dark:text-slate-200 leading-relaxed"
+                  style={{ fontSize: isActive ? `${fontSize}px` : '16px', lineHeight: '1.8' }}
+                >
+                  {version.content}
+                </p>
+              )
+            })()}
           </section>
         )
       })}
@@ -1096,6 +1210,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const [showReportModal, setShowReportModal] = useState(false)
   const [lyricsMode, setLyricsMode] = useState('original')
   const [lyricsFontSize, setLyricsFontSize] = useState(18)
+  const [openAnnotationId, setOpenAnnotationId] = useState(null)
   const [headerAvgRating, setHeaderAvgRating] = useState(0)
   const [headerTotalRatings, setHeaderTotalRatings] = useState(0)
   const lyricsRef = useRef(null)
@@ -1164,7 +1279,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
     } else if (lyricsMode === 'punjabi' && song.lyricsPunjabi) {
       textToCopy = song.lyricsPunjabi
     }
-    navigator.clipboard.writeText(textToCopy)
+    navigator.clipboard.writeText(stripHtml(textToCopy))
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
@@ -1358,6 +1473,8 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   </div>
                 )}
 
+                <hr className="border-slate-200 dark:border-slate-700 my-4" />
+
                 <LyricsToggle
                   lyricsMode={lyricsMode}
                   setLyricsMode={setLyricsMode}
@@ -1397,6 +1514,8 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                     selectedLines={activeSelectedLines}
                     onLineToggle={activeLineToggle}
                     selectColor={isClipMode ? 'cyan' : 'purple'}
+                    openAnnotationId={openAnnotationId}
+                    onAnnotationToggle={(id) => setOpenAnnotationId(openAnnotationId === id ? null : id)}
                   />
                 </div>
               </section>
@@ -1419,7 +1538,11 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                     {song.title} Song Meaning
                   </h2>
                   <div className="text-slate-600 dark:text-slate-300 leading-relaxed">
-                    <p className="whitespace-pre-line">{song.meaning}</p>
+                    {isHtml(song.meaning) ? (
+                      <div className="prose prose-sm max-w-none dark:prose-invert" dangerouslySetInnerHTML={{ __html: song.meaning }} />
+                    ) : (
+                      <p className="whitespace-pre-line">{song.meaning}</p>
+                    )}
                   </div>
                 </div>
               )}

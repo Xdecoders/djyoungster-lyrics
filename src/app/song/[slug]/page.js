@@ -221,6 +221,10 @@ async function getSongData(slug) {
             }
           }
         },
+        annotations: {
+          orderBy: { startLine: 'asc' },
+          select: { id: true, startLine: true, endLine: true, content: true }
+        },
       }
     })
 
@@ -312,6 +316,22 @@ export default async function SongPage({ params }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
+      )}
+      {song.annotations?.length > 0 && (
+        <section id="annotations" className="max-w-4xl mx-auto px-4 mt-8">
+          <h2 className="text-xl font-semibold mb-4">Lyric Annotations</h2>
+          {song.annotations.map(ann => {
+            const plainLyrics = song.lyrics?.replace(/<[^>]*>/g, '') || ''
+            const lines = plainLyrics.split('\n')
+            const quoted = lines.slice(ann.startLine, ann.endLine + 1).filter(l => l.trim()).join(' / ')
+            return (
+              <details key={ann.id} className="mb-3 bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <summary className="cursor-pointer font-medium text-slate-700 italic">&ldquo;{quoted}&rdquo;</summary>
+                <p className="mt-3 text-slate-600 leading-relaxed text-sm">{ann.content}</p>
+              </details>
+            )
+          })}
+        </section>
       )}
       <SongPageClient
         initialSong={JSON.parse(JSON.stringify(song))}

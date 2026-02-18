@@ -144,3 +144,26 @@ pre {
   opacity: 0;
   transform: translateY(6px);
 }
+
+/* Rich text content styles (lyrics, meaning, editor) */
+.lyrics-content strong,
+.prose strong {
+  font-weight: 700;
+}
+
+.lyrics-content em,
+.prose em {
+  font-style: italic;
+}
+
+.lyrics-content a,
+.prose a {
+  color: #16a34a;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.lyrics-content a:hover,
+.prose a:hover {
+  color: #15803d;
+}

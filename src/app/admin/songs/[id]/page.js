@@ -5,6 +5,11 @@ import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import { FiSave, FiX, FiMusic, FiUser, FiDisc, FiTag, FiFilm, FiCalendar, FiGlobe, FiImage, FiEye, FiType, FiAlignLeft, FiSearch, FiPlus, FiFolder, FiVideo, FiUpload, FiLink, FiEdit3, FiMic, FiUsers, FiAward, FiStar, FiBookOpen } from 'react-icons/fi'
 import { FaSpotify, FaApple } from 'react-icons/fa'
+import RichTextEditor from '@/components/RichTextEditor'
+
+function stripHtmlTags(html) {
+  return html?.replace(/<[^>]*>/g, '') || ''
+}
 
 export default function EditSong() {
   const router = useRouter()
@@ -840,7 +845,7 @@ export default function EditSong() {
     const newErrors = {}
 
     if (!formData.title.trim()) newErrors.title = 'Title is required'
-    if (!formData.lyrics.trim()) newErrors.lyrics = 'Lyrics are required'
+    if (!stripHtmlTags(formData.lyrics).trim()) newErrors.lyrics = 'Lyrics are required'
     if (selectedArtists.length === 0) newErrors.artists = 'Select at least one artist'
 
     setErrors(newErrors)
@@ -881,7 +886,7 @@ export default function EditSong() {
   }
 
   const handleAutoTranslate = async () => {
-    if (!formData.lyrics.trim()) return
+    if (!stripHtmlTags(formData.lyrics).trim()) return
     setTranslating(true)
     try {
       const token = localStorage.getItem('adminToken')
@@ -949,6 +954,12 @@ export default function EditSong() {
               </div>
             </div>
             <div className="flex gap-3">
+              <Link
+                href={`/admin/songs/${songId}/annotations`}
+                className="px-4 py-2.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-xl hover:bg-amber-100 transition font-medium text-sm flex items-center gap-2 hidden sm:flex"
+              >
+                <FiBookOpen className="w-4 h-4" /> Annotations
+              </Link>
               <Link
                 href="/admin/songs"
                 className="px-4 py-2.5 text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition font-medium text-sm hidden sm:block"
@@ -1044,7 +1055,7 @@ export default function EditSong() {
                   <button
                     type="button"
                     onClick={handleAutoTranslate}
-                    disabled={translating || !formData.lyrics.trim()}
+                    disabled={translating || !stripHtmlTags(formData.lyrics).trim()}
                     className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                   >
                     {translating ? (
@@ -1061,18 +1072,14 @@ export default function EditSong() {
                   </button>
                 </div>
 
-                {/* Active Lyrics Textarea */}
+                {/* Active Lyrics Editor */}
                 {lyricsTabs.map(tab => (
                   <div key={tab.id} className={activeLyricsTab === tab.id ? 'block' : 'hidden'}>
-                    <textarea
-                      name={tab.field}
+                    <RichTextEditor
                       value={formData[tab.field]}
-                      onChange={handleChange}
-                      rows={15}
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-mono ${
-                        errors.lyrics && tab.id === 'main' ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      onChange={(html) => setFormData(prev => ({ ...prev, [tab.field]: html }))}
                       placeholder={`Paste ${tab.label.toLowerCase()} here...`}
+                      rows={15}
                     />
                     {errors.lyrics && tab.id === 'main' && <p className="text-red-500 text-sm mt-1">{errors.lyrics}</p>}
                   </div>
@@ -1085,13 +1092,11 @@ export default function EditSong() {
                   <FiBookOpen className="w-5 h-5 text-primary" />
                   Song Meaning / Interpretation
                 </h2>
-                <textarea
-                  name="meaning"
+                <RichTextEditor
                   value={formData.meaning}
-                  onChange={handleChange}
-                  rows={5}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                  onChange={(html) => setFormData(prev => ({ ...prev, meaning: html }))}
                   placeholder="Explain the meaning or interpretation of this song..."
+                  rows={5}
                 />
               </div>
 
