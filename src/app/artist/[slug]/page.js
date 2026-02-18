@@ -36,9 +36,10 @@ export async function generateMetadata({ params }) {
     }
 
     const artistName = toTitleCase(artist.name)
-    const title = artist.metaTitle || `${artistName} Songs Lyrics with English Translation - DJYoungster`
+    const songCount = artist._count?.songs || 0
+    const title = artist.metaTitle || `${artistName} All Songs Lyrics & Discography - DJYoungster`
     const description = artist.metaDescription ||
-      `${artistName} through his song lyrics and meanings. Djyoungster provides ${artistName} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `Explore ${artistName} complete discography with ${songCount} songs. Read ${artistName} all songs lyrics with English translation, Hindi and Punjabi variations on DJYoungster.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/artist/${slug}`
@@ -51,12 +52,15 @@ export async function generateMetadata({ params }) {
       description,
       keywords: [
         artistName,
+        `${artistName} all songs lyrics`,
         `${artistName} songs`,
         `${artistName} lyrics`,
+        `${artistName} discography`,
         `${artistName} albums`,
-        'lyrics',
-        'songs',
-        'music',
+        `${artistName} song list`,
+        `${artistName} new songs`,
+        `${artistName} latest songs`,
+        `${artistName} hits`,
       ].join(', '),
       openGraph: {
         title,
@@ -224,6 +228,34 @@ async function getArtistData(slug, searchParams) {
       take: 5
     })
 
+    // Get total views across all songs
+    const viewsAgg = await prisma.song.aggregate({
+      where: { artists: { some: { artistId: artist.id } }, status: 'published' },
+      _sum: { views: true }
+    })
+    const totalViews = viewsAgg._sum.views || 0
+
+    // Get movies linked to this artist's songs
+    const artistMovies = await prisma.movie.findMany({
+      where: {
+        songs: {
+          some: {
+            artists: { some: { artistId: artist.id } },
+            status: 'published'
+          }
+        }
+      },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        posterUrl: true,
+        year: true,
+        _count: { select: { songs: true } }
+      },
+      orderBy: { year: 'desc' }
+    })
+
     // Get direct artist rating from ArtistRating table
     const ratingAgg = await prisma.artistRating.aggregate({
       where: { artistId: artist.id },
@@ -234,9 +266,10 @@ async function getArtistData(slug, searchParams) {
     const totalRatings = ratingAgg._count.rating
 
     return {
-      artist: { ...artist, totalSongs, averageRating, totalRatings },
+      artist: { ...artist, totalSongs, totalViews, averageRating, totalRatings },
       songs,
       featuredSongs,
+      movies: artistMovies,
       genres: artistGenres,
       pagination: {
         page,
@@ -262,7 +295,7 @@ export default async function ArtistPage({ params, searchParams }) {
     notFound()
   }
 
-  const { artist } = data
+  const { artist, featuredSongs, movies } = data
 
   // Generate structured data
   const artistSchema = generateArtistSchema(artist)
@@ -274,6 +307,55 @@ export default async function ArtistPage({ params, searchParams }) {
     { name: artist.name, url: `/artist/${artist.slug}` }
   ]
   const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+
+  // Generate FAQ schema
+  const faqItems = []
+  faqItems.push({
+    '@type': 'Question',
+    name: `How many songs does ${artist.name} have?`,
+    acceptedAnswer: { '@type': 'Answer', text: `${artist.name} has ${artist.totalSongs || 0} ${artist.totalSongs === 1 ? 'song' : 'songs'} on DJYoungster with full lyrics and English translation.` }
+  })
+  if (artist.albums?.length > 0) {
+    faqItems.push({
+      '@type': 'Question',
+      name: `How many albums does ${artist.name} have?`,
+      acceptedAnswer: { '@type': 'Answer', text: `${artist.name} has ${artist.albums.length} ${artist.albums.length === 1 ? 'album' : 'albums'}: ${artist.albums.map(a => a.title).join(', ')}.` }
+    })
+  }
+  if (featuredSongs?.length > 0) {
+    const topSongs = featuredSongs.map(s => s.title).join(', ')
+    faqItems.push({
+      '@type': 'Question',
+      name: `What are the most popular songs by ${artist.name}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `The most popular songs by ${artist.name} include: ${topSongs}.` }
+    })
+  }
+  if (artist.country) {
+    faqItems.push({
+      '@type': 'Question',
+      name: `Where is ${artist.name} from?`,
+      acceptedAnswer: { '@type': 'Answer', text: `${artist.name} is from ${artist.country}.` }
+    })
+  }
+  if (movies?.length > 0) {
+    const movieNames = movies.map(m => m.title).join(', ')
+    faqItems.push({
+      '@type': 'Question',
+      name: `Which movies has ${artist.name} sung for?`,
+      acceptedAnswer: { '@type': 'Answer', text: `${artist.name} has sung songs for the following movies: ${movieNames}.` }
+    })
+  }
+  faqItems.push({
+    '@type': 'Question',
+    name: `Where can I read ${artist.name} song lyrics?`,
+    acceptedAnswer: { '@type': 'Answer', text: `You can read all ${artist.name} song lyrics with English translation, Hindi and Punjabi language variations on DJYoungster.` }
+  })
+
+  const faqSchema = faqItems.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems
+  } : null
 
   return (
     <>
@@ -287,6 +369,12 @@ export default async function ArtistPage({ params, searchParams }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
       <ArtistPageClient initialData={JSON.parse(JSON.stringify(data))} />

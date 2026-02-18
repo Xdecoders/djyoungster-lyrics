@@ -40,9 +40,9 @@ export async function generateMetadata({ params }) {
     const albumTitle = toTitleCase(album.title)
     const releaseYear = album.releaseDate ? new Date(album.releaseDate).getFullYear() : ''
 
-    const title = album.metaTitle || `${albumTitle} Songs Lyrics with English Translation - DJYoungster`
+    const title = album.metaTitle || `${albumTitle} Album Tracklist, Songs Lyrics & Info - DJYoungster`
     const description = album.metaDescription ||
-      `Explore ${albumTitle} by ${artistName} song lyrics and meanings. Djyoungster provides ${albumTitle} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `Explore ${albumTitle} by ${artistName} complete tracklist with all songs lyrics and meanings. Read ${albumTitle} album info, song list and lyrics with English translation on DJYoungster.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/album/${slug}`
@@ -56,12 +56,16 @@ export async function generateMetadata({ params }) {
       keywords: [
         albumTitle,
         `${albumTitle} album`,
+        `${albumTitle} tracklist`,
         `${albumTitle} songs`,
         `${albumTitle} lyrics`,
+        `${albumTitle} all songs`,
+        `${albumTitle} album info`,
+        `${albumTitle} song list`,
         artistName,
         `${artistName} albums`,
         album.label,
-        'album',
+        'album tracklist',
         'lyrics',
         'songs',
         'music',
@@ -222,6 +226,7 @@ export default async function AlbumPage({ params }) {
   }
 
   const { album, moreAlbums } = data
+  const artistName = album.artist?.name || 'Various Artists'
 
   // Generate structured data
   const albumSchema = generateAlbumSchema(album, album.songs)
@@ -233,6 +238,55 @@ export default async function AlbumPage({ params }) {
     { name: album.title, url: `/album/${album.slug}` }
   ]
   const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
+
+  // Generate FAQ schema
+  const faqItems = []
+  faqItems.push({
+    '@type': 'Question',
+    name: `How many songs are in ${album.title} album?`,
+    acceptedAnswer: { '@type': 'Answer', text: `${album.title} by ${artistName} has ${album.totalSongs} ${album.totalSongs === 1 ? 'song' : 'songs'} in its tracklist.` }
+  })
+  if (album.artist?.name) {
+    faqItems.push({
+      '@type': 'Question',
+      name: `Who is the artist of ${album.title}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `${album.title} is an album by ${artistName}.${album.label ? ` It was released under ${album.label}.` : ''}` }
+    })
+  }
+  if (album.releaseDate) {
+    const year = new Date(album.releaseDate).getFullYear()
+    faqItems.push({
+      '@type': 'Question',
+      name: `When was ${album.title} released?`,
+      acceptedAnswer: { '@type': 'Answer', text: `${album.title} by ${artistName} was released in ${year}.` }
+    })
+  }
+  if (album.label) {
+    faqItems.push({
+      '@type': 'Question',
+      name: `Which label released ${album.title}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `${album.title} was released under the ${album.label} label.` }
+    })
+  }
+  if (album.songs?.length > 0) {
+    const songNames = album.songs.map(s => s.title).join(', ')
+    faqItems.push({
+      '@type': 'Question',
+      name: `What are the songs in ${album.title}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `The songs in ${album.title} are: ${songNames}.` }
+    })
+  }
+  faqItems.push({
+    '@type': 'Question',
+    name: `Where can I read ${album.title} song lyrics?`,
+    acceptedAnswer: { '@type': 'Answer', text: `You can read all ${album.title} song lyrics with English translation and meanings on DJYoungster.` }
+  })
+
+  const faqSchema = faqItems.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems
+  } : null
 
   return (
     <>
@@ -248,9 +302,14 @@ export default async function AlbumPage({ params }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
+      )}
       <AlbumPageClient
         initialAlbum={JSON.parse(JSON.stringify(album))}
-        initialMoreAlbums={JSON.parse(JSON.stringify(moreAlbums))}
       />
     </>
   )

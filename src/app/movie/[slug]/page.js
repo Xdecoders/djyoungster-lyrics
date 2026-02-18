@@ -194,6 +194,59 @@ export default async function MoviePage({ params }) {
   ]
   const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
 
+  // Generate FAQ schema from movie info
+  const faqItems = []
+  faqItems.push({
+    '@type': 'Question',
+    name: `How many songs are in ${movie.title}?`,
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text: `${movie.title} has ${movie.totalSongs} ${movie.totalSongs === 1 ? 'song' : 'songs'} in its soundtrack.${movie.musicDirector ? ` The music is composed by ${movie.musicDirector}.` : ''}`
+    }
+  })
+  if (movie.director) {
+    faqItems.push({
+      '@type': 'Question',
+      name: `Who is the director of ${movie.title}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `${movie.title} is directed by ${movie.director}.${movie.year ? ` The movie was released in ${movie.year}.` : ''}` }
+    })
+  }
+  if (movie.musicDirector) {
+    faqItems.push({
+      '@type': 'Question',
+      name: `Who is the music director of ${movie.title}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `The music of ${movie.title} is composed by ${movie.musicDirector}.` }
+    })
+  }
+  if (movie.cast) {
+    faqItems.push({
+      '@type': 'Question',
+      name: `Who are the cast members of ${movie.title}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `The cast of ${movie.title} includes ${movie.cast}.` }
+    })
+  }
+  if (movie.language) {
+    faqItems.push({
+      '@type': 'Question',
+      name: `What language is ${movie.title}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `${movie.title} is a ${movie.language} language movie.${movie.genre ? ` It falls under the ${movie.genre} genre.` : ''}` }
+    })
+  }
+  if (movie.songs?.length > 0) {
+    const songNames = movie.songs.map(s => s.title).join(', ')
+    faqItems.push({
+      '@type': 'Question',
+      name: `What are the songs in ${movie.title}?`,
+      acceptedAnswer: { '@type': 'Answer', text: `The songs in ${movie.title} are: ${songNames}.` }
+    })
+  }
+
+  const faqSchema = faqItems.length > 0 ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems
+  } : null
+
   return (
     <>
       {movieSchema && (
@@ -206,6 +259,12 @@ export default async function MoviePage({ params }) {
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        />
+      )}
+      {faqSchema && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
       <MoviePageClient initialMovie={JSON.parse(JSON.stringify(movie))} />

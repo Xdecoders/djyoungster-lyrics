@@ -4,7 +4,7 @@ import { useState } from 'react'
 import InteractiveRating from '@/components/InteractiveRating'
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
-import { FiFilm, FiMusic, FiPlay, FiEye, FiChevronRight, FiCalendar, FiUser, FiUsers, FiVideo, FiGlobe, FiAward, FiEdit3, FiHeadphones } from 'react-icons/fi'
+import { FiFilm, FiMusic, FiPlay, FiEye, FiChevronRight, FiCalendar, FiUser, FiUsers, FiVideo, FiGlobe, FiAward, FiEdit3, FiHeadphones, FiHelpCircle, FiChevronDown } from 'react-icons/fi'
 
 // Auto-generated Movie Description Component
 function MovieDescription({ movie }) {
@@ -56,7 +56,7 @@ function MovieInfo({ movie }) {
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
       <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
         <FiFilm className="w-4 h-4 text-rose-500" />
-        Movie Information
+        {movie.title} Info
       </h3>
       <div className="space-y-3">
         {info.map((item, index) => (
@@ -105,6 +105,106 @@ function SongRow({ song, index }) {
         <span className="text-sm">{formatViews(song.views)}</span>
       </div>
     </Link>
+  )
+}
+
+// FAQ Component
+function MovieFAQs({ movie }) {
+  const [openIndex, setOpenIndex] = useState(null)
+
+  const faqs = []
+
+  faqs.push({
+    q: `How many songs are in ${movie.title}?`,
+    a: `${movie.title} has ${movie.totalSongs} ${movie.totalSongs === 1 ? 'song' : 'songs'} in its soundtrack.${movie.musicDirector ? ` The music is composed by ${movie.musicDirector}.` : ''}`
+  })
+
+  if (movie.director) {
+    faqs.push({
+      q: `Who is the director of ${movie.title}?`,
+      a: `${movie.title} is directed by ${movie.director}.${movie.year ? ` The movie was released in ${movie.year}.` : ''}`
+    })
+  }
+
+  if (movie.musicDirector) {
+    faqs.push({
+      q: `Who is the music director of ${movie.title}?`,
+      a: `The music of ${movie.title} is composed by ${movie.musicDirector}.`
+    })
+  }
+
+  if (movie.cast) {
+    faqs.push({
+      q: `Who are the cast members of ${movie.title}?`,
+      a: `The cast of ${movie.title} includes ${movie.cast}.`
+    })
+  }
+
+  if (movie.producer) {
+    faqs.push({
+      q: `Who produced ${movie.title}?`,
+      a: `${movie.title} is produced by ${movie.producer}.`
+    })
+  }
+
+  if (movie.writer) {
+    faqs.push({
+      q: `Who wrote ${movie.title}?`,
+      a: `${movie.title} is written by ${movie.writer}.`
+    })
+  }
+
+  if (movie.language) {
+    faqs.push({
+      q: `What language is ${movie.title}?`,
+      a: `${movie.title} is a ${movie.language} language movie.${movie.genre ? ` It falls under the ${movie.genre} genre.` : ''}`
+    })
+  }
+
+  if (movie.year) {
+    faqs.push({
+      q: `When was ${movie.title} released?`,
+      a: `${movie.title} was released in ${movie.year}.${movie.director ? ` It is directed by ${movie.director}.` : ''}`
+    })
+  }
+
+  if (movie.songs?.length > 0) {
+    const songNames = movie.songs.map(s => s.title).join(', ')
+    faqs.push({
+      q: `What are the songs in ${movie.title}?`,
+      a: `The songs in ${movie.title} are: ${songNames}.`
+    })
+  }
+
+  if (faqs.length === 0) return null
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden mt-6">
+      <div className="p-5 border-b border-slate-100 dark:border-slate-700">
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <FiHelpCircle className="w-5 h-5 text-rose-500" />
+          {movie.title} FAQs
+        </h2>
+      </div>
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
+        {faqs.map((faq, index) => (
+          <div key={index}>
+            <button
+              onClick={() => setOpenIndex(openIndex === index ? null : index)}
+              className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+            >
+              <span className="font-medium text-slate-800 dark:text-white text-sm pr-4">{faq.q}</span>
+              <FiChevronDown className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform ${openIndex === index ? 'rotate-180' : ''}`} />
+            </button>
+            {openIndex === index && (
+              <div className="px-5 pb-5 -mt-2">
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{faq.a}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
@@ -207,7 +307,7 @@ export default function MoviePageClient({ initialMovie }) {
               <div className="p-5 border-b border-slate-100 dark:border-slate-700">
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white flex items-center gap-2">
                   <FiMusic className="w-5 h-5 text-rose-500" />
-                  Songs from {movie.title}
+                  {movie.title} All Songs Lyrics
                 </h2>
               </div>
               <div className="divide-y divide-slate-50 dark:divide-slate-700">
@@ -223,6 +323,9 @@ export default function MoviePageClient({ initialMovie }) {
                 )}
               </div>
             </div>
+
+            {/* FAQs */}
+            <MovieFAQs movie={movie} />
           </div>
 
           {/* Sidebar */}
@@ -231,7 +334,7 @@ export default function MoviePageClient({ initialMovie }) {
 
             {/* Quick Stats */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
-              <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Soundtrack Stats</h3>
+              <h3 className="font-semibold text-slate-800 dark:text-white mb-4">{movie.title} Stats</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-rose-50 dark:bg-rose-900/20 rounded-xl p-4 text-center">
                   <FiMusic className="w-5 h-5 text-rose-500 mx-auto mb-2" />

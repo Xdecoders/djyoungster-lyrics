@@ -9,7 +9,6 @@ import {
   FiDisc,
   FiUser,
   FiCalendar,
-  FiClock,
   FiEye,
   FiPlay,
   FiShare2,
@@ -17,7 +16,9 @@ import {
   FiX,
   FiCopy,
   FiCheck,
-  FiTwitter
+  FiTwitter,
+  FiHelpCircle,
+  FiChevronDown
 } from 'react-icons/fi'
 import { FaWhatsapp, FaFacebook } from 'react-icons/fa'
 
@@ -152,32 +153,94 @@ function SongRow({ song, index }) {
   )
 }
 
-function AlbumCard({ album }) {
+// FAQ Component
+function AlbumFAQs({ album }) {
+  const [openIndex, setOpenIndex] = useState(null)
+  const artistName = album?.artist?.name || 'Various Artists'
+
+  const faqs = []
+
+  faqs.push({
+    q: `How many songs are in ${album.title} album?`,
+    a: `${album.title} by ${artistName} has ${album.totalSongs} ${album.totalSongs === 1 ? 'song' : 'songs'} in its tracklist.`
+  })
+
+  if (album.artist?.name) {
+    faqs.push({
+      q: `Who is the artist of ${album.title}?`,
+      a: `${album.title} is an album by ${artistName}.${album.label ? ` It was released under ${album.label}.` : ''}`
+    })
+  }
+
+  if (album.releaseDate) {
+    const year = new Date(album.releaseDate).getFullYear()
+    faqs.push({
+      q: `When was ${album.title} released?`,
+      a: `${album.title} by ${artistName} was released in ${year}.`
+    })
+  }
+
+  if (album.label) {
+    faqs.push({
+      q: `Which label released ${album.title}?`,
+      a: `${album.title} was released under the ${album.label} label.`
+    })
+  }
+
+  if (album.songs?.length > 0) {
+    const songNames = album.songs.map(s => s.title).join(', ')
+    faqs.push({
+      q: `What are the songs in ${album.title}?`,
+      a: `The songs in ${album.title} are: ${songNames}.`
+    })
+  }
+
+  faqs.push({
+    q: `Where can I read ${album.title} song lyrics?`,
+    a: `You can read all ${album.title} song lyrics with English translation and meanings on DJYoungster.`
+  })
+
+  if (faqs.length === 0) return null
+
   return (
-    <Link href={`/album/${album.slug}`} className="group">
-      <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
-        {album.coverImage ? (
-          <Image src={album.coverImage} alt={album.title} fill sizes="(max-width: 640px) 50vw, 176px" className="object-cover" />
-        ) : (
-          <FiDisc className="w-12 h-12 text-emerald-400" />
-        )}
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden mt-6">
+      <div className="p-5 border-b border-slate-100 dark:border-slate-700">
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <FiHelpCircle className="w-5 h-5 text-primary" />
+          {album.title} FAQs
+        </h2>
       </div>
-      <h3 className="font-medium text-slate-800 dark:text-white truncate group-hover:text-primary transition">{album.title}</h3>
-      <p className="text-sm text-slate-500 dark:text-slate-400">{album._count?.songs || 0} {album._count?.songs === 1 ? 'song' : 'songs'}</p>
-    </Link>
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
+        {faqs.map((faq, index) => (
+          <div key={index}>
+            <button
+              onClick={() => setOpenIndex(openIndex === index ? null : index)}
+              className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+            >
+              <span className="font-medium text-slate-800 dark:text-white text-sm pr-4">{faq.q}</span>
+              <FiChevronDown className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform ${openIndex === index ? 'rotate-180' : ''}`} />
+            </button>
+            {openIndex === index && (
+              <div className="px-5 pb-5 -mt-2">
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{faq.a}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
   )
 }
 
-export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }) {
+export default function AlbumPageClient({ initialAlbum }) {
   // Use initial data from server - no loading state needed
   const [album] = useState(initialAlbum)
-  const [moreAlbums] = useState(initialMoreAlbums)
   const [showShareModal, setShowShareModal] = useState(false)
 
   // Generate description - use custom if available, otherwise auto-generate
   const artistName = album?.artist?.name || 'Various Artists'
   const albumDescription = album?.metaDescription ||
-    `Explore ${album?.title} by ${artistName} song lyrics and meanings. Djyoungster provides ${album?.title} lyrics in English Translation, Hindi and Punjabi language variations.`
+    `Explore ${album?.title} by ${artistName} complete tracklist with all songs lyrics and meanings. Read ${album?.title} album info, song list and lyrics with English translation on DJYoungster.`
 
   const formatViews = (views) => {
     if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'
@@ -306,7 +369,7 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
               <div className="p-5 border-b border-slate-100 dark:border-slate-700">
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white flex items-center gap-2">
                   <FiMusic className="w-5 h-5 text-primary" />
-                  Tracklist
+                  {album.title} Tracklist
                 </h2>
               </div>
               <div className="divide-y divide-slate-50 dark:divide-slate-700">
@@ -322,77 +385,61 @@ export default function AlbumPageClient({ initialAlbum, initialMoreAlbums = [] }
                 )}
               </div>
             </div>
+
+            {/* FAQs */}
+            <AlbumFAQs album={album} />
           </div>
 
           {/* Sidebar */}
           <div className="lg:col-span-1">
-            {/* Album Info Card */}
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
-              <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Album Info</h3>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
-                    <FiUser className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">Artist</p>
-                    <Link href={`/artist/${album.artist?.slug}`} className="text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary">
-                      {album.artist?.name}
-                    </Link>
-                  </div>
+            {/* Album Stats */}
+            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
+              <h3 className="font-semibold text-slate-800 dark:text-white mb-4">{album.title} Album Stats</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 text-center">
+                  <FiMusic className="w-5 h-5 text-emerald-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white">{album.totalSongs || 0}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Songs</p>
+                </div>
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center">
+                  <FiEye className="w-5 h-5 text-blue-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatViews(album.totalViews || 0)}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Views</p>
                 </div>
                 {album.releaseDate && (
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
-                      <FiCalendar className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">Release Date</p>
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{formatDate(album.releaseDate)}</p>
-                    </div>
+                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 text-center">
+                    <FiCalendar className="w-5 h-5 text-purple-500 mx-auto mb-2" />
+                    <p className="text-lg font-bold text-slate-800 dark:text-white">{new Date(album.releaseDate).getFullYear()}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Released</p>
                   </div>
                 )}
                 {album.label && (
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
-                      <FiDisc className="w-4 h-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 dark:text-slate-500">Label</p>
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{album.label}</p>
-                    </div>
+                  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 text-center">
+                    <FiDisc className="w-5 h-5 text-amber-500 mx-auto mb-2" />
+                    <p className="text-lg font-bold text-slate-800 dark:text-white truncate">{album.label}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Label</p>
                   </div>
                 )}
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
-                    <FiMusic className="w-4 h-4 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 dark:text-slate-500">Total Songs</p>
-                    <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{album.totalSongs}</p>
-                  </div>
-                </div>
               </div>
+              {/* Artist Link */}
+              <Link
+                href={`/artist/${album.artist?.slug}`}
+                className="mt-4 flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-700 transition group"
+              >
+                <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center overflow-hidden relative flex-shrink-0">
+                  {album.artist?.imageUrl ? (
+                    <Image src={album.artist.imageUrl} alt={album.artist.name} fill sizes="40px" className="object-cover" />
+                  ) : (
+                    <FiUser className="w-5 h-5 text-slate-400" />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-slate-400 dark:text-slate-500">Artist</p>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-200 group-hover:text-primary transition truncate">{album.artist?.name}</p>
+                </div>
+                <FiChevronRight className="w-4 h-4 text-slate-400 group-hover:text-primary transition" />
+              </Link>
             </div>
-
-            {/* More from Artist */}
-            {moreAlbums.length > 0 && (
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
-                <h3 className="font-semibold text-slate-800 dark:text-white mb-4">More from {album.artist?.name}</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {moreAlbums.slice(0, 4).map((alb) => (
-                    <AlbumCard key={alb.id} album={alb} />
-                  ))}
-                </div>
-                <Link
-                  href={`/artist/${album.artist?.slug}`}
-                  className="mt-4 flex items-center justify-center gap-2 text-sm text-primary hover:text-emerald-600 font-medium"
-                >
-                  View All Albums
-                  <FiChevronRight className="w-4 h-4" />
-                </Link>
-              </div>
-            )}
           </div>
         </div>
       </div>

@@ -9,6 +9,7 @@ import {
   FiMusic,
   FiUser,
   FiDisc,
+  FiFilm,
   FiPlay,
   FiEye,
   FiChevronRight,
@@ -21,7 +22,9 @@ import {
   FiX,
   FiCopy,
   FiCheck,
-  FiTwitter
+  FiTwitter,
+  FiHelpCircle,
+  FiChevronDown
 } from 'react-icons/fi'
 import { FaSpotify, FaInstagram, FaTwitter as FaTwitterBrand, FaYoutube, FaWhatsapp, FaFacebook } from 'react-icons/fa'
 
@@ -200,7 +203,7 @@ function HeroSection({ artist, featuredSongs, songs, socialLinks }) {
               <span className="px-2.5 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-medium rounded-full">Verified</span>
             )}
           </div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 dark:text-white mb-2">{artist?.name}</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-800 dark:text-white mb-2">{artist?.name} Songs Lyrics</h1>
 
           {/* Interactive Star Rating */}
           <InteractiveRating
@@ -403,6 +406,84 @@ function AlbumCard({ album }) {
   )
 }
 
+// FAQ Component
+function ArtistFAQs({ artist, featuredSongs, movies }) {
+  const [openIndex, setOpenIndex] = useState(null)
+
+  const faqs = []
+
+  faqs.push({
+    q: `How many songs does ${artist.name} have?`,
+    a: `${artist.name} has ${artist.totalSongs || 0} ${artist.totalSongs === 1 ? 'song' : 'songs'} on DJYoungster with full lyrics and English translation.`
+  })
+
+  if (artist.albums?.length > 0) {
+    faqs.push({
+      q: `How many albums does ${artist.name} have?`,
+      a: `${artist.name} has ${artist.albums.length} ${artist.albums.length === 1 ? 'album' : 'albums'}: ${artist.albums.map(a => a.title).join(', ')}.`
+    })
+  }
+
+  if (featuredSongs?.length > 0) {
+    const topSongs = featuredSongs.map(s => s.title).join(', ')
+    faqs.push({
+      q: `What are the most popular songs by ${artist.name}?`,
+      a: `The most popular songs by ${artist.name} include: ${topSongs}.`
+    })
+  }
+
+  if (artist.country) {
+    faqs.push({
+      q: `Where is ${artist.name} from?`,
+      a: `${artist.name} is from ${artist.country}.`
+    })
+  }
+
+  if (movies?.length > 0) {
+    const movieNames = movies.map(m => m.title).join(', ')
+    faqs.push({
+      q: `Which movies has ${artist.name} sung for?`,
+      a: `${artist.name} has sung songs for the following movies: ${movieNames}.`
+    })
+  }
+
+  faqs.push({
+    q: `Where can I read ${artist.name} song lyrics?`,
+    a: `You can read all ${artist.name} song lyrics with English translation, Hindi and Punjabi language variations on DJYoungster.`
+  })
+
+  if (faqs.length === 0) return null
+
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden mt-6">
+      <div className="p-5 border-b border-slate-100 dark:border-slate-700">
+        <h2 className="text-xl font-semibold text-slate-800 dark:text-white flex items-center gap-2">
+          <FiHelpCircle className="w-5 h-5 text-primary" />
+          {artist.name} FAQs
+        </h2>
+      </div>
+      <div className="divide-y divide-slate-100 dark:divide-slate-700">
+        {faqs.map((faq, index) => (
+          <div key={index}>
+            <button
+              onClick={() => setOpenIndex(openIndex === index ? null : index)}
+              className="w-full flex items-center justify-between p-5 text-left hover:bg-slate-50 dark:hover:bg-slate-700/50 transition"
+            >
+              <span className="font-medium text-slate-800 dark:text-white text-sm pr-4">{faq.q}</span>
+              <FiChevronDown className={`w-5 h-5 text-slate-400 flex-shrink-0 transition-transform ${openIndex === index ? 'rotate-180' : ''}`} />
+            </button>
+            {openIndex === index && (
+              <div className="px-5 pb-5 -mt-2">
+                <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">{faq.a}</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default function ArtistPageClient({ initialData }) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -411,12 +492,14 @@ export default function ArtistPageClient({ initialData }) {
   const artist = initialData?.artist || null
   const songs = initialData?.songs || []
   const featuredSongs = initialData?.featuredSongs || []
+  const movies = initialData?.movies || []
   const genres = initialData?.genres || []
   const pagination = initialData?.pagination || null
 
   // UI state only
   const [view, setView] = useState('list')
   const [showFilters, setShowFilters] = useState(false)
+  const [activeTab, setActiveTab] = useState('songs')
 
   const currentSort = searchParams.get('sort') || 'latest'
   const selectedGenre = searchParams.get('genre') || ''
@@ -455,9 +538,15 @@ export default function ArtistPageClient({ initialData }) {
 
   const socialLinks = parseSocialLinks(artist?.socialLinks)
 
+  const formatViews = (views) => {
+    if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'
+    if (views >= 1000) return (views / 1000).toFixed(1) + 'K'
+    return views?.toString() || '0'
+  }
+
   // Generate description - use custom if available, otherwise auto-generate
   const artistDescription = artist?.metaDescription ||
-    `${artist?.name} through his song lyrics and meanings. Djyoungster provides ${artist?.name} lyrics in English Translation, Hindi and Punjabi language variations.`
+    `Explore ${artist?.name} complete discography and all songs lyrics. DJYoungster provides ${artist?.name} songs with English translation, Hindi and Punjabi language variations.`
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900">
@@ -490,12 +579,65 @@ export default function ArtistPageClient({ initialData }) {
               <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{artistDescription}</p>
             </div>
 
+            {/* Tabs */}
+            <div className="flex items-center gap-1 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-1.5 mb-6">
+              <button
+                onClick={() => setActiveTab('songs')}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition flex-1 justify-center ${
+                  activeTab === 'songs'
+                    ? 'bg-primary text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+              >
+                <FiMusic className="w-4 h-4" />
+                Songs
+                <span className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === 'songs' ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                  {pagination?.totalSongs || 0}
+                </span>
+              </button>
+              {artist?.albums?.length > 0 && (
+                <button
+                  onClick={() => setActiveTab('albums')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition flex-1 justify-center ${
+                    activeTab === 'albums'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <FiDisc className="w-4 h-4" />
+                  Albums
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === 'albums' ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                    {artist.albums.length}
+                  </span>
+                </button>
+              )}
+              {movies.length > 0 && (
+                <button
+                  onClick={() => setActiveTab('movies')}
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition flex-1 justify-center ${
+                    activeTab === 'movies'
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <FiFilm className="w-4 h-4" />
+                  Movies
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${activeTab === 'movies' ? 'bg-white/20' : 'bg-slate-100 dark:bg-slate-700'}`}>
+                    {movies.length}
+                  </span>
+                </button>
+              )}
+            </div>
+
+            {/* Songs Tab */}
+            {activeTab === 'songs' && (
+            <div>
             {/* Filter Bar */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-4 mb-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <h2 className="font-semibold text-slate-800 dark:text-white">
-                    All Songs
+                    {artist?.name} All Songs
                     <span className="text-slate-400 dark:text-slate-500 font-normal ml-2">({pagination?.totalSongs || 0})</span>
                   </h2>
                 </div>
@@ -656,6 +798,60 @@ export default function ArtistPageClient({ initialData }) {
                 )}
               </div>
             )}
+            </div>
+            )}
+
+            {/* Albums Tab */}
+            {activeTab === 'albums' && (
+              <div>
+                {artist?.albums?.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {artist.albums.map((album) => (
+                      <AlbumCard key={album.id} album={album} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <FiDisc className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-500 dark:text-slate-400">No albums found</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Movies Tab */}
+            {activeTab === 'movies' && (
+              <div>
+                {movies.length > 0 ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                    {movies.map((movie) => (
+                      <Link key={movie.id} href={`/movie/${movie.slug}`} className="group">
+                        <div className="aspect-[2/3] rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-900/30 dark:to-purple-900/30 flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all relative">
+                          {movie.posterUrl ? (
+                            <Image src={movie.posterUrl} alt={movie.title} fill sizes="(max-width: 640px) 50vw, 176px" className="object-cover" />
+                          ) : (
+                            <FiFilm className="w-12 h-12 text-violet-300" />
+                          )}
+                        </div>
+                        <h3 className="font-medium text-slate-800 dark:text-white truncate text-sm group-hover:text-primary transition">{movie.title}</h3>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {movie.year && <span>{movie.year}</span>}
+                          {movie._count?.songs > 0 && <span> &middot; {movie._count.songs} {movie._count.songs === 1 ? 'song' : 'songs'}</span>}
+                        </p>
+                      </Link>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12 bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700">
+                    <FiFilm className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                    <p className="text-slate-500 dark:text-slate-400">No movies found</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* FAQs */}
+            <ArtistFAQs artist={artist} featuredSongs={featuredSongs} movies={movies} />
           </div>
 
           {/* Sidebar */}
@@ -665,7 +861,7 @@ export default function ArtistPageClient({ initialData }) {
               <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
                 <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
                   <FiTrendingUp className="w-4 h-4 text-primary" />
-                  Popular Songs
+                  {artist?.name} Popular Songs
                 </h3>
                 <div className="space-y-1">
                   {featuredSongs.map((song, index) => (
@@ -675,46 +871,32 @@ export default function ArtistPageClient({ initialData }) {
               </div>
             )}
 
-            {/* Albums */}
-            {artist?.albums?.length > 0 && (
-              <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
-                <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                  <FiDisc className="w-4 h-4 text-primary" />
-                  Albums
-                </h3>
-                <div className="grid grid-cols-2 gap-4">
-                  {artist.albums.slice(0, 4).map((album) => (
-                    <AlbumCard key={album.id} album={album} />
-                  ))}
-                </div>
-                {artist.albums.length > 4 && (
-                  <Link
-                    href={`/artist/${artist.slug}/albums`}
-                    className="mt-4 flex items-center justify-center gap-2 text-sm text-primary hover:text-primary-hover font-medium"
-                  >
-                    View All Albums
-                    <FiChevronRight className="w-4 h-4" />
-                  </Link>
-                )}
-              </div>
-            )}
-
-            {/* Quick Stats */}
+            {/* Artist Stats */}
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
-              <h3 className="font-semibold text-slate-800 dark:text-white mb-4">Quick Stats</h3>
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400 text-sm">Total Songs</span>
-                  <span className="font-medium text-slate-800 dark:text-white">{artist?.totalSongs || 0}</span>
+              <h3 className="font-semibold text-slate-800 dark:text-white mb-4">{artist?.name} Stats</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 text-center">
+                  <FiMusic className="w-5 h-5 text-emerald-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white">{artist?.totalSongs || 0}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Songs</p>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-slate-500 dark:text-slate-400 text-sm">Albums</span>
-                  <span className="font-medium text-slate-800 dark:text-white">{artist?.albums?.length || 0}</span>
+                <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 text-center">
+                  <FiEye className="w-5 h-5 text-blue-500 mx-auto mb-2" />
+                  <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatViews(artist?.totalViews || 0)}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Views</p>
                 </div>
+                {artist?.albums?.length > 0 && (
+                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 text-center">
+                    <FiDisc className="w-5 h-5 text-purple-500 mx-auto mb-2" />
+                    <p className="text-2xl font-bold text-slate-800 dark:text-white">{artist.albums.length}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Albums</p>
+                  </div>
+                )}
                 {artist?.country && (
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 dark:text-slate-400 text-sm">Country</span>
-                    <span className="font-medium text-slate-800 dark:text-white">{artist.country}</span>
+                  <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-4 text-center">
+                    <FiGlobe className="w-5 h-5 text-amber-500 mx-auto mb-2" />
+                    <p className="text-lg font-bold text-slate-800 dark:text-white">{artist.country}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">Country</p>
                   </div>
                 )}
               </div>
