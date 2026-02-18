@@ -967,11 +967,12 @@ export default function AddSong() {
                 {/* Active Lyrics Editor */}
                 {lyricsTabs.map(tab => (
                   <div key={tab.id} className={activeLyricsTab === tab.id ? 'block' : 'hidden'}>
-                    <RichTextEditor
+                    <textarea
                       value={formData[tab.field]}
-                      onChange={(html) => setFormData(prev => ({ ...prev, [tab.field]: html }))}
+                      onChange={(e) => setFormData(prev => ({ ...prev, [tab.field]: e.target.value }))}
                       placeholder={`Paste ${tab.label.toLowerCase()} here...`}
                       rows={15}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-mono text-sm resize-y whitespace-pre-wrap"
                     />
                     {errors.lyrics && tab.id === 'main' && <p className="text-red-500 text-sm mt-1">{errors.lyrics}</p>}
                   </div>
