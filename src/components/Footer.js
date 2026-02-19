@@ -8,7 +8,7 @@ import {
   FiMail,
   FiHeart
 } from 'react-icons/fi'
-import { FaWhatsapp } from 'react-icons/fa'
+import { FaWhatsapp, FaXTwitter, FaFacebookF, FaLinkedinIn, FaInstagram } from 'react-icons/fa6'
 
 export default function Footer() {
   const pathname = usePathname()
@@ -132,6 +132,22 @@ export default function Footer() {
                     {subscribeMessage}
                   </p>
                 )}
+              </div>
+
+              {/* Social Media */}
+              <div className="flex items-center gap-3">
+                <a href="https://x.com/djyoungstercom" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition" aria-label="Follow on X">
+                  <FaXTwitter className="w-4 h-4" />
+                </a>
+                <a href="https://www.facebook.com/djyoungster" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#1877F2] hover:text-white transition" aria-label="Follow on Facebook">
+                  <FaFacebookF className="w-4 h-4" />
+                </a>
+                <a href="https://www.instagram.com/djyoungster_com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-gradient-to-br hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:text-white transition" aria-label="Follow on Instagram">
+                  <FaInstagram className="w-4 h-4" />
+                </a>
+                <a href="https://www.linkedin.com/in/djyoungsterofficial" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#0A66C2] hover:text-white transition" aria-label="Follow on LinkedIn">
+                  <FaLinkedinIn className="w-4 h-4" />
+                </a>
               </div>
 
             </div>

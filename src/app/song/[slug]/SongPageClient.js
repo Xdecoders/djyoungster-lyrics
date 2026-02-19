@@ -47,7 +47,7 @@ import {
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
 import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest } from 'react-icons/fa'
-import { FaXTwitter } from 'react-icons/fa6'
+import { FaXTwitter, FaLinkedinIn } from 'react-icons/fa6'
 
 // HTML helpers for backward-compatible rendering
 function stripHtml(html) {
@@ -522,9 +522,16 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
 
   if (!isOpen) return null
 
+  // Extract first 4 lines of lyrics as a preview (strip HTML tags)
+  const lyricsPreview = song.lyrics
+    ? song.lyrics.replace(/<[^>]*>/g, '').split('\n').filter(l => l.trim()).slice(0, 4).join('\n')
+    : ''
+
   const shareText = selectedText
     ? `"${selectedText}"\n\nFrom "${song.title}" - Read full lyrics on DJYoungster!`
-    : `Check out "${song.title}" lyrics on DJYoungster!`
+    : lyricsPreview
+      ? `"${lyricsPreview}"\n\n— ${song.title} | Full lyrics on DJYoungster`
+      : `Check out "${song.title}" lyrics on DJYoungster!`
 
   const shareLinks = [
     {
@@ -544,6 +551,12 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
       icon: FaFacebook,
       color: 'bg-blue-600 hover:bg-blue-700',
       url: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`
+    },
+    {
+      name: 'LinkedIn',
+      icon: FaLinkedinIn,
+      color: 'bg-[#0A66C2] hover:bg-[#094d92]',
+      url: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`
     },
     {
       name: 'Pinterest',
