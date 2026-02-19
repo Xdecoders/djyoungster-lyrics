@@ -22,8 +22,12 @@ export async function GET(request) {
         orderBy = { songs: { _count: 'desc' } }
     }
 
+    // Only include artists that have at least one song
+    const whereClause = { songs: { some: {} } }
+
     const [artists, total] = await Promise.all([
       prisma.artist.findMany({
+        where: whereClause,
         include: {
           _count: { select: { songs: true } },
           songs: {
@@ -42,7 +46,7 @@ export async function GET(request) {
         skip,
         take: limit
       }),
-      prisma.artist.count()
+      prisma.artist.count({ where: whereClause })
     ])
 
     // Add thumbnail from first song's cover image if no artist image

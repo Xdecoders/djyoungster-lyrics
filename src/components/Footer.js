@@ -8,7 +8,7 @@ import {
   FiMail,
   FiHeart
 } from 'react-icons/fi'
-import { FaWhatsapp, FaXTwitter, FaFacebookF, FaLinkedinIn, FaInstagram } from 'react-icons/fa6'
+import { FaWhatsapp, FaXTwitter, FaFacebookF, FaLinkedinIn, FaInstagram, FaYoutube } from 'react-icons/fa6'
 
 export default function Footer() {
   const pathname = usePathname()
@@ -147,6 +147,9 @@ export default function Footer() {
                 </a>
                 <a href="https://www.linkedin.com/in/djyoungsterofficial" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#0A66C2] hover:text-white transition" aria-label="Follow on LinkedIn">
                   <FaLinkedinIn className="w-4 h-4" />
+                </a>
+                <a href="https://youtube.com/@Djyoungstercom" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#FF0000] hover:text-white transition" aria-label="Subscribe on YouTube">
+                  <FaYoutube className="w-4 h-4" />
                 </a>
               </div>
 
