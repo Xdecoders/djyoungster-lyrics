@@ -60,11 +60,22 @@ export async function POST(request) {
   try {
     const data = await request.json()
 
+    // Auto-deduplicate slug if it already exists
+    let slug = data.slug
+    const existingSlug = await prisma.song.findUnique({ where: { slug }, select: { id: true } })
+    if (existingSlug) {
+      let suffix = 2
+      while (await prisma.song.findUnique({ where: { slug: `${data.slug}-${suffix}` }, select: { id: true } })) {
+        suffix++
+      }
+      slug = `${data.slug}-${suffix}`
+    }
+
     // Create song with relations
     const song = await prisma.song.create({
       data: {
         title: data.title,
-        slug: data.slug,
+        slug,
         lyrics: data.lyrics,
         lyricsRomanized: data.lyricsRomanized || null,
         lyricsTranslated: data.lyricsTranslated || null,

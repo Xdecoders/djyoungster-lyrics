@@ -15,14 +15,16 @@ export async function scrapeAndSaveSong(url) {
       return { status: 'failed', reason: 'Empty or too short lyrics' }
     }
 
-    // 3. Check for duplicate slug
-    if (scraped.slug) {
-      const existing = await prisma.song.findUnique({
-        where: { slug: scraped.slug },
-        select: { id: true }
-      })
+    // 3. Auto-deduplicate slug
+    let slug = scraped.slug
+    if (slug) {
+      const existing = await prisma.song.findUnique({ where: { slug }, select: { id: true } })
       if (existing) {
-        return { status: 'skipped', reason: `Duplicate slug: ${scraped.slug}`, songId: existing.id }
+        let suffix = 2
+        while (await prisma.song.findUnique({ where: { slug: `${scraped.slug}-${suffix}` }, select: { id: true } })) {
+          suffix++
+        }
+        slug = `${scraped.slug}-${suffix}`
       }
     }
 
@@ -82,7 +84,7 @@ export async function scrapeAndSaveSong(url) {
     const song = await prisma.song.create({
       data: {
         title: scraped.title,
-        slug: scraped.slug,
+        slug,
         lyrics: scraped.lyrics,
         lyricsRomanized: scraped.lyricsRomanized || null,
         lyricsTranslated: scraped.lyricsTranslated || null,

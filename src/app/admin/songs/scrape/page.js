@@ -804,6 +804,7 @@ export default function ScrapeSong() {
                 <span className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">tamil2lyrics.com</span>
                 <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-medium">lyricsmint.com</span>
                 <span className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">lyricsraag.com</span>
+                <span className="px-3 py-1.5 bg-orange-50 text-orange-700 rounded-full text-sm font-medium">gaana.com</span>
               </div>
             </div>
           </div>
@@ -859,7 +860,8 @@ export default function ScrapeSong() {
               { 'genius.com': 'bg-yellow-100 text-yellow-700',
                 'tamil2lyrics.com': 'bg-blue-100 text-blue-700',
                 'lyricsmint.com': 'bg-green-100 text-green-700',
-                'lyricsraag.com': 'bg-purple-100 text-purple-700'
+                'lyricsraag.com': 'bg-purple-100 text-purple-700',
+                'gaana.com': 'bg-orange-100 text-orange-700'
               }[scrapeResult.scraped.sourceSite] || 'bg-gray-100 text-gray-700'
             }`}>
               {scrapeResult.scraped.sourceSite}
@@ -894,7 +896,7 @@ export default function ScrapeSong() {
             <FiAlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
             <div>
               <p className="text-amber-800 font-medium">Possible Duplicate</p>
-              <p className="text-amber-600 text-sm mt-1">{duplicateWarning}</p>
+              <p className="text-amber-600 text-sm mt-1">{duplicateWarning}. The slug will be auto-adjusted (e.g. &quot;-2&quot;) on save if not changed.</p>
             </div>
           </div>
         )}

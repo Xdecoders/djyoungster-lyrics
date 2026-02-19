@@ -8,7 +8,8 @@ const SITES = [
   { key: 'lyricsmint.com', name: 'LyricsMint', type: 'sitemap', color: 'from-purple-500 to-purple-700' },
   { key: 'lyricsraag.com', name: 'LyricsRaag', type: 'both', color: 'from-blue-500 to-blue-700' },
   { key: 'tamil2lyrics.com', name: 'Tamil2Lyrics', type: 'sitemap', color: 'from-orange-500 to-orange-700' },
-  { key: 'genius.com', name: 'Genius', type: 'manual', color: 'from-yellow-500 to-yellow-700' }
+  { key: 'genius.com', name: 'Genius', type: 'manual', color: 'from-yellow-500 to-yellow-700' },
+  { key: 'gaana.com', name: 'Gaana', type: 'both', color: 'from-red-500 to-red-700' }
 ]
 
 export default function BulkImportPage() {

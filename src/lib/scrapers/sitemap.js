@@ -131,6 +131,26 @@ function filterTamil2Lyrics(urls) {
 }
 
 /**
+ * Filter URLs for gaana.com
+ * Keep: /lyrics/{slug} pattern only
+ * Exclude: /lyrics/ index, non-lyrics pages
+ */
+function filterGaana(urls) {
+  return urls.filter(url => {
+    try {
+      const path = new URL(url).pathname.replace(/\/$/, '')
+      if (!path) return false
+      const segments = path.split('/').filter(Boolean)
+      if (segments.length !== 2) return false
+      if (segments[0] !== 'lyrics') return false
+      return true
+    } catch {
+      return false
+    }
+  })
+}
+
+/**
  * Main entry: discover all song URLs from a supported site
  */
 export async function discoverSongUrls(site) {
@@ -149,13 +169,17 @@ export async function discoverSongUrls(site) {
     'tamil2lyrics.com': [
       'https://www.tamil2lyrics.com/sitemap_index.xml',
       'https://www.tamil2lyrics.com/sitemap.xml'
+    ],
+    'gaana.com': [
+      'https://gaana.com/sitemap_v1/index.xml'
     ]
   }
 
   const filters = {
     'lyricsmint.com': filterLyricsMint,
     'lyricsraag.com': filterLyricsRaag,
-    'tamil2lyrics.com': filterTamil2Lyrics
+    'tamil2lyrics.com': filterTamil2Lyrics,
+    'gaana.com': filterGaana
   }
 
   const urls = sitemapUrls[site]
