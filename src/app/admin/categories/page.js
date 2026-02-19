@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiFolder, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX, FiUpload, FiImage, FiEye } from 'react-icons/fi'
+import { FiFolder, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX, FiUpload, FiImage, FiEye, FiSearch } from 'react-icons/fi'
 
 export default function CategoriesPage() {
   const router = useRouter()
@@ -13,6 +13,7 @@ export default function CategoriesPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [formData, setFormData] = useState({
     name: '',
@@ -229,7 +230,21 @@ export default function CategoriesPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Search Bar */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6">
+          <div className="relative">
+            <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+            />
+          </div>
+        </div>
+
         {/* Success Message */}
         {successMessage && (
           <div className="mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 animate-pulse">
@@ -387,73 +402,76 @@ export default function CategoriesPage() {
           </div>
         )}
 
-        {/* Categories List */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
-              <p className="text-slate-500">Loading categories...</p>
+        {/* Categories Grid */}
+        {loading ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+            <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
+            <p className="text-slate-500">Loading categories...</p>
+          </div>
+        ) : categories.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+            <div className="bg-amber-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FiFolder className="w-8 h-8 text-amber-400" />
             </div>
-          ) : categories.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="bg-amber-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FiFolder className="w-8 h-8 text-amber-400" />
-              </div>
-              <p className="text-slate-500">No categories yet. Add your first category!</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {categories.map((category) => (
-                <div key={category.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
-                  <div className="flex items-center gap-4">
-                    {category.imageUrl ? (
-                      <Image src={category.imageUrl} alt={category.name} width={40} height={53} className="w-10 h-[53px] rounded-xl object-cover" unoptimized />
-                    ) : (
-                      <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center">
-                        <FiFolder className="w-5 h-5 text-amber-500" />
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="font-medium text-slate-800">{category.name}</h3>
-                      <p className="text-sm text-slate-400">/{category.slug}</p>
+            <p className="text-slate-500">
+              {searchTerm ? 'No categories found matching your search.' : 'No categories yet. Add your first category!'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {categories.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).map((category) => (
+              <div key={category.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
+                {category.imageUrl ? (
+                  <Image src={category.imageUrl} alt={category.name} width={400} height={192} className="w-full h-36 sm:h-48 object-cover" unoptimized />
+                ) : (
+                  <div className="w-full h-36 sm:h-48 bg-amber-50 flex items-center justify-center">
+                    <FiFolder className="w-12 h-12 text-amber-300" />
+                  </div>
+                )}
+                <div className="p-4">
+                  <h3 className="font-semibold text-slate-800 truncate text-sm sm:text-base">{category.name}</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 truncate">/{category.slug}</p>
+
+                  <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-1">
+                      <FiMusic className="w-3 h-3" />
+                      {category._count?.songs || 0}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-slate-500 flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-lg">
-                      <FiMusic className="w-3.5 h-3.5 text-blue-500" />
-                      {category._count?.songs || 0}
-                    </span>
-                    <div className="flex gap-1">
-                      <Link
-                        href={`/category/${category.slug}`}
-                        target="_blank"
-                        className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
-                        title="View category page"
-                      >
-                        <FiEye className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleEdit(category)}
-                        className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
-                      >
-                        <FiEdit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(category.id)}
-                        className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+
+                  <div className="flex justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
+                    <Link
+                      href={`/category/${category.slug}`}
+                      target="_blank"
+                      aria-label="View category"
+                      className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                      title="View category page"
+                    >
+                      <FiEye className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => handleEdit(category)}
+                      aria-label="Edit category"
+                      className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
+                    >
+                      <FiEdit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(category.id)}
+                      aria-label="Delete category"
+                      className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-4 text-sm text-slate-500">
-          Total: {categories.length} categories
+          Showing {categories.filter(c => c.name.toLowerCase().includes(searchTerm.toLowerCase())).length} of {categories.length} categories
         </div>
       </main>
 

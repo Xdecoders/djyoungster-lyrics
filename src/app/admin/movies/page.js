@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiFilm, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiCalendar, FiX, FiChevronLeft, FiChevronRight, FiImage, FiUpload, FiLink, FiEye } from 'react-icons/fi'
+import Image from 'next/image'
+import { FiFilm, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiCalendar, FiX, FiChevronLeft, FiChevronRight, FiImage, FiUpload, FiLink, FiEye, FiSearch } from 'react-icons/fi'
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 20
 
 export default function MoviesPage() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export default function MoviesPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [imageMode, setImageMode] = useState('url')
   const [formData, setFormData] = useState({
@@ -165,10 +167,15 @@ export default function MoviesPage() {
     }
   }
 
-  // Pagination logic
-  const totalPages = Math.ceil(movies.length / ITEMS_PER_PAGE)
+  // Filter and pagination logic
+  const filteredMovies = movies.filter(movie =>
+    movie.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    movie.director?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    movie.language?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+  const totalPages = Math.ceil(filteredMovies.length / ITEMS_PER_PAGE)
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const paginatedMovies = movies.slice(startIndex, startIndex + ITEMS_PER_PAGE)
+  const paginatedMovies = filteredMovies.slice(startIndex, startIndex + ITEMS_PER_PAGE)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -202,7 +209,21 @@ export default function MoviesPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Search Bar */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6">
+          <div className="relative">
+            <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search movies..."
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1) }}
+              className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+            />
+          </div>
+        </div>
+
         {/* Add/Edit Form */}
         {showForm && (
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
@@ -418,81 +439,84 @@ export default function MoviesPage() {
           </div>
         )}
 
-        {/* Movies List */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
-              <p className="text-slate-500">Loading movies...</p>
+        {/* Movies Grid */}
+        {loading ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+            <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
+            <p className="text-slate-500">Loading movies...</p>
+          </div>
+        ) : filteredMovies.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+            <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FiFilm className="w-8 h-8 text-rose-400" />
             </div>
-          ) : movies.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="bg-rose-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FiFilm className="w-8 h-8 text-rose-400" />
-              </div>
-              <p className="text-slate-500">No movies yet. Add your first movie!</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {paginatedMovies.map((movie) => (
-                <div key={movie.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-rose-50 rounded-xl flex items-center justify-center">
-                      <FiFilm className="w-6 h-6 text-rose-500" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium text-slate-800">{movie.title}</h3>
-                      <div className="flex items-center gap-3 text-sm text-slate-500">
-                        {movie.year && (
-                          <span className="flex items-center gap-1">
-                            <FiCalendar className="w-3 h-3" />
-                            {movie.year}
-                          </span>
-                        )}
-                        {movie.director && (
-                          <span>Dir: {movie.director}</span>
-                        )}
+            <p className="text-slate-500">
+              {searchTerm ? 'No movies found matching your search.' : 'No movies yet. Add your first movie!'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {paginatedMovies.map((movie) => (
+              <div key={movie.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
+                {movie.posterUrl ? (
+                  <Image src={movie.posterUrl} alt={movie.title} width={400} height={192} className="w-full h-36 sm:h-48 object-cover" unoptimized />
+                ) : (
+                  <div className="w-full h-36 sm:h-48 bg-rose-50 flex items-center justify-center">
+                    <FiFilm className="w-12 h-12 text-rose-300" />
+                  </div>
+                )}
+                <div className="p-4">
+                  <h3 className="font-semibold text-slate-800 truncate text-sm sm:text-base">{movie.title}</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 truncate">{movie.director ? `Dir: ${movie.director}` : movie.language || '\u00A0'}</p>
+
+                  <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                    {movie.year && (
+                      <div className="flex items-center gap-1">
+                        <FiCalendar className="w-3 h-3" />
+                        {movie.year}
                       </div>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <FiMusic className="w-3 h-3" />
+                      {movie._count?.songs || 0}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-slate-500 flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-lg">
-                      <FiMusic className="w-3.5 h-3.5 text-blue-500" />
-                      {movie._count?.songs || 0}
-                    </span>
-                    <div className="flex gap-1">
-                      <Link
-                        href={`/movie/${movie.slug}`}
-                        target="_blank"
-                        className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
-                        title="View movie page"
-                      >
-                        <FiEye className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleEdit(movie)}
-                        className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
-                      >
-                        <FiEdit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(movie.id)}
-                        className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+
+                  <div className="flex justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
+                    <Link
+                      href={`/movie/${movie.slug}`}
+                      target="_blank"
+                      aria-label="View movie"
+                      className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                      title="View movie page"
+                    >
+                      <FiEye className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => handleEdit(movie)}
+                      aria-label="Edit movie"
+                      className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
+                    >
+                      <FiEdit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(movie.id)}
+                      aria-label="Delete movie"
+                      className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Pagination */}
         <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-slate-500">
-            Showing {movies.length > 0 ? startIndex + 1 : 0}-{Math.min(startIndex + ITEMS_PER_PAGE, movies.length)} of {movies.length} movies
+            Showing {filteredMovies.length > 0 ? startIndex + 1 : 0}-{Math.min(startIndex + ITEMS_PER_PAGE, filteredMovies.length)} of {filteredMovies.length} movies
           </div>
           {totalPages > 1 && (
             <div className="flex items-center gap-2">

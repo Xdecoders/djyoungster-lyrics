@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { FiUser, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiMusic, FiChevronLeft, FiChevronRight, FiEye } from 'react-icons/fi'
 
-const ITEMS_PER_PAGE = 10
+const ITEMS_PER_PAGE = 20
 
 export default function ArtistsList() {
   const router = useRouter()
@@ -129,58 +129,51 @@ export default function ArtistsList() {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
             {paginatedArtists.map((artist) => (
               <div key={artist.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
-                <div className="p-5">
-                  <div className="flex items-start gap-4">
-                    {artist.imageUrl ? (
-                      <Image src={artist.imageUrl} alt={artist.name} width={56} height={56} className="w-14 h-14 rounded-xl object-cover" unoptimized />
-                    ) : (
-                      <div className="w-14 h-14 bg-emerald-50 rounded-xl flex items-center justify-center">
-                        <FiUser className="w-7 h-7 text-emerald-400" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-slate-800 truncate">{artist.name}</h3>
-                      {artist.country && (
-                        <p className="text-sm text-slate-500">{artist.country}</p>
-                      )}
-                      {artist.bio && (
-                        <p className="text-sm text-slate-500 mt-1 line-clamp-2">{artist.bio}</p>
-                      )}
+                {artist.imageUrl ? (
+                  <Image src={artist.imageUrl} alt={artist.name} width={400} height={192} className="w-full h-36 sm:h-48 object-cover" unoptimized />
+                ) : (
+                  <div className="w-full h-36 sm:h-48 bg-emerald-50 flex items-center justify-center">
+                    <FiUser className="w-12 h-12 text-emerald-300" />
+                  </div>
+                )}
+                <div className="p-4">
+                  <h3 className="font-semibold text-slate-800 truncate text-sm sm:text-base">{artist.name}</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 truncate">{artist.country || '\u00A0'}</p>
+
+                  <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-1">
+                      <FiMusic className="w-3 h-3" />
+                      {artist._count?.songs || 0}
                     </div>
                   </div>
 
-                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100">
-                    <div className="flex items-center gap-1.5 text-sm text-slate-500">
-                      <div className="bg-blue-50 p-1.5 rounded-lg">
-                        <FiMusic className="w-3.5 h-3.5 text-blue-500" />
-                      </div>
-                      <span>{artist._count?.songs || 0} songs</span>
-                    </div>
-                    <div className="flex gap-1">
-                      <Link
-                        href={`/artist/${artist.slug}`}
-                        target="_blank"
-                        className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
-                        title="View artist page"
-                      >
-                        <FiEye className="w-4 h-4" />
-                      </Link>
-                      <Link
-                        href={`/admin/artists/${artist.id}`}
-                        className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
-                      >
-                        <FiEdit2 className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => setDeleteConfirm(artist.id)}
-                        className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+                  <div className="flex justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
+                    <Link
+                      href={`/artist/${artist.slug}`}
+                      target="_blank"
+                      aria-label="View artist"
+                      className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                      title="View artist page"
+                    >
+                      <FiEye className="w-4 h-4" />
+                    </Link>
+                    <Link
+                      href={`/admin/artists/${artist.id}`}
+                      aria-label="Edit artist"
+                      className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
+                    >
+                      <FiEdit2 className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => setDeleteConfirm(artist.id)}
+                      aria-label="Delete artist"
+                      className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
               </div>

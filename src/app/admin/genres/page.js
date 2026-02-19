@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiTag, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX, FiUpload, FiEye } from 'react-icons/fi'
+import { FiTag, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiX, FiUpload, FiEye, FiSearch } from 'react-icons/fi'
 
 export default function GenresPage() {
   const router = useRouter()
@@ -13,6 +13,7 @@ export default function GenresPage() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -213,7 +214,21 @@ export default function GenresPage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Search Bar */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6">
+          <div className="relative">
+            <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Search genres..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
+            />
+          </div>
+        </div>
+
         {/* Error Message */}
         {errorMessage && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
@@ -353,75 +368,76 @@ export default function GenresPage() {
           </div>
         )}
 
-        {/* Genres List */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center">
-              <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
-              <p className="text-slate-500">Loading genres...</p>
+        {/* Genres Grid */}
+        {loading ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+            <div className="inline-block w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mb-2"></div>
+            <p className="text-slate-500">Loading genres...</p>
+          </div>
+        ) : genres.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
+            <div className="bg-amber-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <FiTag className="w-8 h-8 text-amber-400" />
             </div>
-          ) : genres.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="bg-amber-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FiTag className="w-8 h-8 text-amber-400" />
-              </div>
-              <p className="text-slate-500">No genres yet. Add your first genre!</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {genres.map((genre) => (
-                <div key={genre.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition">
-                  <div className="flex items-center gap-4">
-                    {genre.imageUrl ? (
-                      <Image src={genre.imageUrl} alt={genre.name} width={48} height={48} className="w-12 h-12 rounded-xl object-cover" unoptimized />
-                    ) : (
-                      <div className="w-12 h-12 bg-amber-50 rounded-xl flex items-center justify-center">
-                        <FiTag className="w-6 h-6 text-amber-400" />
-                      </div>
-                    )}
-                    <div>
-                      <h3 className="font-medium text-slate-800">{genre.name}</h3>
-                      {genre.description && (
-                        <p className="text-sm text-slate-500 line-clamp-1">{genre.description}</p>
-                      )}
+            <p className="text-slate-500">
+              {searchTerm ? 'No genres found matching your search.' : 'No genres yet. Add your first genre!'}
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+            {genres.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase())).map((genre) => (
+              <div key={genre.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-all duration-300 hover:scale-[1.02]">
+                {genre.imageUrl ? (
+                  <Image src={genre.imageUrl} alt={genre.name} width={400} height={192} className="w-full h-36 sm:h-48 object-cover" unoptimized />
+                ) : (
+                  <div className="w-full h-36 sm:h-48 bg-amber-50 flex items-center justify-center">
+                    <FiTag className="w-12 h-12 text-amber-300" />
+                  </div>
+                )}
+                <div className="p-4">
+                  <h3 className="font-semibold text-slate-800 truncate text-sm sm:text-base">{genre.name}</h3>
+                  <p className="text-xs sm:text-sm text-slate-500 truncate">{genre.description || '\u00A0'}</p>
+
+                  <div className="flex items-center gap-3 mt-2 text-xs text-slate-500">
+                    <div className="flex items-center gap-1">
+                      <FiMusic className="w-3 h-3" />
+                      {genre._count?.songs || 0}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm text-slate-500 flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-lg">
-                      <FiMusic className="w-3.5 h-3.5 text-blue-500" />
-                      {genre._count?.songs || 0}
-                    </span>
-                    <div className="flex gap-1">
-                      <Link
-                        href={`/genre/${genre.slug}`}
-                        target="_blank"
-                        className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
-                        title="View genre page"
-                      >
-                        <FiEye className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => handleEdit(genre)}
-                        className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
-                      >
-                        <FiEdit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setDeleteConfirm(genre.id)}
-                        className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
-                      >
-                        <FiTrash2 className="w-4 h-4" />
-                      </button>
-                    </div>
+
+                  <div className="flex justify-end gap-1 mt-3 pt-3 border-t border-slate-100">
+                    <Link
+                      href={`/genre/${genre.slug}`}
+                      target="_blank"
+                      aria-label="View genre"
+                      className="p-2 text-slate-500 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition"
+                      title="View genre page"
+                    >
+                      <FiEye className="w-4 h-4" />
+                    </Link>
+                    <button
+                      onClick={() => handleEdit(genre)}
+                      aria-label="Edit genre"
+                      className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"
+                    >
+                      <FiEdit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(genre.id)}
+                      aria-label="Delete genre"
+                      className="p-2 text-slate-500 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
+                    >
+                      <FiTrash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="mt-4 text-sm text-slate-500">
-          Total: {genres.length} genres
+          Showing {genres.filter(g => g.name.toLowerCase().includes(searchTerm.toLowerCase())).length} of {genres.length} genres
         </div>
       </main>
 
