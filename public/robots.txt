@@ -20,4 +20,4 @@ Disallow: /admin/
 Disallow: /api/
 
 # Sitemap
-Sitemap: https://djyoungster.com/sitemap-index.xml
+Sitemap: https://djyoungster.com/sitemap.xml
