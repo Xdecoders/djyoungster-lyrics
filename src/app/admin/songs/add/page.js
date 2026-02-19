@@ -1,11 +1,16 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { FiSave, FiX, FiMusic, FiUser, FiDisc, FiTag, FiFilm, FiCalendar, FiGlobe, FiImage, FiEye, FiType, FiAlignLeft, FiSearch, FiPlus, FiFolder, FiVideo, FiUpload, FiLink, FiEdit3, FiMic, FiUsers, FiAward, FiStar, FiBookOpen } from 'react-icons/fi'
 import { FaSpotify, FaApple } from 'react-icons/fa'
 import RichTextEditor from '@/components/RichTextEditor'
+import useAutoSaveDraft from '@/hooks/useAutoSaveDraft'
+import useNavigationGuard from '@/hooks/useNavigationGuard'
+import UnsavedChangesModal from '@/components/admin/UnsavedChangesModal'
+import DraftRestorationBanner from '@/components/admin/DraftRestorationBanner'
+import DraftSavedIndicator from '@/components/admin/DraftSavedIndicator'
 
 function stripHtmlTags(html) {
   return html?.replace(/<[^>]*>/g, '') || ''
@@ -158,6 +163,42 @@ export default function AddSong() {
   const producerRef = useRef(null)
   const directorRef = useRef(null)
 
+  // Draft auto-save
+  const [draftEnabled, setDraftEnabled] = useState(false)
+  const selections = useMemo(() => ({
+    selectedArtists,
+    selectedMovie,
+    selectedAlbum,
+    selectedGenres,
+    selectedCategories,
+    selectedTags,
+    imagePreview
+  }), [selectedArtists, selectedMovie, selectedAlbum, selectedGenres, selectedCategories, selectedTags, imagePreview])
+
+  const { hasDraft, draftTimestamp, restoreDraft, discardDraft, clearDraft, saveDraft, isDirty, draftSavedIndicator } = useAutoSaveDraft({
+    storageKey: 'song-draft-add',
+    formData,
+    selections,
+    enabled: draftEnabled
+  })
+  const { showModal, guardedNavigate, confirmLeave, cancelNavigation, pendingUrl } = useNavigationGuard(isDirty)
+
+  const handleRestoreDraft = () => {
+    const draft = restoreDraft()
+    if (draft) {
+      setFormData(draft.formData)
+      if (draft.selections) {
+        if (draft.selections.selectedArtists) setSelectedArtists(draft.selections.selectedArtists)
+        if (draft.selections.selectedMovie) setSelectedMovie(draft.selections.selectedMovie)
+        if (draft.selections.selectedAlbum) setSelectedAlbum(draft.selections.selectedAlbum)
+        if (draft.selections.selectedGenres) setSelectedGenres(draft.selections.selectedGenres)
+        if (draft.selections.selectedCategories) setSelectedCategories(draft.selections.selectedCategories)
+        if (draft.selections.selectedTags) setSelectedTags(draft.selections.selectedTags)
+        if (draft.selections.imagePreview) setImagePreview(draft.selections.imagePreview)
+      }
+    }
+  }
+
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
     if (!token) {
@@ -293,6 +334,7 @@ export default function AddSong() {
       if (!creditsData.message) {
         setCreditSuggestions(creditsData)
       }
+      setDraftEnabled(true)
     } catch (error) {
       console.error('Error fetching data:', error)
     }
@@ -772,6 +814,7 @@ export default function AddSong() {
       const data = await res.json()
 
       if (res.ok) {
+        clearDraft()
         // Show success message with indexing status
         let message = 'Song added successfully!'
         if (data.indexingResult) {
@@ -841,7 +884,7 @@ export default function AddSong() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
-              <Link href="/admin/songs" className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition">
+              <Link href="/admin/songs" onClick={(e) => { if (isDirty.current) { e.preventDefault(); guardedNavigate('/admin/songs') } }} className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition">
                 <FiX className="w-5 h-5" />
               </Link>
               <div className="flex items-center gap-2">
@@ -849,11 +892,13 @@ export default function AddSong() {
                   <FiMusic className="w-5 h-5 text-blue-600" />
                 </div>
                 <h1 className="text-lg sm:text-xl font-bold text-slate-800">Add New Song</h1>
+                <DraftSavedIndicator show={draftSavedIndicator} />
               </div>
             </div>
             <div className="flex gap-3">
               <Link
                 href="/admin/songs"
+                onClick={(e) => { if (isDirty.current) { e.preventDefault(); guardedNavigate('/admin/songs') } }}
                 className="px-4 py-2.5 text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200 transition font-medium text-sm hidden sm:block"
               >
                 Cancel
@@ -873,7 +918,8 @@ export default function AddSong() {
 
       {/* Main Form */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <DraftRestorationBanner show={hasDraft} timestamp={draftTimestamp} onRestore={handleRestoreDraft} onDiscard={discardDraft} />
+        <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Content - Left Side */}
             <div className="lg:col-span-2 space-y-6">
@@ -2373,6 +2419,13 @@ export default function AddSong() {
           </div>
         </div>
       )}
+
+      <UnsavedChangesModal
+        show={showModal}
+        onSaveDraft={() => { saveDraft(); confirmLeave() }}
+        onDiscard={() => { discardDraft(); confirmLeave() }}
+        onCancel={cancelNavigation}
+      />
     </div>
   )
 }
