@@ -647,14 +647,14 @@ export function TemplatePickerModal({ isOpen, onClose, onSelect, sampleLines }) 
             <div className="w-10 h-10 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3 mb-5 overflow-y-auto flex-1 min-h-0">
+          <div className="grid grid-cols-3 gap-3 mb-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0">
             {CLIP_TEMPLATES.map((tmpl) => (
               <button
                 key={tmpl.id}
                 onClick={() => setSelectedId(tmpl.id)}
                 className={`relative rounded-xl overflow-hidden border-2 transition-all aspect-[9/16] ${
                   selectedId === tmpl.id
-                    ? 'border-cyan-500 shadow-lg shadow-cyan-500/30 scale-[1.02]'
+                    ? 'border-cyan-500 shadow-lg shadow-cyan-500/30'
                     : 'border-transparent hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               >

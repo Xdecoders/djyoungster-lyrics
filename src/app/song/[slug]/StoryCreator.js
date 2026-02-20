@@ -399,14 +399,14 @@ export function StoryTemplatePickerModal({ isOpen, onClose, onSelect, sampleLine
             <div className="w-10 h-10 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="grid grid-cols-3 gap-3 mb-5 overflow-y-auto flex-1 min-h-0">
+          <div className="grid grid-cols-3 gap-3 mb-5 overflow-y-auto overflow-x-hidden flex-1 min-h-0">
             {STORY_TEMPLATES.map((tmpl) => (
               <button
                 key={tmpl.id}
                 onClick={() => setSelectedId(tmpl.id)}
                 className={`relative rounded-xl overflow-hidden border-2 transition-all aspect-[9/16] ${
                   selectedId === tmpl.id
-                    ? 'border-purple-500 shadow-lg shadow-purple-500/30 scale-[1.02]'
+                    ? 'border-purple-500 shadow-lg shadow-purple-500/30'
                     : 'border-transparent hover:border-slate-300 dark:hover:border-slate-600'
                 }`}
               >
