@@ -2,7 +2,95 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { FiX, FiDownload, FiShare2, FiVideo, FiCheck } from 'react-icons/fi'
-import { STORY_TEMPLATES, ensureGoogleFont, paintBackground, wrapText } from './StoryCreator'
+import { ensureGoogleFont, paintBackground, wrapText } from './StoryCreator'
+
+// Clip/Reel Templates (separate from Story templates)
+export const CLIP_TEMPLATES = [
+  {
+    id: 'wildflower',
+    label: 'Wildflower',
+    emoji: '\u{1F33B}',
+    font: "'Playfair Display', Georgia, serif",
+    fontGoogle: 'Playfair Display',
+    fontWeight: 'normal',
+    bgImage: '/templates/reel-dark-1.png',
+    fallbackColor: '#0d2e2e',
+    accent: '#e8a050',
+    textColor: '#ffffff',
+    textShadow: true,
+    dark: true,
+  },
+  {
+    id: 'emerald',
+    label: 'Emerald',
+    emoji: '\u{1F48E}',
+    font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontGoogle: null,
+    fontWeight: 'bold',
+    bgImage: '/templates/reel-dark-2.png',
+    fallbackColor: '#0a2e1a',
+    accent: '#5eead4',
+    textColor: '#ffffff',
+    textShadow: true,
+    dark: true,
+  },
+  {
+    id: 'moonlight',
+    label: 'Moonlight',
+    emoji: '\u{1F319}',
+    font: "'Lora', Georgia, serif",
+    fontGoogle: 'Lora',
+    fontWeight: 'normal',
+    bgImage: '/templates/reel-dark-3.png',
+    fallbackColor: '#1a1a2e',
+    accent: '#c0c0c0',
+    textColor: '#ffffff',
+    textShadow: true,
+    dark: true,
+  },
+  {
+    id: 'minimal',
+    label: 'Minimal',
+    emoji: '\u{1F343}',
+    font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+    fontGoogle: null,
+    fontWeight: 'bold',
+    bgImage: '/templates/reel-light-1.png',
+    fallbackColor: '#e8e8f0',
+    accent: '#64748b',
+    textColor: '#1a2030',
+    textShadow: false,
+    dark: false,
+  },
+  {
+    id: 'golden',
+    label: 'Golden',
+    emoji: '\u{2728}',
+    font: "'Playfair Display', Georgia, serif",
+    fontGoogle: 'Playfair Display',
+    fontWeight: 'normal',
+    bgImage: '/templates/reel-light-2.png',
+    fallbackColor: '#f0e8d8',
+    accent: '#8b6914',
+    textColor: '#3d2b1f',
+    textShadow: false,
+    dark: false,
+  },
+  {
+    id: 'rose',
+    label: 'Ros\u00e9',
+    emoji: '\u{1F33A}',
+    font: "'Lora', Georgia, serif",
+    fontGoogle: 'Lora',
+    fontWeight: 'normal',
+    bgImage: '/templates/reel-light-3.png',
+    fallbackColor: '#f8e0e8',
+    accent: '#c97b94',
+    textColor: '#3b1c2e',
+    textShadow: false,
+    dark: false,
+  },
+]
 
 // ── Particles ────────────────────────────────────────────────────────────────
 
@@ -45,7 +133,6 @@ function paintParticles(ctx, W, H, particles, accentColor) {
 
 function paintWatermark(ctx, W, H, template, s = 1) {
   const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-  const brandAlpha = template.brandingOpacity ?? 1
   const divY = H - Math.round(500 * s)
 
   ctx.save()
@@ -54,7 +141,7 @@ function paintWatermark(ctx, W, H, template, s = 1) {
   // Divider line
   ctx.strokeStyle = template.accent
   ctx.lineWidth = 2
-  ctx.globalAlpha = 0.5 * brandAlpha
+  ctx.globalAlpha = 0.5
   ctx.beginPath()
   ctx.moveTo(W / 2 - Math.round(60 * s), divY)
   ctx.lineTo(W / 2 + Math.round(60 * s), divY)
@@ -62,14 +149,14 @@ function paintWatermark(ctx, W, H, template, s = 1) {
 
   // Brand name
   ctx.font = `bold ${Math.round(34 * s)}px ${fontSystem}`
-  ctx.fillStyle = template.brandColor || template.accent
-  ctx.globalAlpha = brandAlpha
+  ctx.fillStyle = template.accent
+  ctx.globalAlpha = 1
   ctx.fillText('DJYoungster', W / 2, divY + Math.round(55 * s))
 
   // Tagline
   ctx.font = `${Math.round(28 * s)}px ${fontSystem}`
   ctx.fillStyle = template.textColor
-  ctx.globalAlpha = 0.5 * brandAlpha
+  ctx.globalAlpha = 0.5
   ctx.fillText('Created at djyoungster.com', W / 2, divY + Math.round(100 * s))
 
   ctx.restore()
@@ -77,7 +164,6 @@ function paintWatermark(ctx, W, H, template, s = 1) {
 
 function paintEndCard(ctx, W, H, template, songTitle, artistNames, s = 1) {
   const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
-  const brandAlpha = template.brandingOpacity ?? 1
 
   ctx.save()
   ctx.textAlign = 'center'
@@ -101,7 +187,7 @@ function paintEndCard(ctx, W, H, template, songTitle, artistNames, s = 1) {
   ctx.fillText(artistNames, W / 2, H / 2 + Math.round(30 * s))
 
   // Divider
-  ctx.globalAlpha = 0.4 * brandAlpha
+  ctx.globalAlpha = 0.4
   ctx.strokeStyle = template.accent
   ctx.lineWidth = 2
   ctx.beginPath()
@@ -111,19 +197,19 @@ function paintEndCard(ctx, W, H, template, songTitle, artistNames, s = 1) {
 
   // Brand
   ctx.font = `bold ${Math.round(32 * s)}px ${fontSystem}`
-  ctx.fillStyle = template.brandColor || template.accent
-  ctx.globalAlpha = brandAlpha
+  ctx.fillStyle = template.accent
+  ctx.globalAlpha = 1
   ctx.fillText('DJYoungster', W / 2, H / 2 + Math.round(135 * s))
 
   ctx.font = `${Math.round(26 * s)}px ${fontSystem}`
   ctx.fillStyle = template.textColor
-  ctx.globalAlpha = 0.5 * brandAlpha
+  ctx.globalAlpha = 0.5
   ctx.fillText('djyoungster.com', W / 2, H / 2 + Math.round(175 * s))
 
   ctx.restore()
 }
 
-export async function generateClipVideo({ selectedLines, songTitle, artistNames, coverImageUrl, template = STORY_TEMPLATES[0], onProgress, onPreview }) {
+export async function generateClipVideo({ selectedLines, songTitle, artistNames, template = CLIP_TEMPLATES[0], onProgress, onPreview }) {
   // Check WebCodecs support
   if (typeof VideoEncoder === 'undefined') {
     throw new Error('WebCodecs API is not supported in this browser. Please use Chrome 94+ or Edge 94+.')
@@ -153,7 +239,7 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
     await ensureGoogleFont(template.fontGoogle)
   }
 
-  await paintBackground(bgCtx, W, H, template, coverImageUrl)
+  await paintBackground(bgCtx, W, H, template)
 
   // Frame canvas
   const frameCanvas = document.createElement('canvas')
@@ -289,12 +375,6 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
         frameCtx.shadowOffsetY = 4
       }
 
-      // Neon glow effect for neonGlow templates
-      if (template.neonGlow) {
-        frameCtx.shadowColor = template.accent
-        frameCtx.shadowBlur = 20
-      }
-
       const startY = (H / 2) - (totalContentH / 2)
       let curY = startY
       for (let i = 0; i < numLines; i++) {
@@ -346,7 +426,7 @@ export async function generateClipVideo({ selectedLines, songTitle, artistNames,
 
 // ── Template Thumbnail Generator ─────────────────────────────────────────────
 
-export async function generateTemplateThumbnail(template, sampleLines, coverImageUrl) {
+export async function generateTemplateThumbnail(template, sampleLines) {
   const W = 270
   const H = 480
   const canvas = document.createElement('canvas')
@@ -358,7 +438,7 @@ export async function generateTemplateThumbnail(template, sampleLines, coverImag
     await ensureGoogleFont(template.fontGoogle)
   }
 
-  await paintBackground(ctx, W, H, template, coverImageUrl)
+  await paintBackground(ctx, W, H, template)
 
   // Static particles
   const thumbParticles = initParticles(30, W, H)
@@ -392,11 +472,6 @@ export async function generateTemplateThumbnail(template, sampleLines, coverImag
     ctx.shadowOffsetY = 2
   }
 
-  if (template.neonGlow) {
-    ctx.shadowColor = template.accent
-    ctx.shadowBlur = 12
-  }
-
   let curY = (H / 2) - (totalH / 2)
   for (let i = 0; i < wrappedBlocks.length; i++) {
     wrappedBlocks[i].forEach((wLine, wi) => {
@@ -421,7 +496,7 @@ export function useClipMode({ initialSong }) {
   const [clipPreviewImage, setClipPreviewImage] = useState(null)
   const [isGeneratingClip, setIsGeneratingClip] = useState(false)
   const [clipProgress, setClipProgress] = useState(0)
-  const [clipTemplate, setClipTemplate] = useState(STORY_TEMPLATES[0])
+  const [clipTemplate, setClipTemplate] = useState(CLIP_TEMPLATES[0])
 
   const handleLineToggle = useCallback((index, text) => {
     setSelectedLines(prev => {
@@ -455,7 +530,6 @@ export function useClipMode({ initialSong }) {
         selectedLines: selectedLines.map(l => l.text),
         songTitle: initialSong.title,
         artistNames: initialSong.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist',
-        coverImageUrl: initialSong.coverImage || null,
         template: tmpl,
         onProgress: setClipProgress,
         onPreview: setClipPreviewImage,
@@ -480,7 +554,6 @@ export function useClipMode({ initialSong }) {
         selectedLines: selectedLines.map(l => l.text),
         songTitle: initialSong.title,
         artistNames: initialSong.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist',
-        coverImageUrl: initialSong.coverImage || null,
         template,
         onProgress: setClipProgress,
         onPreview: setClipPreviewImage,
@@ -524,21 +597,21 @@ export function useClipMode({ initialSong }) {
 
 // ── TemplatePickerModal Component ────────────────────────────────────────────
 
-export function TemplatePickerModal({ isOpen, onClose, onSelect, sampleLines, coverImageUrl }) {
+export function TemplatePickerModal({ isOpen, onClose, onSelect, sampleLines }) {
   const [thumbnails, setThumbnails] = useState({})
-  const [selectedId, setSelectedId] = useState(STORY_TEMPLATES[0].id)
+  const [selectedId, setSelectedId] = useState(CLIP_TEMPLATES[0].id)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!isOpen) return
     setLoading(true)
-    setSelectedId(STORY_TEMPLATES[0].id)
+    setSelectedId(CLIP_TEMPLATES[0].id)
 
     const lines = sampleLines?.length ? sampleLines : ['Sample lyrics line', 'Another line here']
 
     Promise.all(
-      STORY_TEMPLATES.map(async (tmpl) => {
-        const url = await generateTemplateThumbnail(tmpl, lines, tmpl.skipCoverImage ? null : coverImageUrl)
+      CLIP_TEMPLATES.map(async (tmpl) => {
+        const url = await generateTemplateThumbnail(tmpl, lines)
         return [tmpl.id, url]
       })
     ).then((results) => {
@@ -547,11 +620,11 @@ export function TemplatePickerModal({ isOpen, onClose, onSelect, sampleLines, co
       setThumbnails(map)
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [isOpen, sampleLines, coverImageUrl])
+  }, [isOpen, sampleLines])
 
   if (!isOpen) return null
 
-  const selected = STORY_TEMPLATES.find(t => t.id === selectedId) || STORY_TEMPLATES[0]
+  const selected = CLIP_TEMPLATES.find(t => t.id === selectedId) || CLIP_TEMPLATES[0]
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -575,7 +648,7 @@ export function TemplatePickerModal({ isOpen, onClose, onSelect, sampleLines, co
           </div>
         ) : (
           <div className="grid grid-cols-3 gap-3 mb-5 overflow-y-auto flex-1 min-h-0">
-            {STORY_TEMPLATES.map((tmpl) => (
+            {CLIP_TEMPLATES.map((tmpl) => (
               <button
                 key={tmpl.id}
                 onClick={() => setSelectedId(tmpl.id)}
@@ -744,7 +817,7 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
 
             {/* Template selector chips */}
             <div className="flex gap-2 mb-4 overflow-x-auto pb-1 flex-shrink-0">
-              {STORY_TEMPLATES.map((tmpl) => (
+              {CLIP_TEMPLATES.map((tmpl) => (
                 <button
                   key={tmpl.id}
                   onClick={() => {

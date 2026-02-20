@@ -6,97 +6,88 @@ import { FiX, FiDownload, FiShare2, FiCamera, FiCheck } from 'react-icons/fi'
 // Story Templates
 export const STORY_TEMPLATES = [
   {
-    id: 'midnight-sad',
-    label: 'Sad',
-    emoji: '\u{1F494}',
-    emojiOpacity: 1.0,
+    id: 'moody-bloom',
+    label: 'Moody Bloom',
+    emoji: '\u{1F338}',
     font: "'Playfair Display', Georgia, serif",
     fontGoogle: 'Playfair Display',
     fontWeight: 'normal',
-    bgGradient: ['#0f172a', '#1e293b', '#0f172a'],
-    overlayOpacity: [0.3, 0.5, 0.4],
-    accent: '#8b5cf6',
-    brandColor: '#1DB954',
+    bgImage: '/templates/story-dark-1.png',
+    fallbackColor: '#1a2e1a',
+    accent: '#d4a574',
     textColor: '#ffffff',
     textShadow: true,
-    skipCoverImage: false,
+    dark: true,
   },
   {
-    id: 'late-night-drive',
-    label: 'Night Drive',
-    emoji: '\u{1F303}',
-    emojiOpacity: 0.9,
-    font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-    fontGoogle: null,
-    fontWeight: 'bold',
-    bgGradient: ['#022c22', '#064e3b', '#065f46'],
-    overlayOpacity: [0.1, 0.15, 0.1],
-    accent: '#6ee7b7',
-    textColor: 'rgba(255,255,255,0.9)',
-    textShadow: true,
-    skipCoverImage: true,
-    brandingOpacity: 0.6,
-  },
-  {
-    id: 'soft-love',
-    label: 'Love',
-    emoji: '\u{2764}\uFE0F',
-    emojiOpacity: 0.85,
+    id: 'nostalgic',
+    label: 'Nostalgic',
+    emoji: '\u{1F342}',
     font: "'Lora', Georgia, serif",
     fontGoogle: 'Lora',
     fontWeight: 'normal',
-    bgGradient: ['#fef2f2', '#fff1f2', '#fef2f2'],
-    overlayOpacity: [0.0, 0.0, 0.0],
-    accent: '#e11d48',
-    textColor: '#1c1917',
+    bgImage: '/templates/story-dark-2.png',
+    fallbackColor: '#3d2b1f',
+    accent: '#c9a96e',
+    textColor: '#ffffff',
+    textShadow: true,
+    dark: true,
+  },
+  {
+    id: 'deep-rose',
+    label: 'Deep Rose',
+    emoji: '\u{1F339}',
+    font: "'Playfair Display', Georgia, serif",
+    fontGoogle: 'Playfair Display',
+    fontWeight: 'normal',
+    bgImage: '/templates/story-dark-3.png',
+    fallbackColor: '#3b1c2e',
+    accent: '#e8a0a0',
+    textColor: '#ffffff',
+    textShadow: true,
+    dark: true,
+  },
+  {
+    id: 'elegant-leaf',
+    label: 'Elegant Leaf',
+    emoji: '\u{1F33F}',
+    font: "'Lora', Georgia, serif",
+    fontGoogle: 'Lora',
+    fontWeight: 'normal',
+    bgImage: '/templates/story-light-1.png',
+    fallbackColor: '#f5f0e8',
+    accent: '#6b7c5e',
+    textColor: '#2c1810',
     textShadow: false,
-    skipCoverImage: true,
+    dark: false,
   },
   {
-    id: 'neon-glow',
-    label: 'Neon',
-    emoji: '\u{1F4A0}',
-    emojiOpacity: 0.8,
+    id: 'soft-dream',
+    label: 'Soft Dream',
+    emoji: '\u{1F337}',
     font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontGoogle: null,
     fontWeight: 'bold',
-    bgGradient: ['#0a0a0f', '#111118', '#0a0a0f'],
-    overlayOpacity: [0.0, 0.0, 0.0],
-    accent: '#22d3ee',
-    textColor: '#ffffff',
-    textShadow: true,
-    skipCoverImage: true,
-    neonGlow: true,
+    bgImage: '/templates/story-light-2.png',
+    fallbackColor: '#e8e0f0',
+    accent: '#c47a8a',
+    textColor: '#1e293b',
+    textShadow: false,
+    dark: false,
   },
   {
-    id: 'golden-sunset',
-    label: 'Sunset',
-    emoji: '\u{1F305}',
-    emojiOpacity: 0.9,
-    font: "'Lora', Georgia, serif",
-    fontGoogle: 'Lora',
-    fontWeight: 'normal',
-    bgGradient: ['#78350f', '#c2410c', '#d97706'],
-    overlayOpacity: [0.15, 0.1, 0.15],
-    accent: '#fbbf24',
-    textColor: '#fffbeb',
-    textShadow: true,
-    skipCoverImage: true,
-  },
-  {
-    id: 'deep-ocean',
-    label: 'Ocean',
-    emoji: '\u{1F30A}',
-    emojiOpacity: 0.85,
+    id: 'blush',
+    label: 'Blush',
+    emoji: '\u{1F33A}',
     font: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontGoogle: null,
     fontWeight: 'bold',
-    bgGradient: ['#0c1445', '#134e4a', '#0f766e'],
-    overlayOpacity: [0.1, 0.15, 0.1],
-    accent: '#06b6d4',
-    textColor: 'rgba(255,255,255,0.95)',
-    textShadow: true,
-    skipCoverImage: true,
+    bgImage: '/templates/story-light-3.png',
+    fallbackColor: '#f8e8f0',
+    accent: '#c97b94',
+    textColor: '#3b1c2e',
+    textShadow: false,
+    dark: false,
   },
 ]
 
@@ -145,51 +136,33 @@ export function wrapText(ctx, text, maxWidth) {
   return lines
 }
 
-export async function paintBackground(ctx, W, H, template, coverImageUrl) {
-  let hasCoverBg = false
-  if (coverImageUrl && !template.skipCoverImage) {
+export async function paintBackground(ctx, W, H, template) {
+  let hasImage = false
+  if (template.bgImage) {
     try {
-      const img = await loadImage(coverImageUrl)
-      ctx.filter = 'blur(40px) brightness(0.4)'
-      const scale = Math.max(W / img.width, H / img.height) * 1.2
+      const img = await loadImage(template.bgImage)
+      // Aspect-fill: scale to cover entire canvas
+      const scale = Math.max(W / img.width, H / img.height)
       const sw = img.width * scale
       const sh = img.height * scale
       ctx.drawImage(img, (W - sw) / 2, (H - sh) / 2, sw, sh)
-      ctx.filter = 'none'
-      hasCoverBg = true
+      hasImage = true
     } catch {
-      // CORS or load failure — use gradient fallback
+      // Image load failure — use solid color fallback
     }
   }
 
-  if (!hasCoverBg) {
-    const grad = ctx.createLinearGradient(0, 0, W, H)
-    grad.addColorStop(0, template.bgGradient[0])
-    grad.addColorStop(0.5, template.bgGradient[1])
-    grad.addColorStop(1, template.bgGradient[2])
-    ctx.fillStyle = grad
+  if (!hasImage) {
+    ctx.fillStyle = template.fallbackColor || '#1a1a2e'
     ctx.fillRect(0, 0, W, H)
-
-    if (template.skipCoverImage) {
-      ctx.globalAlpha = 0.04
-      for (let i = 0; i < 300; i++) {
-        const x = Math.random() * W
-        const y = Math.random() * H
-        const r = Math.random() * 2 + 0.5
-        ctx.beginPath()
-        ctx.arc(x, y, r, 0, Math.PI * 2)
-        ctx.fillStyle = template.accent
-        ctx.fill()
-      }
-      ctx.globalAlpha = 1
-    }
   }
 
-  const overlay = ctx.createLinearGradient(0, 0, 0, H)
-  overlay.addColorStop(0, `rgba(0,0,0,${template.overlayOpacity[0]})`)
-  overlay.addColorStop(0.5, `rgba(0,0,0,${template.overlayOpacity[1]})`)
-  overlay.addColorStop(1, `rgba(0,0,0,${template.overlayOpacity[2]})`)
-  ctx.fillStyle = overlay
+  // Subtle overlay for text readability
+  if (template.dark) {
+    ctx.fillStyle = 'rgba(0,0,0,0.15)'
+  } else {
+    ctx.fillStyle = 'rgba(255,255,255,0.1)'
+  }
   ctx.fillRect(0, 0, W, H)
 }
 
@@ -197,7 +170,7 @@ export function paintTitleArea(ctx, W, H, template, songTitle, artistNames) {
   const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
   ctx.textAlign = 'center'
-  ctx.globalAlpha = template.emojiOpacity ?? 0.18
+  ctx.globalAlpha = 0.85
   ctx.font = `80px ${fontSystem}`
   ctx.fillText(template.emoji, W / 2, 350)
   ctx.globalAlpha = 1
@@ -212,7 +185,7 @@ export function paintTitleArea(ctx, W, H, template, songTitle, artistNames) {
   ctx.globalAlpha = 1
 }
 
-export async function generateStoryImage({ selectedLines, songTitle, artistNames, coverImageUrl, template = STORY_TEMPLATES[0] }) {
+export async function generateStoryImage({ selectedLines, songTitle, artistNames, template = STORY_TEMPLATES[0] }) {
   const W = 1080
   const H = 1920
   const fontSystem = "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
@@ -221,7 +194,7 @@ export async function generateStoryImage({ selectedLines, songTitle, artistNames
   canvas.height = H
   const ctx = canvas.getContext('2d')
 
-  await paintBackground(ctx, W, H, template, coverImageUrl)
+  await paintBackground(ctx, W, H, template)
   paintTitleArea(ctx, W, H, template, songTitle, artistNames)
 
   // Lyrics lines
@@ -255,7 +228,11 @@ export async function generateStoryImage({ selectedLines, songTitle, artistNames
   for (const item of drawItems) {
     totalLyricsHeight += item.break ? breakGap : lineHeight
   }
-  const lyricsStartY = (H / 2) - (totalLyricsHeight / 2) + 60
+  // Center the entire block (lyrics + divider + watermark) in the zone below the title area
+  const titleAreaBottom = 500
+  const watermarkHeight = 140 // gap-to-divider(40) + divider-to-brand(55) + brand-to-tagline(45)
+  const totalBlockHeight = totalLyricsHeight + watermarkHeight
+  const lyricsStartY = Math.max(titleAreaBottom, (titleAreaBottom + H) / 2 - totalBlockHeight / 2)
 
   let cursorY = lyricsStartY
   for (const item of drawItems) {
@@ -297,15 +274,14 @@ export async function generateStoryImage({ selectedLines, songTitle, artistNames
   ctx.globalAlpha = 1
 
   // Watermark
-  const brandAlpha = template.brandingOpacity ?? 1
   ctx.font = `bold 34px ${fontSystem}`
-  ctx.fillStyle = template.brandColor || template.accent
-  ctx.globalAlpha = brandAlpha
+  ctx.fillStyle = template.accent
+  ctx.globalAlpha = 1
   ctx.textAlign = 'center'
   ctx.fillText('DJYoungster', W / 2, dividerY + 55)
   ctx.font = `28px ${fontSystem}`
   ctx.fillStyle = template.textColor
-  ctx.globalAlpha = 0.5 * brandAlpha
+  ctx.globalAlpha = 0.5
   ctx.fillText('Created at djyoungster.com', W / 2, dividerY + 100)
   ctx.globalAlpha = 1
 
@@ -316,7 +292,7 @@ export async function generateStoryImage({ selectedLines, songTitle, artistNames
 
 // ── Story Template Thumbnail Generator ────────────────────────────────────────
 
-export async function generateStoryThumbnail(template, sampleLines, coverImageUrl) {
+export async function generateStoryThumbnail(template, sampleLines) {
   const W = 270
   const H = 480
   const canvas = document.createElement('canvas')
@@ -328,7 +304,7 @@ export async function generateStoryThumbnail(template, sampleLines, coverImageUr
     await ensureGoogleFont(template.fontGoogle)
   }
 
-  await paintBackground(ctx, W, H, template, coverImageUrl)
+  await paintBackground(ctx, W, H, template)
 
   // Sample text
   const scale = W / 1080
@@ -358,11 +334,6 @@ export async function generateStoryThumbnail(template, sampleLines, coverImageUr
     ctx.shadowOffsetY = 2
   }
 
-  if (template.neonGlow) {
-    ctx.shadowColor = template.accent
-    ctx.shadowBlur = 12
-  }
-
   let curY = (H / 2) - (totalH / 2)
   for (let i = 0; i < wrappedBlocks.length; i++) {
     wrappedBlocks[i].forEach((wLine, wi) => {
@@ -378,7 +349,7 @@ export async function generateStoryThumbnail(template, sampleLines, coverImageUr
 
 // ── StoryTemplatePickerModal Component ───────────────────────────────────────
 
-export function StoryTemplatePickerModal({ isOpen, onClose, onSelect, sampleLines, coverImageUrl }) {
+export function StoryTemplatePickerModal({ isOpen, onClose, onSelect, sampleLines }) {
   const [thumbnails, setThumbnails] = useState({})
   const [selectedId, setSelectedId] = useState(STORY_TEMPLATES[0].id)
   const [loading, setLoading] = useState(true)
@@ -392,7 +363,7 @@ export function StoryTemplatePickerModal({ isOpen, onClose, onSelect, sampleLine
 
     Promise.all(
       STORY_TEMPLATES.map(async (tmpl) => {
-        const url = await generateStoryThumbnail(tmpl, lines, tmpl.skipCoverImage ? null : coverImageUrl)
+        const url = await generateStoryThumbnail(tmpl, lines)
         return [tmpl.id, url]
       })
     ).then((results) => {
@@ -401,7 +372,7 @@ export function StoryTemplatePickerModal({ isOpen, onClose, onSelect, sampleLine
       setThumbnails(map)
       setLoading(false)
     }).catch(() => setLoading(false))
-  }, [isOpen, sampleLines, coverImageUrl])
+  }, [isOpen, sampleLines])
 
   if (!isOpen) return null
 
@@ -645,7 +616,6 @@ export function useStoryMode({ initialSong }) {
         selectedLines: selectedLines.map(l => l.text),
         songTitle: initialSong.title,
         artistNames: initialSong.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist',
-        coverImageUrl: initialSong.coverImage || null,
         template: tmpl
       })
       setStoryImageBlob(blob)
@@ -666,7 +636,6 @@ export function useStoryMode({ initialSong }) {
         selectedLines: selectedLines.map(l => l.text),
         songTitle: initialSong.title,
         artistNames: initialSong.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist',
-        coverImageUrl: initialSong.coverImage || null,
         template
       })
       setStoryImageBlob(blob)

@@ -1804,7 +1804,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         onClose={() => setShowStoryTemplatePicker(false)}
         onSelect={handleCreateStory}
         sampleLines={selectedLines.map(l => l.text)}
-        coverImageUrl={song.coverImage || null}
       />
       <StoryPreviewModal
         isOpen={showStoryPreview}
@@ -1820,7 +1819,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         onClose={() => setShowTemplatePicker(false)}
         onSelect={handleCreateClip}
         sampleLines={clipSelectedLines.map(l => l.text)}
-        coverImageUrl={song.coverImage || null}
       />
       <ClipPreviewModal
         isOpen={showClipPreview}
