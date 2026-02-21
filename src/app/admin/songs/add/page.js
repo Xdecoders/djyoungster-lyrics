@@ -11,6 +11,9 @@ import useNavigationGuard from '@/hooks/useNavigationGuard'
 import UnsavedChangesModal from '@/components/admin/UnsavedChangesModal'
 import DraftRestorationBanner from '@/components/admin/DraftRestorationBanner'
 import DraftSavedIndicator from '@/components/admin/DraftSavedIndicator'
+import useSpellCheck from '@/hooks/useSpellCheck'
+import SpellCheckPanel from '@/components/admin/SpellCheckPanel'
+import TransliterateTextarea from '@/components/admin/TransliterateTextarea'
 
 function stripHtmlTags(html) {
   return html?.replace(/<[^>]*>/g, '') || ''
@@ -70,6 +73,12 @@ export default function AddSong() {
   // Lyrics tab state
   const [activeLyricsTab, setActiveLyricsTab] = useState('main')
   const [translating, setTranslating] = useState(false)
+
+  // Spell check
+  const {
+    spellSuggestions, spellChecking, spellCheckDone, spellError,
+    handleSpellCheck, handleApplySuggestion, dismissSuggestion, clearSpellCheck
+  } = useSpellCheck(formData, setFormData)
 
   // Artist search states
   const [artistSearch, setArtistSearch] = useState('')
@@ -980,7 +989,7 @@ export default function AddSong() {
                     <button
                       key={tab.id}
                       type="button"
-                      onClick={() => setActiveLyricsTab(tab.id)}
+                      onClick={() => { setActiveLyricsTab(tab.id); clearSpellCheck() }}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                         activeLyricsTab === tab.id
                           ? 'bg-primary text-white'
@@ -990,11 +999,35 @@ export default function AddSong() {
                       {tab.label} {tab.required && '*'}
                     </button>
                   ))}
+                  {(activeLyricsTab === 'hindi' || activeLyricsTab === 'punjabi') && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const lang = activeLyricsTab === 'hindi' ? 'hindi' : 'punjabi'
+                        const field = activeLyricsTab === 'hindi' ? 'lyricsHindi' : 'lyricsPunjabi'
+                        handleSpellCheck(field, lang)
+                      }}
+                      disabled={spellChecking}
+                      className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition bg-amber-100 text-amber-700 hover:bg-amber-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {spellChecking ? (
+                        <>
+                          <span className="w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full animate-spin"></span>
+                          Checking...
+                        </>
+                      ) : (
+                        <>
+                          <FiSearch className="w-4 h-4" />
+                          Spell Check
+                        </>
+                      )}
+                    </button>
+                  )}
                   <button
                     type="button"
                     onClick={handleAutoTranslate}
                     disabled={translating || !stripHtmlTags(formData.lyrics).trim()}
-                    className="ml-auto px-4 py-2 rounded-lg text-sm font-medium transition bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    className={`${activeLyricsTab !== 'hindi' && activeLyricsTab !== 'punjabi' ? 'ml-auto ' : ''}px-4 py-2 rounded-lg text-sm font-medium transition bg-violet-100 text-violet-700 hover:bg-violet-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
                   >
                     {translating ? (
                       <>
@@ -1013,14 +1046,26 @@ export default function AddSong() {
                 {/* Active Lyrics Editor */}
                 {lyricsTabs.map(tab => (
                   <div key={tab.id} className={activeLyricsTab === tab.id ? 'block' : 'hidden'}>
-                    <textarea
+                    <TransliterateTextarea
                       value={formData[tab.field]}
-                      onChange={(e) => setFormData(prev => ({ ...prev, [tab.field]: e.target.value }))}
+                      onChange={(newValue) => setFormData(prev => ({ ...prev, [tab.field]: newValue }))}
+                      lang={tab.id === 'punjabi' ? 'pa' : tab.id === 'hindi' ? 'hi' : null}
                       placeholder={`Paste ${tab.label.toLowerCase()} here...`}
                       rows={15}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-mono text-sm resize-y whitespace-pre-wrap"
                     />
                     {errors.lyrics && tab.id === 'main' && <p className="text-red-500 text-sm mt-1">{errors.lyrics}</p>}
+                    {(tab.id === 'hindi' || tab.id === 'punjabi') && activeLyricsTab === tab.id && (
+                      <SpellCheckPanel
+                        suggestions={spellSuggestions}
+                        checking={spellChecking}
+                        done={spellCheckDone}
+                        error={spellError}
+                        onApply={handleApplySuggestion}
+                        onDismiss={dismissSuggestion}
+                        onClear={clearSpellCheck}
+                      />
+                    )}
                   </div>
                 ))}
               </div>
