@@ -193,39 +193,37 @@ export default function HomeContent({ data, siteSettings }) {
               </Link>
             </div>
             <Carousel>
-              <div className="flex gap-3 w-max">
+              <div className="flex gap-4 w-max">
                 {data.artists.map((artist, index) => {
-                  const gradients = [
-                    'from-rose-500 to-pink-600',
-                    'from-emerald-500 to-teal-600',
-                    'from-blue-500 to-indigo-600',
-                    'from-violet-500 to-purple-600',
-                    'from-amber-500 to-orange-600',
-                    'from-cyan-500 to-sky-600',
-                    'from-fuchsia-500 to-pink-600',
-                    'from-lime-500 to-green-600',
-                    'from-red-500 to-rose-600',
-                    'from-teal-500 to-emerald-600',
+                  const colors = [
+                    { icon: 'bg-rose-400', bar: 'bg-rose-400', text: 'text-rose-900' },
+                    { icon: 'bg-emerald-400', bar: 'bg-emerald-400', text: 'text-emerald-900' },
+                    { icon: 'bg-blue-400', bar: 'bg-blue-400', text: 'text-blue-900' },
+                    { icon: 'bg-purple-400', bar: 'bg-purple-400', text: 'text-purple-900' },
+                    { icon: 'bg-orange-400', bar: 'bg-orange-400', text: 'text-orange-900' },
+                    { icon: 'bg-cyan-400', bar: 'bg-cyan-400', text: 'text-cyan-900' },
                   ]
+                  const c = colors[index % colors.length]
+                  const initials = artist.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+                  const songCount = artist._count?.songs || 0
                   return (
-                    <Link
-                      key={artist.id}
-                      href={`/artist/${artist.slug}`}
-                      className="flex-shrink-0 group"
-                    >
-                      <div className="flex items-center gap-3 pl-1.5 pr-5 py-1.5 rounded-full bg-[#e8ecef] dark:bg-slate-800 shadow-[3px_3px_8px_#d1d5d8,-3px_-3px_8px_#ffffff] dark:shadow-[3px_3px_8px_#0f172a,-3px_-3px_8px_#1e293b] hover:shadow-[inset_2px_2px_5px_#d1d5d8,inset_-2px_-2px_5px_#ffffff] dark:hover:shadow-[inset_2px_2px_5px_#0f172a,inset_-2px_-2px_5px_#1e293b] transition-all duration-300">
-                        <div className={`w-14 h-14 rounded-full overflow-hidden relative shrink-0 bg-gradient-to-br ${gradients[index % gradients.length]}`}>
-                          {artist.imageUrl ? (
-                            <Image src={artist.imageUrl} alt={artist.name} fill sizes="56px" className="object-cover" />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <FiUser className="w-6 h-6 text-white/80" />
-                            </div>
-                          )}
+                    <Link key={artist.id} href={`/artist/${artist.slug}`} className="flex-shrink-0 w-32 group">
+                      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
+                        <div className="flex items-center justify-center pt-5 pb-2">
+                          <div className={`${c.icon} w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm`}>
+                            <span className={`text-xl font-bold ${c.text}`}>{initials}</span>
+                          </div>
                         </div>
-                        <div className="pr-1">
-                          <h3 className="font-semibold text-slate-800 dark:text-white text-sm whitespace-nowrap group-hover:text-primary transition">{artist.name}</h3>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">{artist._count?.songs || 0} songs</p>
+                        <div className="px-2.5 pb-1.5 text-center">
+                          <h3 className="font-semibold text-slate-800 dark:text-white text-sm truncate">{artist.name}</h3>
+                          <p className="text-xs text-slate-400 dark:text-slate-500">{songCount} songs</p>
+                          <div className="mt-1.5 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+                            <div className={`h-full ${c.bar} rounded-full`} style={{ width: `${Math.min(songCount * 10, 100)}%` }} />
+                          </div>
+                        </div>
+                        <div className="px-2.5 py-2 mt-1 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center gap-1.5">
+                          <FiMusic className="w-3 h-3 text-slate-400" />
+                          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Lyrics</span>
                         </div>
                       </div>
                     </Link>
