@@ -404,6 +404,26 @@ model MovieRating {
   @@index([movieId])
 }
 
+model SongRequest {
+  id              String   @id @default(uuid())
+  songName        String
+  artistName      String
+  lyrics          String?  @db.Text
+  youtubeUrl      String?
+  spotifyUrl      String?
+  email           String
+  newsletterOptIn Boolean  @default(false)
+  ipAddress       String?
+  status          String   @default("pending") // pending, reviewed, completed, rejected
+  adminNotes      String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
+}
+
 model Annotation {
   id        String   @id @default(uuid())
   songId    String

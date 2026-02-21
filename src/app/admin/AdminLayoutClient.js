@@ -20,7 +20,8 @@ import {
   FiFileText,
   FiDatabase,
   FiDownload,
-  FiDownloadCloud
+  FiDownloadCloud,
+  FiInbox
 } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 
@@ -30,6 +31,7 @@ export default function AdminLayoutClient({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [pendingReports, setPendingReports] = useState(0)
   const [activeSubscribers, setActiveSubscribers] = useState(0)
+  const [pendingSongRequests, setPendingSongRequests] = useState(0)
 
   // Check if on login page
   const isLoginPage = pathname === '/admin/login'
@@ -43,6 +45,7 @@ export default function AdminLayoutClient({ children }) {
     if (token && !isLoginPage) {
       fetchPendingReports()
       fetchSubscriberCount()
+      fetchPendingSongRequests()
     }
   }, [pathname, isLoginPage])
 
@@ -55,6 +58,18 @@ export default function AdminLayoutClient({ children }) {
       }
     } catch (error) {
       console.error('Error fetching pending reports:', error)
+    }
+  }
+
+  const fetchPendingSongRequests = async () => {
+    try {
+      const res = await fetch('/api/admin/song-requests?status=pending&limit=1')
+      if (res.ok) {
+        const data = await res.json()
+        setPendingSongRequests(data.counts?.pending || 0)
+      }
+    } catch (error) {
+      console.error('Error fetching pending song requests:', error)
     }
   }
 
@@ -87,6 +102,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/movies', label: 'Movies', icon: FiFilm },
 { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail, badgeType: 'subscriber' },
     { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badgeType: 'reports' },
+    { href: '/admin/song-requests', label: 'Song Requests', icon: FiInbox, badgeType: 'songRequests' },
     { href: '/admin/seo-settings', label: 'SEO Settings', icon: FiSearch },
     { href: '/admin/pages', label: 'Pages', icon: FiFileText },
     { href: '/admin/cache', label: 'Cache', icon: FiDatabase },
@@ -94,8 +110,8 @@ export default function AdminLayoutClient({ children }) {
   ]
 
   const isActive = (path) => {
-    // Exact match for scrape to avoid conflict with /admin/songs
-    if (path === '/admin/songs' && pathname.startsWith('/admin/songs/scrape')) return false
+    // Exact match for scrape and song-requests to avoid conflict with /admin/songs
+    if (path === '/admin/songs' && (pathname.startsWith('/admin/songs/scrape') || pathname.startsWith('/admin/song-requests'))) return false
     return pathname.startsWith(path)
   }
 
@@ -145,9 +161,10 @@ export default function AdminLayoutClient({ children }) {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
-              const badgeCount = item.badgeType === 'reports' ? pendingReports : item.badgeType === 'subscriber' ? activeSubscribers : 0
+              const badgeCount = item.badgeType === 'reports' ? pendingReports : item.badgeType === 'subscriber' ? activeSubscribers : item.badgeType === 'songRequests' ? pendingSongRequests : 0
               const hasBadge = badgeCount > 0
               const isReportsBadge = item.badgeType === 'reports' && hasBadge
+              const isSongRequestsBadge = item.badgeType === 'songRequests' && hasBadge
               return (
                 <Link
                   key={item.href}
@@ -155,15 +172,15 @@ export default function AdminLayoutClient({ children }) {
                   onClick={() => setSidebarOpen(false)}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                     isActive(item.href)
-                      ? isReportsBadge ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-primary'
-                      : isReportsBadge ? 'text-red-600 hover:bg-red-50' : 'text-slate-600 hover:bg-slate-50'
+                      ? isReportsBadge ? 'bg-red-50 text-red-600' : isSongRequestsBadge ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-primary'
+                      : isReportsBadge ? 'text-red-600 hover:bg-red-50' : isSongRequestsBadge ? 'text-amber-600 hover:bg-amber-50' : 'text-slate-600 hover:bg-slate-50'
                   }`}
                 >
                   <item.icon className="w-5 h-5" />
                   <span className="font-medium">{item.label}</span>
                   {hasBadge && (
                     <span className={`ml-auto text-white text-xs font-bold px-2 py-0.5 rounded-full min-w-[20px] text-center ${
-                      item.badgeType === 'reports' ? 'bg-red-500' : 'bg-emerald-500'
+                      item.badgeType === 'reports' ? 'bg-red-500' : item.badgeType === 'songRequests' ? 'bg-amber-500' : 'bg-emerald-500'
                     }`}>
                       {badgeCount > 99 ? '99+' : badgeCount}
                     </span>
