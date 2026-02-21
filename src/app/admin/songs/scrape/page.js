@@ -393,7 +393,7 @@ export default function ScrapeSong() {
       const res = await fetch('/api/admin/translate-lyrics', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ lyrics: formData.lyrics, title: formData.title })
+        body: JSON.stringify({ lyrics: formData.lyrics, title: formData.title, artist: selectedArtists.map(a => a.name).join(', ') })
       })
       if (!res.ok) {
         const err = await res.json()

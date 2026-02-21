@@ -14,7 +14,7 @@ export async function POST(request) {
       apiKey: process.env.OPENAI_API_KEY
     })
 
-    const { lyrics, title } = await request.json()
+    const { lyrics, title, artist } = await request.json()
 
     if (!lyrics || !lyrics.trim()) {
       return NextResponse.json(
@@ -24,6 +24,7 @@ export async function POST(request) {
     }
 
     const songTitle = title ? `"${title}"` : 'this song'
+    const artistName = artist || ''
 
     const completion = await client.chat.completions.create({
       model: 'gpt-4o',
@@ -50,7 +51,7 @@ Return ONLY a JSON object with these 7 fields:
 - "lyricsHindi": The SAME original lyrics written in Devanagari script (transliteration, NOT translation). IMPORTANT: Use correct Hindi matras, nuktas, and spelling — e.g. proper use of ि vs ी, ु vs ू, ं vs ँ, and conjuncts. Do not produce sloppy or approximate Devanagari — each word must be spelled accurately.
 - "lyricsPunjabi": The SAME original lyrics written in Gurmukhi script (transliteration, NOT translation). IMPORTANT: Use correct Gurmukhi matras, tippis, bindis, and adhak — e.g. proper use of ਿ vs ੀ, ੁ vs ੂ, ੰ vs ਂ, and ੱ for gemination. Each word must be spelled accurately in Gurmukhi.
 - "meaning": A detailed explanation of the song ${songTitle}'s meaning in 300-400 words in English. Include the song name and reference key hook lines or phrases from the lyrics. Cover the themes, emotions, story, and cultural context. Write it as flowing paragraphs, not bullet points.
-- "metaTitle": An SEO-optimized page title under 60 characters. Format: "${title || '[Song Name]'} Lyrics, Meaning & Translation - DjYoungster". Keep it concise, include the song name first.
+- "metaTitle": An SEO-optimized page title. EXACT format: "${title || '[Song Name]'} Lyrics - ${artistName || '[Artist Name]'} [Meaning & Translation] - DjYoungster". Use the exact song name and artist name provided, do not abbreviate or change them.
 - "metaDescription": An SEO-optimized meta description between 150-160 characters. Include the song name, a catchy hook line or key phrase quoted from the lyrics, and mention lyrics/meaning/translation. End with "- DjYoungster".
 
 IMPORTANT: For lyricsHindi, lyricsPunjabi, and lyricsRomanized — you are doing SCRIPT CONVERSION only. The words and meaning must remain the same as the original, just written in a different script. However, you MUST fix and improve the spelling in each script — do not copy mistakes from the input. Only lyricsTranslated should be an actual language translation (into English).
