@@ -438,25 +438,44 @@ function SongCard({ song, index, priority = false }) {
 
 // Artist Card Component
 function ArtistCard({ artist, index }) {
-  const pastelBgs = [
-    'bg-gradient-to-br from-pink-100 to-rose-200 dark:from-pink-900/40 dark:to-rose-900/40',
-    'bg-gradient-to-br from-emerald-100 to-teal-200 dark:from-emerald-900/40 dark:to-teal-900/40',
-    'bg-gradient-to-br from-cyan-100 to-blue-200 dark:from-cyan-900/40 dark:to-blue-900/40',
-    'bg-gradient-to-br from-emerald-100 to-green-200 dark:from-emerald-900/40 dark:to-green-900/40',
-    'bg-gradient-to-br from-amber-100 to-orange-200 dark:from-amber-900/40 dark:to-orange-900/40',
+  const colors = [
+    { bg: 'bg-rose-300', icon: 'bg-rose-400', bar: 'bg-rose-400', badge: 'bg-amber-400 text-white', text: 'text-rose-900' },
+    { bg: 'bg-emerald-300', icon: 'bg-emerald-400', bar: 'bg-emerald-400', badge: 'bg-slate-300 text-slate-700', text: 'text-emerald-900' },
+    { bg: 'bg-blue-300', icon: 'bg-blue-400', bar: 'bg-blue-400', badge: 'bg-amber-600 text-white', text: 'text-blue-900' },
+    { bg: 'bg-purple-300', icon: 'bg-purple-400', bar: 'bg-purple-400', badge: 'bg-slate-400 text-white', text: 'text-purple-900' },
+    { bg: 'bg-orange-300', icon: 'bg-orange-400', bar: 'bg-orange-400', badge: 'bg-slate-300 text-slate-700', text: 'text-orange-900' },
+    { bg: 'bg-cyan-300', icon: 'bg-cyan-400', bar: 'bg-cyan-400', badge: 'bg-slate-400 text-white', text: 'text-cyan-900' },
   ]
+  const c = colors[index % colors.length]
+  const initials = artist.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+  const songCount = artist._count?.songs || 0
 
   return (
-    <Link href={`/artist/${artist.slug}`} className="flex-shrink-0 w-36 group text-center">
-      <div className={`w-28 h-28 mx-auto rounded-full ${pastelBgs[index % pastelBgs.length]} flex items-center justify-center mb-3 overflow-hidden shadow-sm group-hover:shadow-md transition-all duration-300 group-hover:scale-105 relative`}>
-        {artist.imageUrl ? (
-          <Image src={artist.imageUrl} alt={artist.name} fill sizes="112px" className="object-cover" />
-        ) : (
-          <FiUser className="w-10 h-10 text-slate-400" />
-        )}
+    <Link href={`/artist/${artist.slug}`} className="flex-shrink-0 w-40 group">
+      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
+        {/* Icon area */}
+        <div className={`${c.bg} dark:opacity-80 mx-3 mt-3 rounded-xl h-28 flex items-center justify-center relative`}>
+          <div className={`${c.icon} w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm`}>
+            <span className={`text-xl font-bold ${c.text}`}>{initials}</span>
+          </div>
+          <span className={`absolute bottom-1.5 right-1.5 ${c.badge} text-[10px] font-bold w-5 h-5 rounded-md flex items-center justify-center shadow-sm`}>
+            {index + 1}
+          </span>
+        </div>
+        {/* Info */}
+        <div className="px-3 pt-2.5 pb-1.5 text-center">
+          <h3 className="font-semibold text-slate-800 dark:text-white text-sm truncate">{artist.name}</h3>
+          <p className="text-xs text-slate-400 dark:text-slate-500">{songCount} songs</p>
+          <div className="mt-1.5 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className={`h-full ${c.bar} rounded-full`} style={{ width: `${Math.min(songCount * 10, 100)}%` }} />
+          </div>
+        </div>
+        {/* Footer */}
+        <div className="px-3 py-2 mt-1 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center gap-1.5">
+          <FiMusic className="w-3 h-3 text-slate-400" />
+          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Lyrics</span>
+        </div>
       </div>
-      <h3 className="font-medium text-slate-800 dark:text-white text-sm truncate">{artist.name}</h3>
-      <p className="text-xs text-slate-500 dark:text-slate-400">{artist._count?.songs || 0} songs</p>
     </Link>
   )
 }
