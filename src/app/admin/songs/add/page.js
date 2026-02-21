@@ -824,16 +824,7 @@ export default function AddSong() {
 
       if (res.ok) {
         clearDraft()
-        // Show success message with indexing status
-        let message = 'Song added successfully!'
-        if (data.indexingResult) {
-          if (data.indexingResult.success) {
-            message += '\n\n✅ Submitted to Google Search Console for indexing.'
-          } else {
-            message += '\n\n⚠️ Google Indexing: ' + (data.indexingResult.message || 'Not configured')
-          }
-        }
-        alert(message)
+        alert('Song added successfully!')
         router.push('/admin/songs')
       } else {
         alert(data.message || 'Failed to add song')

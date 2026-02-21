@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
-import { submitUrlForIndexing } from '@/lib/googleIndexing'
 
 // GET all songs
 export async function GET() {
@@ -164,13 +163,7 @@ export async function POST(request) {
       console.log('[Song Create] Revalidation note:', revalidateError.message)
     }
 
-    // Submit to Google Search Console for indexing
-    const siteUrl = process.env.SITE_URL || 'https://djyoungster.com'
-    const songUrl = `${siteUrl}/song/${song.slug}`
-    const indexingResult = await submitUrlForIndexing(songUrl)
-    console.log('Google Indexing Result:', indexingResult)
-
-    return NextResponse.json({ ...song, indexingResult }, { status: 201 })
+    return NextResponse.json(song, { status: 201 })
   } catch (error) {
     console.error('Error creating song:', error)
     return NextResponse.json(
