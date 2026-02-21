@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import Image from 'next/image'
 import {
   FiMail,
@@ -14,7 +13,6 @@ import {
   FiX,
   FiClock,
   FiTrendingUp,
-  FiArrowLeft,
   FiEye,
   FiUserMinus,
   FiMusic,
@@ -315,41 +313,27 @@ export default function NewsletterPage() {
   ).slice(0, 10)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div>
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center gap-3">
-              <Link href="/admin/dashboard" className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition">
-                <FiArrowLeft className="w-5 h-5" />
-              </Link>
-              <div className="flex items-center gap-2">
-                <div className="bg-purple-100 p-2 rounded-lg">
-                  <FiMail className="w-5 h-5 text-purple-600" />
-                </div>
-                <h1 className="text-lg sm:text-xl font-bold text-slate-800">Newsletter</h1>
-              </div>
-            </div>
-            <button
-              onClick={() => {
-                setEditingNewsletter(null)
-                setSubject('')
-                setContent('')
-                setSelectedSong(null)
-                setShowCompose(true)
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition font-medium text-sm"
-            >
-              <FiPlus className="w-4 h-4" />
-              <span className="hidden sm:inline">Compose</span>
-            </button>
-          </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-800">Newsletter</h1>
+          <p className="text-slate-500 text-sm mt-1">Manage and send newsletters to subscribers</p>
         </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <button
+          onClick={() => {
+            setEditingNewsletter(null)
+            setSubject('')
+            setContent('')
+            setSelectedSong(null)
+            setShowCompose(true)
+          }}
+          className="flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-primary to-emerald-600 text-white rounded-xl font-medium hover:shadow-lg transition-all"
+        >
+          <FiPlus className="w-4 h-4" />
+          Compose
+        </button>
+      </div>
         {/* Stats Cards */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
@@ -509,7 +493,6 @@ export default function NewsletterPage() {
             </div>
           )}
         </div>
-      </main>
 
       {/* Compose Modal */}
       {showCompose && (
