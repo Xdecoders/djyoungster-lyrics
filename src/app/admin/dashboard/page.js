@@ -18,7 +18,11 @@ import {
   FiAlertCircle,
   FiEdit2,
   FiClock,
-  FiTag
+  FiTag,
+  FiDownload,
+  FiBell,
+  FiEye,
+  FiUsers as FiUsersIcon
 } from 'react-icons/fi'
 
 export default function AdminDashboard() {
@@ -27,7 +31,11 @@ export default function AdminDashboard() {
     totalSongs: 0,
     totalArtists: 0,
     totalAlbums: 0,
-    totalGenres: 0
+    totalGenres: 0,
+    pwaInstalls: 0,
+    pushSubscribers: 0,
+    totalVisits: 0,
+    uniqueVisitors: 0
   })
   const [reports, setReports] = useState([])
   const [pendingReports, setPendingReports] = useState(0)
@@ -112,7 +120,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-6 sm:mb-8">
           <StatCard
             title="Total Songs"
             value={stats.totalSongs}
@@ -147,6 +155,42 @@ export default function AdminDashboard() {
             bgColor="bg-amber-50"
             iconBgColor="bg-amber-100"
             iconColor="text-amber-600"
+            loading={loading}
+          />
+          <StatCard
+            title="PWA Installs"
+            value={stats.pwaInstalls}
+            Icon={FiDownload}
+            bgColor="bg-purple-50"
+            iconBgColor="bg-purple-100"
+            iconColor="text-purple-600"
+            loading={loading}
+          />
+          <StatCard
+            title="Push Subscribers"
+            value={stats.pushSubscribers}
+            Icon={FiBell}
+            bgColor="bg-indigo-50"
+            iconBgColor="bg-indigo-100"
+            iconColor="text-indigo-600"
+            loading={loading}
+          />
+          <StatCard
+            title="Total Visits"
+            value={stats.totalVisits}
+            Icon={FiEye}
+            bgColor="bg-cyan-50"
+            iconBgColor="bg-cyan-100"
+            iconColor="text-cyan-600"
+            loading={loading}
+          />
+          <StatCard
+            title="Unique Visitors"
+            value={stats.uniqueVisitors}
+            Icon={FiUsersIcon}
+            bgColor="bg-rose-50"
+            iconBgColor="bg-rose-100"
+            iconColor="text-rose-600"
             loading={loading}
           />
         </div>

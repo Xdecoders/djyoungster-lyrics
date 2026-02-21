@@ -2,6 +2,9 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
+import InstallPrompt from '@/components/InstallPrompt'
+import PushNotificationManager from '@/components/PushNotificationManager'
+import VisitorTracker from '@/components/VisitorTracker'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { getSiteSettings } from '@/lib/seo'
 
@@ -50,6 +53,8 @@ export default async function RootLayout({ children }) {
       <head>
         <link rel="icon" href={faviconUrl} />
         <link rel="apple-touch-icon" href={faviconUrl} />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#10b981" />
       </head>
       <body className="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors">
         <GoogleAnalytics />
@@ -57,6 +62,9 @@ export default async function RootLayout({ children }) {
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <InstallPrompt />
+          <PushNotificationManager />
+          <VisitorTracker />
         </ThemeProvider>
       </body>
     </html>

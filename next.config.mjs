@@ -41,6 +41,14 @@ const nextConfig = {
     ]
 
     return [
+      // Service worker - no cache, allow root scope
+      {
+        source: '/sw.js',
+        headers: [
+          { key: 'Cache-Control', value: 'no-cache, no-store, must-revalidate' },
+          { key: 'Service-Worker-Allowed', value: '/' },
+        ],
+      },
       // Global security headers
       {
         source: '/(.*)',

@@ -21,7 +21,8 @@ import {
   FiDatabase,
   FiDownload,
   FiDownloadCloud,
-  FiInbox
+  FiInbox,
+  FiBell
 } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 
@@ -32,6 +33,7 @@ export default function AdminLayoutClient({ children }) {
   const [pendingReports, setPendingReports] = useState(0)
   const [activeSubscribers, setActiveSubscribers] = useState(0)
   const [pendingSongRequests, setPendingSongRequests] = useState(0)
+  const [pushSubscribers, setPushSubscribers] = useState(0)
 
   // Check if on login page
   const isLoginPage = pathname === '/admin/login'
@@ -46,6 +48,7 @@ export default function AdminLayoutClient({ children }) {
       fetchPendingReports()
       fetchSubscriberCount()
       fetchPendingSongRequests()
+      fetchPushSubscribers()
     }
   }, [pathname, isLoginPage])
 
@@ -70,6 +73,18 @@ export default function AdminLayoutClient({ children }) {
       }
     } catch (error) {
       console.error('Error fetching pending song requests:', error)
+    }
+  }
+
+  const fetchPushSubscribers = async () => {
+    try {
+      const res = await fetch('/api/admin/push-notifications')
+      if (res.ok) {
+        const data = await res.json()
+        setPushSubscribers(data.activeSubscribers || 0)
+      }
+    } catch (error) {
+      console.error('Error fetching push subscribers:', error)
     }
   }
 
@@ -101,6 +116,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/categories', label: 'Categories', icon: FiGrid },
     { href: '/admin/movies', label: 'Movies', icon: FiFilm },
 { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail, badgeType: 'subscriber' },
+    { href: '/admin/push-notifications', label: 'Push Notifications', icon: FiBell, badgeType: 'push' },
     { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badgeType: 'reports' },
     { href: '/admin/song-requests', label: 'Song Requests', icon: FiInbox, badgeType: 'songRequests' },
     { href: '/admin/seo-settings', label: 'SEO Settings', icon: FiSearch },
@@ -161,7 +177,7 @@ export default function AdminLayoutClient({ children }) {
           {/* Navigation */}
           <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
-              const badgeCount = item.badgeType === 'reports' ? pendingReports : item.badgeType === 'subscriber' ? activeSubscribers : item.badgeType === 'songRequests' ? pendingSongRequests : 0
+              const badgeCount = item.badgeType === 'reports' ? pendingReports : item.badgeType === 'subscriber' ? activeSubscribers : item.badgeType === 'songRequests' ? pendingSongRequests : item.badgeType === 'push' ? pushSubscribers : 0
               const hasBadge = badgeCount > 0
               const isReportsBadge = item.badgeType === 'reports' && hasBadge
               const isSongRequestsBadge = item.badgeType === 'songRequests' && hasBadge
