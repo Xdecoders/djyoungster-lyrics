@@ -151,6 +151,31 @@ function filterGaana(urls) {
 }
 
 /**
+ * Filter URLs for bharatlyrics.com
+ * Keep: URLs ending in -lyrics/ pattern (song pages)
+ * Exclude: /singer/, /category/, /tag/, /page/, /releases/, language index pages
+ */
+function filterBharatLyrics(urls) {
+  return urls.filter(url => {
+    try {
+      const path = new URL(url).pathname
+      if (!path || path === '/') return false
+      // Must end with -lyrics/ or -lyrics
+      if (!/-lyrics\/?$/.test(path)) return false
+      // Exclude taxonomy/archive pages
+      const excludePrefixes = ['singer', 'category', 'tag', 'page', 'author', 'releases', 'wp-content', 'wp-admin', 'wp-json', 'lyricist', 'composer', 'music-director', 'mood', 'language']
+      const segments = path.split('/').filter(Boolean)
+      if (segments.length === 0) return false
+      if (excludePrefixes.includes(segments[0])) return false
+      if (path.includes('/page/')) return false
+      return true
+    } catch {
+      return false
+    }
+  })
+}
+
+/**
  * Main entry: discover all song URLs from a supported site
  */
 export async function discoverSongUrls(site) {
@@ -172,6 +197,10 @@ export async function discoverSongUrls(site) {
     ],
     'gaana.com': [
       'https://gaana.com/sitemap_v1/index.xml'
+    ],
+    'bharatlyrics.com': [
+      'https://bharatlyrics.com/sitemap_index.xml',
+      'https://bharatlyrics.com/post-sitemap.xml'
     ]
   }
 
@@ -179,7 +208,8 @@ export async function discoverSongUrls(site) {
     'lyricsmint.com': filterLyricsMint,
     'lyricsraag.com': filterLyricsRaag,
     'tamil2lyrics.com': filterTamil2Lyrics,
-    'gaana.com': filterGaana
+    'gaana.com': filterGaana,
+    'bharatlyrics.com': filterBharatLyrics
   }
 
   const urls = sitemapUrls[site]
