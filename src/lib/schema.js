@@ -242,7 +242,7 @@ export function generateSongSchema(song, artistNames) {
 /**
  * Generate MusicGroup/Person schema for artist pages
  */
-export function generateArtistSchema(artist) {
+export function generateArtistSchema(artist, featuredSongs = []) {
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'MusicGroup',
@@ -264,6 +264,22 @@ export function generateArtistSchema(artist) {
       name: album.title,
       url: album.slug ? `${SITE_URL}/album/${album.slug}` : undefined
     }))
+  }
+
+  // Add featured tracks
+  if (featuredSongs.length > 0) {
+    schema.track = featuredSongs.map(song => {
+      const track = {
+        '@type': 'MusicRecording',
+        name: song.title,
+        url: `${SITE_URL}/song/${song.slug}`,
+      }
+      if (song.duration) track.duration = song.duration
+      if (song.datePublished) {
+        track.datePublished = new Date(song.datePublished).toISOString().split('T')[0]
+      }
+      return track
+    })
   }
 
   // Add genres if available

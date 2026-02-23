@@ -219,6 +219,8 @@ async function getArtistData(slug, searchParams) {
         slug: true,
         coverImage: true,
         views: true,
+        duration: true,
+        datePublished: true,
         artists: {
           select: {
             artist: { select: { id: true, name: true, slug: true } }
@@ -299,7 +301,7 @@ export default async function ArtistPage({ params, searchParams }) {
   const { artist, featuredSongs, movies } = data
 
   // Generate structured data
-  const artistSchema = generateArtistSchema(artist)
+  const artistSchema = generateArtistSchema(artist, featuredSongs)
 
   // Generate breadcrumb
   const breadcrumbs = [
