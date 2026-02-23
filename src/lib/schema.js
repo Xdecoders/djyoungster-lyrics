@@ -317,19 +317,14 @@ export function generateMovieSchema(movie, songs = []) {
     schema.image = getAbsoluteUrl(movie.posterUrl)
   }
 
-  // Add soundtrack
+  // Add songs as hasPart (soundtrack is not valid on Movie)
   if (songs.length > 0) {
-    schema.soundtrack = {
-      '@type': 'MusicAlbum',
-      name: `${movie.title} (Original Motion Picture Soundtrack)`,
-      numTracks: songs.length,
-      track: songs.map((song, index) => ({
-        '@type': 'MusicRecording',
-        position: index + 1,
-        name: song.title,
-        url: song.slug ? `${SITE_URL}/song/${song.slug}` : undefined
-      }))
-    }
+    schema.hasPart = songs.map((song, index) => ({
+      '@type': 'MusicRecording',
+      position: index + 1,
+      name: song.title,
+      url: song.slug ? `${SITE_URL}/song/${song.slug}` : undefined
+    }))
   }
 
   return schema
