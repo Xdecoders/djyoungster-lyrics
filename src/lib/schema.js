@@ -213,11 +213,6 @@ export function generateArtistSchema(artist) {
     schema.image = getAbsoluteUrl(artist.imageUrl)
   }
 
-  // Add song count
-  if (artist._count?.songs) {
-    schema.numberOfItems = artist._count.songs
-  }
-
   // Add albums if available
   if (artist.albums?.length > 0) {
     schema.album = artist.albums.map(album => ({
