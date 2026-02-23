@@ -174,9 +174,9 @@ export function generateSongSchema(song, artistNames) {
     schema.genre = song.genres.map(sg => sg.genre.name)
   }
 
-  // Add duration if available (convert to ISO 8601 format)
+  // Add duration inside recordedAs (duration is valid on MusicRecording, not MusicComposition)
   if (song.duration) {
-    schema.duration = song.duration
+    recording.duration = song.duration
   }
 
   // Add image if available
@@ -399,9 +399,8 @@ export function generateMovieSchema(movie, songs = []) {
 
   // Add songs as hasPart (soundtrack is not valid on Movie)
   if (songs.length > 0) {
-    schema.hasPart = songs.map((song, index) => ({
+    schema.hasPart = songs.map(song => ({
       '@type': 'MusicRecording',
-      position: index + 1,
       name: song.title,
       url: song.slug ? `${SITE_URL}/song/${song.slug}` : undefined
     }))
@@ -481,26 +480,6 @@ export function generateFAQSchema(faqs) {
 }
 
 /**
- * Generate AggregateRating schema for homepage
- */
-export function generateAggregateRatingSchema() {
-  return {
-    '@context': 'https://schema.org',
-    '@type': 'WebSite',
-    '@id': `${SITE_URL}/#website`,
-    name: SITE_NAME,
-    url: SITE_URL,
-    aggregateRating: {
-      '@type': 'AggregateRating',
-      ratingValue: '4.8',
-      ratingCount: '15847',
-      bestRating: '5',
-      worstRating: '1'
-    }
-  }
-}
-
-/**
  * Generate CollectionPage schema for category/genre/tag pages
  */
 export function generateCollectionPageSchema(collection, type, songs = []) {
@@ -516,11 +495,6 @@ export function generateCollectionPageSchema(collection, type, songs = []) {
       name: SITE_NAME,
       url: SITE_URL
     }
-  }
-
-  // Add number of items
-  if (collection._count?.songs) {
-    schema.numberOfItems = collection._count.songs
   }
 
   // Add image if available
