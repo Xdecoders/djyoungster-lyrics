@@ -260,9 +260,9 @@ export function generateAlbumSchema(album, songs = []) {
     schema.image = getAbsoluteUrl(album.coverImage)
   }
 
-  // Add record label if available
+  // Add record label as publisher (recordLabel is not valid on MusicAlbum)
   if (album.label) {
-    schema.recordLabel = {
+    schema.publisher = {
       '@type': 'Organization',
       name: album.label
     }
