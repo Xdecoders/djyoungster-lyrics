@@ -13,8 +13,8 @@ export function generateWebSiteSchema() {
     name: SITE_NAME,
     alternateName: 'DJ Youngster Lyrics',
     url: SITE_URL,
-    description: 'DJYoungster is your ultimate destination for song lyrics in Hindi, Punjabi, English, Tamil, Telugu and more languages.',
-    inLanguage: ['en', 'hi', 'pa', 'ta', 'te'],
+    description: 'Multilingual song lyrics platform - Punjabi, Hindi, English lyrics with translations',
+    inLanguage: ['en', 'pa', 'hi'],
     potentialAction: {
       '@type': 'SearchAction',
       target: {
@@ -35,17 +35,23 @@ export function generateOrganizationSchema() {
     '@type': 'Organization',
     name: SITE_NAME,
     url: SITE_URL,
-    logo: `${SITE_URL}/logo.png`,
+    logo: {
+      '@type': 'ImageObject',
+      url: `${SITE_URL}/logo.png`,
+      width: 512,
+      height: 512
+    },
     sameAs: [
-      'https://twitter.com/djyoungster',
-      'https://facebook.com/djyoungster',
-      'https://instagram.com/djyoungster'
+      'https://x.com/djyoungstercom',
+      'https://www.facebook.com/djyoungster',
+      'https://www.instagram.com/djyoungster_com',
+      'https://www.linkedin.com/in/djyoungsterofficial',
+      'https://youtube.com/@Djyoungstercom'
     ],
     contactPoint: {
       '@type': 'ContactPoint',
-      contactType: 'customer service',
-      email: 'djyoungster32@gmail.com',
-      availableLanguage: ['English', 'Hindi']
+      contactType: 'customer support',
+      email: 'contact@djyoungster.com'
     }
   }
 }
