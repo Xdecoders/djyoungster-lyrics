@@ -307,6 +307,9 @@ export function generateArtistSchema(artist, featuredSongs = []) {
  */
 export function generateAlbumSchema(album, songs = []) {
   const artistName = album.artist?.name || 'Various Artists'
+  const releaseDateStr = album.releaseDate
+    ? new Date(album.releaseDate).toISOString().split('T')[0]
+    : undefined
 
   const schema = {
     '@context': 'https://schema.org',
@@ -314,25 +317,26 @@ export function generateAlbumSchema(album, songs = []) {
     '@id': `${SITE_URL}/album/${album.slug}`,
     name: album.title,
     url: `${SITE_URL}/album/${album.slug}`,
-    albumProductionType: 'StudioAlbum',
+    albumProductionType: 'https://schema.org/StudioAlbum',
+    albumReleaseType: 'https://schema.org/AlbumRelease',
+    numTracks: songs.length || album._count?.songs || undefined,
     byArtist: {
       '@type': 'MusicGroup',
       name: artistName,
-      url: album.artist?.slug ? `${SITE_URL}/artist/${album.artist.slug}` : undefined
+      url: album.artist?.slug ? `${SITE_URL}/artist/${album.artist.slug}` : undefined,
+      ...(album.artist?.imageUrl && { image: getAbsoluteUrl(album.artist.imageUrl) })
     }
   }
 
-  // Add release date if available
-  if (album.releaseDate) {
-    schema.datePublished = new Date(album.releaseDate).toISOString().split('T')[0]
+  if (releaseDateStr) {
+    schema.datePublished = releaseDateStr
   }
 
-  // Add image if available
   if (album.coverImage) {
     schema.image = getAbsoluteUrl(album.coverImage)
   }
 
-  // Add record label as publisher (recordLabel is not valid on MusicAlbum)
+  // Add record label as publisher
   if (album.label) {
     schema.publisher = {
       '@type': 'Organization',
@@ -340,19 +344,23 @@ export function generateAlbumSchema(album, songs = []) {
     }
   }
 
-  // Add number of tracks
-  if (album._count?.songs) {
-    schema.numTracks = album._count.songs
-  }
-
-  // Add tracks if available
+  // Add tracks as ItemList
   if (songs.length > 0) {
-    schema.track = songs.map((song, index) => ({
-      '@type': 'MusicRecording',
-      position: index + 1,
-      name: song.title,
-      url: song.slug ? `${SITE_URL}/song/${song.slug}` : undefined
-    }))
+    schema.track = {
+      '@type': 'ItemList',
+      numberOfItems: songs.length,
+      itemListElement: songs.map((song, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'MusicRecording',
+          name: song.title,
+          url: song.slug ? `${SITE_URL}/song/${song.slug}` : undefined,
+          ...(song.duration && { duration: song.duration }),
+          ...(releaseDateStr && { datePublished: releaseDateStr })
+        }
+      }))
+    }
   }
 
   return schema
