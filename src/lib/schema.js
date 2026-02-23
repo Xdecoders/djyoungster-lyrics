@@ -259,11 +259,23 @@ export function generateArtistSchema(artist, featuredSongs = []) {
 
   // Add albums if available
   if (artist.albums?.length > 0) {
-    schema.album = artist.albums.map(album => ({
-      '@type': 'MusicAlbum',
-      name: album.title,
-      url: album.slug ? `${SITE_URL}/album/${album.slug}` : undefined
-    }))
+    schema.album = artist.albums.map(album => {
+      const a = {
+        '@type': 'MusicAlbum',
+        name: album.title,
+        url: album.slug ? `${SITE_URL}/album/${album.slug}` : undefined,
+      }
+      if (album.releaseDate) {
+        a.datePublished = new Date(album.releaseDate).toISOString().split('T')[0]
+      }
+      if (album._count?.songs) {
+        a.numTracks = album._count.songs
+      }
+      if (album.coverImage) {
+        a.image = getAbsoluteUrl(album.coverImage)
+      }
+      return a
+    })
   }
 
   // Add featured tracks

@@ -124,6 +124,7 @@ async function getArtistData(slug, searchParams) {
             slug: true,
             coverImage: true,
             releaseDate: true,
+            _count: { select: { songs: true } },
           },
           orderBy: { releaseDate: 'desc' }
         },
