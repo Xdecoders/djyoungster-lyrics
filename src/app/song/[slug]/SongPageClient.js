@@ -1412,7 +1412,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                       </span>
                     </button>
 
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
+                    <div itemProp="recordedAs" itemScope itemType="https://schema.org/MusicRecording" className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
                       {song.artists?.map(({ artist }) => (
                         <Link
                           key={artist.id}
