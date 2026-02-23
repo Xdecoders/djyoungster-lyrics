@@ -87,7 +87,7 @@ export default function PushNotificationsPage() {
       }
       if (songsRes.ok) {
         const data = await songsRes.json()
-        setSongs(data || [])
+        setSongs((data || []).filter(s => s.status === 'published'))
       }
     } catch (error) {
       console.error('Error fetching push notifications:', error)

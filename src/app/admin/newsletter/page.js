@@ -103,7 +103,7 @@ export default function NewsletterPage() {
 
       if (songsRes.ok) {
         const data = await songsRes.json()
-        setSongs(data || [])
+        setSongs((data || []).filter(s => s.status === 'published'))
       }
     } catch (error) {
       console.error('Error fetching data:', error)
