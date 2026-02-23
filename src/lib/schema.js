@@ -184,18 +184,56 @@ export function generateSongSchema(song, artistNames) {
     schema.image = getAbsoluteUrl(song.coverImage)
   }
 
-  // Add only first verse/chorus in schema (full lyrics in HTML)
+  // Add multilingual lyrics versions
+  const lyricsVersions = []
+  const authorName = song.lyricist || artistNames || 'Unknown'
+
   if (song.lyrics) {
-    const authorName = song.lyricist || artistNames || 'Unknown'
-    schema.lyrics = {
+    lyricsVersions.push({
       '@type': 'CreativeWork',
-      text: getFirstVerseOrChorus(song.lyrics),
+      name: `${song.title} - Original Lyrics`,
       inLanguage: song.language || 'en',
-      author: {
-        '@type': 'Person',
-        name: authorName
-      }
-    }
+      text: getFirstVerseOrChorus(song.lyrics),
+      author: { '@type': 'Person', name: authorName }
+    })
+  }
+  if (song.lyricsRomanized) {
+    lyricsVersions.push({
+      '@type': 'CreativeWork',
+      name: `${song.title} - Romanized Lyrics`,
+      inLanguage: 'en',
+      text: getFirstVerseOrChorus(song.lyricsRomanized)
+    })
+  }
+  if (song.lyricsTranslated) {
+    lyricsVersions.push({
+      '@type': 'CreativeWork',
+      name: `${song.title} - English Translation`,
+      inLanguage: 'en',
+      text: getFirstVerseOrChorus(song.lyricsTranslated)
+    })
+  }
+  if (song.lyricsHindi) {
+    lyricsVersions.push({
+      '@type': 'CreativeWork',
+      name: `${song.title} - Hindi Lyrics`,
+      inLanguage: 'hi',
+      text: getFirstVerseOrChorus(song.lyricsHindi)
+    })
+  }
+  if (song.lyricsPunjabi) {
+    lyricsVersions.push({
+      '@type': 'CreativeWork',
+      name: `${song.title} - Punjabi Lyrics`,
+      inLanguage: 'pa',
+      text: getFirstVerseOrChorus(song.lyricsPunjabi)
+    })
+  }
+
+  if (lyricsVersions.length === 1) {
+    schema.lyrics = lyricsVersions[0]
+  } else if (lyricsVersions.length > 1) {
+    schema.lyrics = lyricsVersions
   }
 
   return schema
