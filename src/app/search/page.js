@@ -22,12 +22,18 @@ export async function generateMetadata({ searchParams }) {
         siteName: 'DJYoungster',
         type: 'website',
         images: [{ url: ogImageUrl, width: 1200, height: 630, alt: 'DJYoungster Search' }],
+        locale: 'en_US',
       },
       twitter: {
         card: 'summary_large_image',
         title: 'Search | DJYoungster',
         description: 'Search for song lyrics, artists, albums, and movies on DJYoungster.',
         images: [ogImageUrl],
+        creator: '@djyoungstercom',
+        site: '@djyoungstercom',
+      },
+      alternates: {
+        canonical: `${siteUrl}/search`,
       },
     }
   }
@@ -53,12 +59,15 @@ export async function generateMetadata({ searchParams }) {
       siteName: 'DJYoungster',
       type: 'website',
       images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Search: ${query}` }],
+      locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
       title: `${query} - Search | DJYoungster`,
       description: `Search results for "${query}" on DJYoungster.`,
       images: [ogImageUrl],
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
     },
     robots: {
       index: false,

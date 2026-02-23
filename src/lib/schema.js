@@ -71,26 +71,34 @@ function getFirstVerseOrChorus(lyrics) {
 }
 
 /**
- * Generate MusicRecording schema for song pages
+ * Generate MusicComposition schema for song pages
  */
 export function generateSongSchema(song, artistNames) {
-  // Use createdAt date if available, fallback to releaseYear, then current date
+  // Use datePublished field if available, fallback to createdAt, then current date
   let datePublished
-  if (song.createdAt) {
+  if (song.datePublished) {
+    datePublished = new Date(song.datePublished).toISOString().split('T')[0]
+  } else if (song.createdAt) {
     datePublished = new Date(song.createdAt).toISOString().split('T')[0]
-  } else if (song.releaseYear) {
-    datePublished = `${song.releaseYear}-01-01`
   } else {
     datePublished = new Date().toISOString().split('T')[0]
   }
 
+  // Use dateModified field, fallback to updatedAt
+  const dateModified = song.dateModified
+    ? new Date(song.dateModified).toISOString().split('T')[0]
+    : song.updatedAt
+      ? new Date(song.updatedAt).toISOString().split('T')[0]
+      : undefined
+
   const schema = {
     '@context': 'https://schema.org',
-    '@type': 'MusicRecording',
+    '@type': 'MusicComposition',
     '@id': `${SITE_URL}/song/${song.slug}`,
     name: song.title,
     url: `${SITE_URL}/song/${song.slug}`,
     datePublished,
+    ...(dateModified && { dateModified }),
     inLanguage: song.language || undefined,
     // Use Person type for individual artists (not MusicGroup)
     byArtist: song.artists?.length > 0 ? song.artists.map(sa => ({

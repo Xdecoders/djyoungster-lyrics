@@ -50,15 +50,22 @@ export async function generateMetadata() {
           alt: 'DJYoungster Genres',
         },
       ],
+      locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
       title: seo.ogTitle,
       description: seo.ogDescription,
       images: [ogImageUrl],
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
     },
     alternates: {
       canonical: `${siteUrl}/genres`,
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   }
 }

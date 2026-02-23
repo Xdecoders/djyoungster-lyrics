@@ -238,7 +238,7 @@ export default async function CategoryPage({ params, searchParams }) {
 
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
-    { name: 'Categories', url: '/songs' },
+    { name: 'Categories', url: '/songs?tab=categories' },
     { name: category.name, url: `/category/${category.slug}` }
   ])
 

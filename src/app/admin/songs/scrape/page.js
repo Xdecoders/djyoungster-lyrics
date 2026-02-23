@@ -36,7 +36,7 @@ export default function ScrapeSong() {
     lyricsHindi: '',
     lyricsPunjabi: '',
     meaning: '',
-    releaseYear: new Date().getFullYear(),
+    datePublished: new Date().toISOString().split('T')[0],
     artistIds: [],
     albumId: '',
     genreIds: [],
@@ -295,7 +295,7 @@ export default function ScrapeSong() {
         lyrics: s.lyrics || '',
         lyricsRomanized: s.lyricsRomanized || '',
         lyricsTranslated: s.lyricsTranslated || '',
-        releaseYear: s.releaseYear || new Date().getFullYear(),
+        datePublished: s.releaseYear ? `${s.releaseYear}-01-01` : new Date().toISOString().split('T')[0],
         coverImage: s.coverImage || '',
         youtubeUrl: s.youtubeUrl || '',
         spotifyUrl: s.spotifyUrl || '',
@@ -349,7 +349,7 @@ export default function ScrapeSong() {
     setFormData({
       title: '', slug: '', lyrics: '', lyricsRomanized: '', lyricsTranslated: '',
       lyricsHindi: '', lyricsPunjabi: '', meaning: '',
-      releaseYear: new Date().getFullYear(), artistIds: [], albumId: '',
+      datePublished: new Date().toISOString().split('T')[0], artistIds: [], albumId: '',
       genreIds: [], categoryIds: [], tagIds: [], movieId: '', coverImage: '',
       youtubeUrl: '', spotifyUrl: '', appleMusicUrl: '', lyricist: '',
       composer: '', singers: '', label: '', starring: '', producer: '',
@@ -1124,16 +1124,14 @@ export default function ScrapeSong() {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                       <FiCalendar className="w-4 h-4" />
-                      Release Year
+                      Date Published
                     </label>
                     <input
-                      type="number"
-                      name="releaseYear"
-                      value={formData.releaseYear}
+                      type="date"
+                      name="datePublished"
+                      value={formData.datePublished}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-gray-900"
-                      min="1900"
-                      max={new Date().getFullYear() + 1}
                     />
                   </div>
                   <div className="relative" ref={labelRef}>

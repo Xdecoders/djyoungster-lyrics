@@ -12,7 +12,7 @@ function GenreCard({ genre }) {
       className="group relative overflow-hidden rounded-2xl aspect-[3/4] bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800"
     >
       {genre.imageUrl && (
-        <Image src={genre.imageUrl} alt={genre.name} fill className="object-cover group-hover:scale-105 transition-transform duration-300" unoptimized />
+        <Image src={genre.imageUrl} alt={`${genre.name} songs and lyrics`} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover group-hover:scale-105 transition-transform duration-300" />
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
       {!genre.imageUrl && (

@@ -90,12 +90,15 @@ export async function generateMetadata() {
           alt: 'DJYoungster Albums',
         },
       ],
+      locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
       title: seo.ogTitle,
       description: seo.ogDescription,
       images: [ogImageUrl],
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
     },
     alternates: {
       canonical: `${siteUrl}/albums`,

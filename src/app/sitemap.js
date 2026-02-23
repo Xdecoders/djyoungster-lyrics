@@ -24,7 +24,7 @@ export default async function sitemap() {
   const [songs, artists, albums, movies, genres, categories, tags, topLists] = await Promise.all([
     prisma.song.findMany({
       where: { status: 'published' },
-      select: { slug: true, coverImage: true, updatedAt: true },
+      select: { slug: true, coverImage: true, updatedAt: true, dateModified: true },
       orderBy: { updatedAt: 'desc' }
     }),
     prisma.artist.findMany({
@@ -57,7 +57,7 @@ export default async function sitemap() {
 
   const songPages = songs.map(song => ({
     url: `${baseUrl}/song/${song.slug}`,
-    lastModified: song.updatedAt,
+    lastModified: song.dateModified || song.updatedAt,
     changeFrequency: 'weekly',
     priority: 0.8,
     ...(song.coverImage && { images: [getAbsoluteUrl(song.coverImage)] }),

@@ -170,7 +170,7 @@ Na tere bina lagda jee
 Main tenu samjhawan ki
 Na tere bina lagda jee`,
       language: 'Hindi',
-      releaseYear: 2023,
+      datePublished: new Date('2023-01-01'),
       duration: '4:12',
       lyricist: 'Varun Jain',
       composer: 'Sachin-Jigar',
@@ -211,7 +211,7 @@ Tu mere layi kuch na karni
 Main tere bina reh na sakda
 Tu mere bina reh jaani`,
       language: 'Punjabi',
-      releaseYear: 2021,
+      datePublished: new Date('2021-01-01'),
       duration: '3:45',
       lyricist: 'AP Dhillon',
       composer: 'AP Dhillon',
@@ -252,7 +252,7 @@ Tu meri chandni
 Tu meri zindagi
 Tu meri bandagi`,
       language: 'Punjabi',
-      releaseYear: 2023,
+      datePublished: new Date('2023-01-01'),
       duration: '3:30',
       lyricist: 'Diljit Dosanjh',
       composer: 'Diljit Dosanjh',
@@ -293,7 +293,7 @@ Teri chahat mujhe
 Kaala badal sa
 Tera gham bhi sahun main`,
       language: 'Hindi',
-      releaseYear: 2023,
+      datePublished: new Date('2023-01-01'),
       duration: '5:02',
       lyricist: 'Manoj Muntashir',
       composer: 'Pritam',
@@ -336,7 +336,7 @@ Main kya naam doon
 Tere bina jeena
 Ab mumkin nahi`,
       language: 'Hindi',
-      releaseYear: 2023,
+      datePublished: new Date('2023-01-01'),
       duration: '4:28',
       lyricist: 'Kumaar',
       composer: 'Anirudh Ravichander',
@@ -383,7 +383,7 @@ We them brown munde
 Taking over the game
 Yeah we them brown munde`,
       language: 'Punjabi',
-      releaseYear: 2020,
+      datePublished: new Date('2020-01-01'),
       duration: '3:22',
       lyricist: 'AP Dhillon',
       composer: 'AP Dhillon',

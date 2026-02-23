@@ -19,7 +19,8 @@ model Song {
   meaning         String?  @db.Text  // Song meaning/interpretation
   duration        String?
   language        String?
-  releaseYear     Int?
+  datePublished   DateTime?
+  dateModified    DateTime?
   verified        Boolean  @default(false)
   views           Int      @default(0)
   likes           Int      @default(0)
@@ -62,6 +63,7 @@ model Song {
   @@index([views])
   @@index([createdAt])
   @@index([status])
+  @@index([datePublished])
   @@index([albumId])
   @@index([movieId])
 }

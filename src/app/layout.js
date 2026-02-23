@@ -1,5 +1,13 @@
+import { Inter_Tight } from 'next/font/google'
 import './globals.css'
 import Header from '@/components/Header'
+
+const interTight = Inter_Tight({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800', '900'],
+  display: 'swap',
+  variable: '--font-inter-tight',
+})
 import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import InstallPrompt from '@/components/InstallPrompt'
@@ -52,14 +60,17 @@ export default async function RootLayout({ children }) {
   const faviconUrl = siteSettings.favicon || '/favicon.svg'
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={interTight.variable} suppressHydrationWarning>
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="icon" href={faviconUrl} />
         <link rel="apple-touch-icon" href={faviconUrl} />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#10b981" />
       </head>
-      <body className="min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors">
+      <body className={`${interTight.className} min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors`}>
         <GoogleAnalytics />
         <ThemeProvider>
           <Header />

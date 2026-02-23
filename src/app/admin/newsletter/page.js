@@ -157,7 +157,7 @@ export default function NewsletterPage() {
           <tr>
             <td style="padding: 0 24px;">
               <h2 style="margin: 0 0 8px; color: #1e293b; font-size: 22px; font-weight: 700;">${song.title}</h2>
-              <p style="margin: 0 0 16px; color: #64748b; font-size: 14px;">by ${artistNames}${song.releaseYear ? ` • ${song.releaseYear}` : ''}</p>
+              <p style="margin: 0 0 16px; color: #64748b; font-size: 14px;">by ${artistNames}${song.datePublished ? ` • ${new Date(song.datePublished).getFullYear()}` : ''}</p>
             </td>
           </tr>
 

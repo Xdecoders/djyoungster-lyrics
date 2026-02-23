@@ -68,7 +68,7 @@ export async function GET(request, { params }) {
         orderBy = { title: 'asc' }
         break
       case 'oldest':
-        orderBy = { releaseYear: 'asc' }
+        orderBy = { datePublished: 'asc' }
         break
       case 'latest':
       default:

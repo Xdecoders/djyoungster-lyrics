@@ -21,7 +21,16 @@ export async function generateMetadata() {
           title: page.metaTitle || page.title,
           description: page.metaDescription || 'Privacy Policy for DJYoungster',
           url: `${siteUrl}/${SLUG}`,
+          locale: 'en_US',
         },
+        twitter: {
+          card: 'summary',
+          title: page.metaTitle || page.title,
+          description: page.metaDescription || 'Privacy Policy for DJYoungster',
+          creator: '@djyoungstercom',
+          site: '@djyoungstercom',
+        },
+        robots: { index: true, follow: true },
       }
     }
   } catch (error) {

@@ -84,7 +84,7 @@ export default function ImportSongs() {
       title: "Sample Song",
       slug: "sample-song",
       lyrics: "Sample lyrics here...",
-      releaseYear: 2024,
+      datePublished: "2024-01-01",
       artistIds: [],
       genreIds: [],
       categoryIds: [],

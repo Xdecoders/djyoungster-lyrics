@@ -49,15 +49,22 @@ export async function generateMetadata() {
           alt: 'DJYoungster Languages',
         },
       ],
+      locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
       title: seo.ogTitle || 'Browse Songs by Language | DJYoungster',
       description: seo.ogDescription || 'Explore song lyrics in multiple languages on DJYoungster.',
       images: [ogImageUrl],
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
     },
     alternates: {
       canonical: `${siteUrl}/languages`,
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   }
 }

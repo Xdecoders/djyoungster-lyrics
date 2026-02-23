@@ -53,12 +53,15 @@ export async function generateMetadata({ params }) {
           alt: `${capitalizedName} Songs`,
         },
       ],
+      locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
       images: [ogImageUrl],
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
     },
     alternates: {
       canonical: pageUrl,
@@ -126,7 +129,7 @@ export default async function TagPage({ params }) {
   const collectionSchema = generateCollectionPageSchema(tag, 'tag', songs.slice(0, 20))
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: 'Home', url: '/' },
-    { name: 'Tags', url: '/songs' },
+    { name: 'Tags', url: '/songs?tab=tags' },
     { name: tag.name, url: `/tag/${tag.slug}` }
   ])
 

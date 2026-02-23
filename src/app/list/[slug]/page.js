@@ -57,11 +57,18 @@ export async function generateMetadata({ params }) {
       siteName: 'DJYoungster',
       type: 'website',
       images: [{ url: `${siteUrl}/og-image.jpg`, width: 1200, height: 630 }],
+      locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
     alternates: {
       canonical: pageUrl,

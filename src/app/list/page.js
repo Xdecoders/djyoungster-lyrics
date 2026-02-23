@@ -18,9 +18,21 @@ export async function generateMetadata() {
       url: `${siteUrl}/list`,
       siteName: 'DJYoungster',
       type: 'website',
+      locale: 'en_US',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Top Song Lists - Best Songs Ranked by Popularity | DJYoungster',
+      description: 'Browse curated top song lists across categories.',
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
     },
     alternates: {
       canonical: `${siteUrl}/list`,
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   }
 }

@@ -141,7 +141,7 @@ export async function generateMetadata({ params }) {
         'music:musician': artistNames,
         'music:duration': song.duration || undefined,
         'music:album': song.album?.title || undefined,
-        'music:release_date': song.releaseYear?.toString() || undefined,
+        'music:release_date': song.datePublished ? new Date(song.datePublished).toISOString().split('T')[0] : undefined,
       },
     }
   } catch (error) {

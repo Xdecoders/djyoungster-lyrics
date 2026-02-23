@@ -1,26 +1,33 @@
 'use client'
 
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState, useEffect, useCallback } from 'react'
 import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 
 export default function Carousel({ children }) {
   const scrollRef = useRef(null)
   const [canScrollLeft, setCanScrollLeft] = useState(false)
   const [canScrollRight, setCanScrollRight] = useState(true)
+  const rafRef = useRef(null)
 
-  const checkScroll = () => {
-    const el = scrollRef.current
-    if (!el) return
-    setCanScrollLeft(el.scrollLeft > 4)
-    setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4)
-  }
+  const checkScroll = useCallback(() => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    rafRef.current = requestAnimationFrame(() => {
+      const el = scrollRef.current
+      if (!el) return
+      setCanScrollLeft(el.scrollLeft > 4)
+      setCanScrollRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 4)
+    })
+  }, [])
 
   useEffect(() => {
     checkScroll()
     const el = scrollRef.current
     if (el) el.addEventListener('scroll', checkScroll, { passive: true })
-    return () => el?.removeEventListener('scroll', checkScroll)
-  }, [])
+    return () => {
+      el?.removeEventListener('scroll', checkScroll)
+      if (rafRef.current) cancelAnimationFrame(rafRef.current)
+    }
+  }, [checkScroll])
 
   const scroll = (dir) => {
     const el = scrollRef.current

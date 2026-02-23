@@ -33,15 +33,22 @@ export async function generateMetadata() {
           alt: 'DJYoungster Songs',
         },
       ],
+      locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
       title: seo.ogTitle,
       description: seo.ogDescription,
       images: [ogImageUrl],
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
     },
     alternates: {
       canonical: `${siteUrl}/songs`,
+    },
+    robots: {
+      index: true,
+      follow: true,
     },
   }
 }

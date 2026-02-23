@@ -1,18 +1,28 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
+import { verifyToken } from '@/lib/auth'
+
+async function getAdminFromRequest(request) {
+  const authHeader = request.headers.get('authorization')
+  if (!authHeader?.startsWith('Bearer ')) {
+    return null
+  }
+
+  const token = authHeader.slice(7)
+  const payload = await verifyToken(token)
+  if (!payload?.adminId) return null
+
+  return payload.adminId
+}
 
 // GET - Get admin profile
 export async function GET(request) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
+    const adminId = await getAdminFromRequest(request)
+    if (!adminId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
-
-    const token = authHeader.replace('Bearer ', '')
-    const decoded = Buffer.from(token, 'base64').toString('utf-8')
-    const [adminId] = decoded.split(':')
 
     const admin = await prisma.admin.findUnique({
       where: { id: adminId },
@@ -39,14 +49,10 @@ export async function GET(request) {
 // PUT - Update admin settings (password, name, email)
 export async function PUT(request) {
   try {
-    const authHeader = request.headers.get('authorization')
-    if (!authHeader) {
+    const adminId = await getAdminFromRequest(request)
+    if (!adminId) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
     }
-
-    const token = authHeader.replace('Bearer ', '')
-    const decoded = Buffer.from(token, 'base64').toString('utf-8')
-    const [adminId] = decoded.split(':')
 
     const body = await request.json()
     const { currentPassword, newPassword, name, email } = body
@@ -119,6 +125,6 @@ export async function PUT(request) {
     return NextResponse.json({ message: 'No changes made' })
   } catch (error) {
     console.error('Error updating admin:', error)
-    return NextResponse.json({ message: 'Server error: ' + error.message }, { status: 500 })
+    return NextResponse.json({ message: 'Server error' }, { status: 500 })
   }
 }

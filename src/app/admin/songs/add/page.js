@@ -37,7 +37,7 @@ export default function AddSong() {
     lyricsHindi: '',
     lyricsPunjabi: '',
     meaning: '',
-    releaseYear: new Date().getFullYear(),
+    datePublished: new Date().toISOString().split('T')[0],
     artistIds: [],
     albumId: '',
     genreIds: [],
@@ -1218,20 +1218,18 @@ export default function AddSong() {
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Song Details</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Release Year */}
+                  {/* Date Published */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                       <FiCalendar className="w-4 h-4" />
-                      Release Year
+                      Date Published
                     </label>
                     <input
-                      type="number"
-                      name="releaseYear"
-                      value={formData.releaseYear}
+                      type="date"
+                      name="datePublished"
+                      value={formData.datePublished}
                       onChange={handleChange}
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
-                      min="1900"
-                      max={new Date().getFullYear() + 1}
                     />
                   </div>
 

@@ -124,8 +124,8 @@ function SongDescription({ song }) {
     description += ` sung by ${artistNames}`
   }
 
-  if (song.releaseYear) {
-    description += `, released in ${song.releaseYear}`
+  if (song.datePublished) {
+    description += `, released in ${new Date(song.datePublished).getFullYear()}`
   }
 
   description += '.'
@@ -202,8 +202,8 @@ function SongCredits({ song }) {
   if (song.label) {
     credits.push({ label: 'Label', value: song.label, icon: FiAward })
   }
-  if (song.releaseYear) {
-    credits.push({ label: 'Year', value: song.releaseYear.toString(), icon: FiCalendar })
+  if (song.datePublished) {
+    credits.push({ label: 'Year', value: new Date(song.datePublished).getFullYear().toString(), icon: FiCalendar })
   }
   if (credits.length === 0) return null
 
@@ -285,10 +285,11 @@ function FAQSection({ song }) {
       : `${firstArtist} lends ${artistCount > 1 ? 'their' : 'their'} voice to this track`
 
     let extra = ''
-    if (song.releaseYear && song.label) {
-      extra = `, dropping in ${song.releaseYear} via ${song.label}.`
-    } else if (song.releaseYear) {
-      extra = `, released back in ${song.releaseYear}.`
+    const releaseYear = song.datePublished ? new Date(song.datePublished).getFullYear() : null
+    if (releaseYear && song.label) {
+      extra = `, dropping in ${releaseYear} via ${song.label}.`
+    } else if (releaseYear) {
+      extra = `, released back in ${releaseYear}.`
     } else if (song.label) {
       extra = `, released under the ${song.label} label.`
     } else {
@@ -747,8 +748,10 @@ function ReportModal({ isOpen, onClose, songTitle, songId }) {
   )
 }
 
-// YouTube Player Component
+// YouTube Player Component - Click-to-load for performance
 function YouTubePlayer({ url, title }) {
+  const [isPlaying, setIsPlaying] = useState(false)
+
   if (!url) return null
 
   const getVideoId = (url) => {
@@ -771,15 +774,36 @@ function YouTubePlayer({ url, title }) {
         <FaYoutube className="w-5 h-5 text-red-500" />
         Watch {title} Music Video
       </h2>
-      <div className="aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-lg">
-        <iframe
-          src={`https://www.youtube.com/embed/${videoId}`}
-          title={`${title} - Official Music Video`}
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          loading="lazy"
-          className="w-full h-full"
-        />
+      <div className="aspect-video rounded-2xl overflow-hidden bg-slate-900 shadow-lg relative">
+        {isPlaying ? (
+          <iframe
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+            title={`${title} - Official Music Video`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            className="w-full h-full"
+          />
+        ) : (
+          <button
+            onClick={() => setIsPlaying(true)}
+            className="w-full h-full relative group cursor-pointer"
+            aria-label={`Play ${title} music video`}
+          >
+            <img
+              src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+              alt={`${title} - Music Video Thumbnail`}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-red-600 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <svg className="w-7 h-7 sm:w-8 sm:h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+              </div>
+            </div>
+          </button>
+        )}
       </div>
     </section>
   )
@@ -1336,7 +1360,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <article itemScope itemType="https://schema.org/MusicRecording">
+        <article itemScope itemType="https://schema.org/MusicComposition">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
