@@ -225,6 +225,9 @@ async function getSongData(slug) {
           orderBy: { startLine: 'asc' },
           select: { id: true, startLine: true, endLine: true, content: true }
         },
+        ratings: {
+          select: { rating: true }
+        },
       }
     })
 
@@ -290,6 +293,16 @@ export default async function SongPage({ params }) {
     where: { id: song.id },
     data: { views: { increment: 1 } }
   }).catch(console.error)
+
+  // Compute aggregate rating from individual ratings
+  const ratings = song.ratings || []
+  if (ratings.length > 0) {
+    const sum = ratings.reduce((acc, r) => acc + r.rating, 0)
+    song.aggregateRating = {
+      average: sum / ratings.length,
+      count: ratings.length
+    }
+  }
 
   // Generate structured data
   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'

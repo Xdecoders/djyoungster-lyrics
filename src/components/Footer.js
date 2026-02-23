@@ -137,19 +137,19 @@ export default function Footer() {
 
               {/* Social Media */}
               <div className="flex items-center gap-3">
-                <a href="https://x.com/djyoungstercom" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition" aria-label="Follow on X">
+                <a href="https://x.com/djyoungstercom" target="_blank" rel="noopener noreferrer me" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-900 hover:text-white dark:hover:bg-white dark:hover:text-slate-900 transition" aria-label="Follow on X">
                   <FaXTwitter className="w-4 h-4" />
                 </a>
-                <a href="https://www.facebook.com/djyoungster" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#1877F2] hover:text-white transition" aria-label="Follow on Facebook">
+                <a href="https://www.facebook.com/djyoungster" target="_blank" rel="noopener noreferrer me" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#1877F2] hover:text-white transition" aria-label="Follow on Facebook">
                   <FaFacebookF className="w-4 h-4" />
                 </a>
-                <a href="https://www.instagram.com/djyoungster_com" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-gradient-to-br hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:text-white transition" aria-label="Follow on Instagram">
+                <a href="https://www.instagram.com/djyoungster_com" target="_blank" rel="noopener noreferrer me" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-gradient-to-br hover:from-[#f9ce34] hover:via-[#ee2a7b] hover:to-[#6228d7] hover:text-white transition" aria-label="Follow on Instagram">
                   <FaInstagram className="w-4 h-4" />
                 </a>
-                <a href="https://www.linkedin.com/in/djyoungsterofficial" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#0A66C2] hover:text-white transition" aria-label="Follow on LinkedIn">
+                <a href="https://www.linkedin.com/in/djyoungsterofficial" target="_blank" rel="noopener noreferrer me" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#0A66C2] hover:text-white transition" aria-label="Follow on LinkedIn">
                   <FaLinkedinIn className="w-4 h-4" />
                 </a>
-                <a href="https://youtube.com/@Djyoungstercom" target="_blank" rel="noopener noreferrer" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#FF0000] hover:text-white transition" aria-label="Subscribe on YouTube">
+                <a href="https://youtube.com/@Djyoungstercom" target="_blank" rel="noopener noreferrer me" className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-[#FF0000] hover:text-white transition" aria-label="Subscribe on YouTube">
                   <FaYoutube className="w-4 h-4" />
                 </a>
               </div>

@@ -17,6 +17,7 @@ export default function SongsList() {
   const [currentPage, setCurrentPage] = useState(1)
   const [sortBy, setSortBy] = useState('createdAt') // title, views, status, createdAt
   const [sortOrder, setSortOrder] = useState('desc') // asc or desc
+  const [statusFilter, setStatusFilter] = useState('all') // all, published, draft
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -70,11 +71,17 @@ export default function SongsList() {
     setCurrentPage(1) // Reset to first page
   }
 
-  // Filter songs by search term
-  const filteredSongs = songs.filter(song =>
-    song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    song.artists?.some(a => a.artist.name.toLowerCase().includes(searchTerm.toLowerCase()))
-  )
+  // Counts for filter pills
+  const publishedCount = songs.filter(s => s.status === 'published').length
+  const draftCount = songs.filter(s => s.status === 'draft').length
+
+  // Filter songs by search term and status
+  const filteredSongs = songs.filter(song => {
+    const matchesSearch = song.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      song.artists?.some(a => a.artist.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    const matchesStatus = statusFilter === 'all' || song.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
 
   // Sort filtered songs
   const sortedSongs = [...filteredSongs].sort((a, b) => {
@@ -121,10 +128,10 @@ export default function SongsList() {
     )
   }
 
-  // Reset to page 1 when search changes
+  // Reset to page 1 when search or filter changes
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchTerm])
+  }, [searchTerm, statusFilter])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
@@ -156,7 +163,7 @@ export default function SongsList() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        {/* Search Bar */}
+        {/* Search Bar & Status Filter */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-4 mb-6">
           <div className="relative">
             <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400" />
@@ -167,6 +174,25 @@ export default function SongsList() {
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-12 pr-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
             />
+          </div>
+          <div className="flex items-center gap-2 mt-3">
+            {[
+              { key: 'all', label: 'All', count: songs.length },
+              { key: 'published', label: 'Published', count: publishedCount },
+              { key: 'draft', label: 'Draft', count: draftCount },
+            ].map(({ key, label, count }) => (
+              <button
+                key={key}
+                onClick={() => setStatusFilter(key)}
+                className={`px-3 py-1.5 text-xs font-medium rounded-lg transition ${
+                  statusFilter === key
+                    ? 'bg-primary text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                }`}
+              >
+                {label} ({count})
+              </button>
+            ))}
           </div>
         </div>
 

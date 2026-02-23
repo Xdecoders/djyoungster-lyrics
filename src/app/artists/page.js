@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import ArtistsPageClient from './ArtistsPageClient'
+import PaginationHead from '@/components/PaginationHead'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateBreadcrumbSchema } from '@/lib/schema'
 
@@ -23,7 +24,7 @@ async function getArtistsPageData(searchParams) {
     const [rawArtists, total] = await Promise.all([
       prisma.artist.findMany({
         include: {
-          _count: { select: { songs: true } },
+          _count: { select: { songs: { where: { song: { status: 'published' } } } } },
           songs: {
             select: {
               song: {
@@ -102,6 +103,10 @@ export async function generateMetadata() {
     alternates: {
       canonical: `${siteUrl}/artists`,
     },
+    robots: {
+      index: true,
+      follow: true,
+    },
   }
 }
 
@@ -132,6 +137,12 @@ export default async function ArtistsPage({ searchParams }) {
 
   return (
     <>
+      <PaginationHead
+        basePath="/artists"
+        currentPage={data.pagination.page}
+        totalPages={data.pagination.totalPages}
+        searchParams={params}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}

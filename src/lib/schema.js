@@ -149,6 +149,17 @@ export function generateSongSchema(song, artistNames) {
     }
   }
 
+  // Add aggregate rating if available
+  if (song.aggregateRating && song.aggregateRating.count > 0) {
+    schema.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: song.aggregateRating.average.toFixed(1),
+      ratingCount: song.aggregateRating.count.toString(),
+      bestRating: '5',
+      worstRating: '1'
+    }
+  }
+
   return schema
 }
 

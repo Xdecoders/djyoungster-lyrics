@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import MoviesPageClient from './MoviesPageClient'
+import PaginationHead from '@/components/PaginationHead'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateBreadcrumbSchema } from '@/lib/schema'
 
@@ -97,6 +98,10 @@ export async function generateMetadata() {
     alternates: {
       canonical: `${siteUrl}/movies`,
     },
+    robots: {
+      index: true,
+      follow: true,
+    },
   }
 }
 
@@ -127,6 +132,12 @@ export default async function MoviesPage({ searchParams }) {
 
   return (
     <>
+      <PaginationHead
+        basePath="/movies"
+        currentPage={data.pagination.page}
+        totalPages={data.pagination.totalPages}
+        searchParams={params}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}

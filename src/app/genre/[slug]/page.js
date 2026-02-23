@@ -1,8 +1,10 @@
 import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { getAbsoluteUrl } from '@/lib/seo'
+import { generateCollectionPageSchema, generateBreadcrumbSchema, generateFAQSchema } from '@/lib/schema'
 import { toTitleCase } from '@/lib/utils'
+import PaginationHead from '@/components/PaginationHead'
 import GenrePageClient from './GenrePageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -41,7 +43,7 @@ export async function generateMetadata({ params }) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/genre/${slug}`
-    const imageUrl = `${siteUrl}/og-image.jpg`
+    const imageUrl = genre.imageUrl ? getAbsoluteUrl(genre.imageUrl) : `${siteUrl}/og-image.jpg`
 
     return {
       title,
@@ -211,8 +213,35 @@ export default async function GenrePage({ params, searchParams }) {
     { name: genre.name, url: `/genre/${genre.slug}` }
   ])
 
+  // Generate dynamic FAQ schema
+  const genreName = toTitleCase(genre.name)
+  const topSongNames = data.featuredSongs?.slice(0, 3).map(s => s.title).join(', ')
+  const faqs = [
+    {
+      question: `How many ${genreName} songs are on DJYoungster?`,
+      answer: `DJYoungster has ${genre.totalSongs} ${genreName} songs with full lyrics, translations, and meanings.`
+    },
+    {
+      question: `What are the most popular ${genreName} songs?`,
+      answer: topSongNames
+        ? `Some of the most popular ${genreName} songs on DJYoungster include ${topSongNames}, and more.`
+        : `Browse our ${genreName} collection to discover the most popular songs ranked by views.`
+    },
+    {
+      question: `Can I read ${genreName} song lyrics in English?`,
+      answer: `Yes, DJYoungster provides ${genreName} song lyrics with English translations, romanized lyrics, and meanings to help you understand every song.`
+    }
+  ]
+  const faqSchema = generateFAQSchema(faqs)
+
   return (
     <>
+      <PaginationHead
+        basePath={`/genre/${slug}`}
+        currentPage={data.pagination.page}
+        totalPages={data.pagination.totalPages}
+        searchParams={searchParamsResolved}
+      />
       {collectionSchema && (
         <script
           type="application/ld+json"
@@ -225,6 +254,10 @@ export default async function GenrePage({ params, searchParams }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <Suspense fallback={<div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900" />}>
         <GenrePageClient initialData={JSON.parse(JSON.stringify(data))} />
       </Suspense>

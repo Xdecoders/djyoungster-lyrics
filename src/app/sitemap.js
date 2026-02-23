@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getAbsoluteUrl } from '@/lib/seo'
 
 export default async function sitemap() {
   const baseUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
@@ -19,34 +20,38 @@ export default async function sitemap() {
     { url: `${baseUrl}/disclaimer`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
   ]
 
-  // Fetch all dynamic content
-  const [songs, artists, albums, movies, genres, categories, tags] = await Promise.all([
+  // Fetch all dynamic content (with image fields for image sitemap)
+  const [songs, artists, albums, movies, genres, categories, tags, topLists] = await Promise.all([
     prisma.song.findMany({
       where: { status: 'published' },
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, coverImage: true, updatedAt: true },
       orderBy: { updatedAt: 'desc' }
     }),
     prisma.artist.findMany({
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, imageUrl: true, updatedAt: true },
       orderBy: { updatedAt: 'desc' }
     }),
     prisma.album.findMany({
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, coverImage: true, updatedAt: true },
       orderBy: { updatedAt: 'desc' }
     }),
     prisma.movie.findMany({
       where: { slug: { not: null } },
-      select: { slug: true, createdAt: true },
+      select: { slug: true, posterUrl: true, createdAt: true },
       orderBy: { createdAt: 'desc' }
     }),
     prisma.genre.findMany({
-      select: { slug: true, createdAt: true }
+      select: { slug: true, imageUrl: true, createdAt: true }
     }),
     prisma.category.findMany({
-      select: { slug: true, createdAt: true }
+      select: { slug: true, imageUrl: true, createdAt: true }
     }),
     prisma.tag.findMany({
       select: { slug: true, createdAt: true }
+    }),
+    prisma.topList.findMany({
+      where: { isPublished: true },
+      select: { slug: true, updatedAt: true }
     }),
   ])
 
@@ -55,6 +60,7 @@ export default async function sitemap() {
     lastModified: song.updatedAt,
     changeFrequency: 'weekly',
     priority: 0.8,
+    ...(song.coverImage && { images: [getAbsoluteUrl(song.coverImage)] }),
   }))
 
   const artistPages = artists.map(artist => ({
@@ -62,6 +68,7 @@ export default async function sitemap() {
     lastModified: artist.updatedAt,
     changeFrequency: 'weekly',
     priority: 0.7,
+    ...(artist.imageUrl && { images: [getAbsoluteUrl(artist.imageUrl)] }),
   }))
 
   const albumPages = albums.map(album => ({
@@ -69,6 +76,7 @@ export default async function sitemap() {
     lastModified: album.updatedAt,
     changeFrequency: 'weekly',
     priority: 0.7,
+    ...(album.coverImage && { images: [getAbsoluteUrl(album.coverImage)] }),
   }))
 
   const moviePages = movies.map(movie => ({
@@ -76,6 +84,7 @@ export default async function sitemap() {
     lastModified: movie.createdAt,
     changeFrequency: 'weekly',
     priority: 0.7,
+    ...(movie.posterUrl && { images: [getAbsoluteUrl(movie.posterUrl)] }),
   }))
 
   const genrePages = genres.map(genre => ({
@@ -83,6 +92,7 @@ export default async function sitemap() {
     lastModified: genre.createdAt,
     changeFrequency: 'monthly',
     priority: 0.5,
+    ...(genre.imageUrl && { images: [getAbsoluteUrl(genre.imageUrl)] }),
   }))
 
   const categoryPages = categories.map(cat => ({
@@ -90,6 +100,7 @@ export default async function sitemap() {
     lastModified: cat.createdAt,
     changeFrequency: 'monthly',
     priority: 0.5,
+    ...(cat.imageUrl && { images: [getAbsoluteUrl(cat.imageUrl)] }),
   }))
 
   const tagPages = tags.map(tag => ({
@@ -98,6 +109,16 @@ export default async function sitemap() {
     changeFrequency: 'monthly',
     priority: 0.4,
   }))
+
+  const topListPages = [
+    { url: `${baseUrl}/list`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
+    ...topLists.map(tl => ({
+      url: `${baseUrl}/list/${tl.slug}`,
+      lastModified: tl.updatedAt,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    }))
+  ]
 
   return [
     ...staticPages,
@@ -108,5 +129,6 @@ export default async function sitemap() {
     ...genrePages,
     ...categoryPages,
     ...tagPages,
+    ...topListPages,
   ]
 }

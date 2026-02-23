@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getAbsoluteUrl } from '@/lib/seo'
 
 export const revalidate = 3600 // Regenerate every hour
 
@@ -8,18 +9,26 @@ export async function GET() {
   try {
     const songs = await prisma.song.findMany({
       where: { status: 'published' },
-      select: { slug: true, updatedAt: true },
+      select: { slug: true, title: true, coverImage: true, updatedAt: true },
       orderBy: { updatedAt: 'desc' },
     })
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${songs.map(song => `  <url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${songs.map(song => {
+  const imageUrl = getAbsoluteUrl(song.coverImage)
+  return `  <url>
     <loc>${baseUrl}/song/${song.slug}</loc>
     <lastmod>${song.updatedAt.toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>`).join('\n')}
+    <priority>0.8</priority>${imageUrl ? `
+    <image:image>
+      <image:loc>${imageUrl}</image:loc>
+      <image:title>${escapeXml(song.title)} Lyrics</image:title>
+    </image:image>` : ''}
+  </url>`
+}).join('\n')}
 </urlset>`
 
     return new Response(xml, {
@@ -32,4 +41,14 @@ ${songs.map(song => `  <url>
     console.error('Error generating songs sitemap:', error)
     return new Response('Error generating sitemap', { status: 500 })
   }
+}
+
+function escapeXml(str) {
+  if (!str) return ''
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
 }

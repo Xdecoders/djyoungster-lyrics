@@ -2,8 +2,9 @@ import { Suspense } from 'react'
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
-import { generateCollectionPageSchema, generateBreadcrumbSchema } from '@/lib/schema'
+import { generateCollectionPageSchema, generateBreadcrumbSchema, generateFAQSchema } from '@/lib/schema'
 import { toTitleCase } from '@/lib/utils'
+import PaginationHead from '@/components/PaginationHead'
 import CategoryPageClient from './CategoryPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -241,8 +242,38 @@ export default async function CategoryPage({ params, searchParams }) {
     { name: category.name, url: `/category/${category.slug}` }
   ])
 
+  // Generate dynamic FAQ schema
+  const categoryName = toTitleCase(category.name)
+  const topSongNames = data.featuredSongs?.slice(0, 3).map(s => s.title).join(', ')
+  const genreNames = data.genres?.slice(0, 3).map(g => g.name).join(', ')
+  const faqs = [
+    {
+      question: `How many ${categoryName} songs are available on DJYoungster?`,
+      answer: `DJYoungster has ${category.totalSongs} ${categoryName} songs with full lyrics, English translations, and meanings.`
+    },
+    {
+      question: `What are the top ${categoryName} songs right now?`,
+      answer: topSongNames
+        ? `Some of the trending ${categoryName} songs include ${topSongNames}, and many more ranked by popularity.`
+        : `Browse our ${categoryName} collection to find the most popular songs ranked by views.`
+    },
+    {
+      question: `What genres are available in ${categoryName} songs?`,
+      answer: genreNames
+        ? `${categoryName} songs on DJYoungster span genres like ${genreNames}, and more. Use the genre filter to find exactly what you like.`
+        : `${categoryName} songs are available across multiple genres. Browse the collection to explore.`
+    }
+  ]
+  const faqSchema = generateFAQSchema(faqs)
+
   return (
     <>
+      <PaginationHead
+        basePath={`/category/${slug}`}
+        currentPage={data.pagination.page}
+        totalPages={data.pagination.totalPages}
+        searchParams={searchParamsResolved}
+      />
       {collectionSchema && (
         <script
           type="application/ld+json"
@@ -255,6 +286,10 @@ export default async function CategoryPage({ params, searchParams }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
         />
       )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       <Suspense fallback={<div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900" />}>
         <CategoryPageClient initialData={JSON.parse(JSON.stringify(data))} />
       </Suspense>

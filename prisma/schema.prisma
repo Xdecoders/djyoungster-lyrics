@@ -146,8 +146,30 @@ model Category {
   createdAt       DateTime @default(now())
 
   songs SongCategory[]
+  topLists TopList[]
 
   @@index([slug])
+}
+
+model TopList {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String   @unique
+  count           Int      @default(50)
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  tagId           String?
+  tag             Tag?      @relation(fields: [tagId], references: [id])
+  description     String?  @db.Text
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  isPublished     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+  @@index([categoryId])
+  @@index([tagId])
 }
 
 model SiteSeoSettings {
@@ -238,7 +260,8 @@ model Tag {
   metaDescription String?   @db.Text
   createdAt       DateTime  @default(now())
 
-  songs SongTag[]
+  songs    SongTag[]
+  topLists TopList[]
 
   @@index([slug])
 }

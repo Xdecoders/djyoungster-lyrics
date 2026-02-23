@@ -22,7 +22,8 @@ import {
   FiDownload,
   FiDownloadCloud,
   FiInbox,
-  FiBell
+  FiBell,
+  FiList
 } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 
@@ -115,6 +116,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/genres', label: 'Genres', icon: FiTag },
     { href: '/admin/categories', label: 'Categories', icon: FiGrid },
     { href: '/admin/movies', label: 'Movies', icon: FiFilm },
+    { href: '/admin/top-lists', label: 'Top Lists', icon: FiList },
 { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail, badgeType: 'subscriber' },
     { href: '/admin/push-notifications', label: 'Push Notifications', icon: FiBell, badgeType: 'push' },
     { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badgeType: 'reports' },

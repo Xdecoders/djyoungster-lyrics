@@ -15,7 +15,9 @@ import {
   FiChevronDown,
   FiSun,
   FiMoon,
-  FiGlobe
+  FiGlobe,
+  FiList,
+  FiTrendingUp
 } from 'react-icons/fi'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -25,6 +27,7 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isScrolled, setIsScrolled] = useState(false)
   const [isBrowseOpen, setIsBrowseOpen] = useState(false)
+  const [topLists, setTopLists] = useState([])
   const searchInputRef = useRef(null)
   const browseRef = useRef(null)
   const pathname = usePathname()
@@ -58,6 +61,14 @@ export default function Header() {
     }
   }, [isSearchOpen])
 
+  // Fetch published top lists for Browse menu
+  useEffect(() => {
+    fetch('/api/top-lists')
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setTopLists(Array.isArray(data) ? data : []))
+      .catch(() => {})
+  }, [])
+
   // Close browse dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -87,12 +98,18 @@ export default function Header() {
     { href: '/songs', label: 'Songs', icon: FiMusic },
     { href: '/artists', label: 'Artists', icon: FiMic },
     { href: '/albums', label: 'Albums', icon: FiDisc },
+    { href: '/movies', label: 'Movies', icon: FiFilm },
   ]
 
   const browseLinks = [
     { href: '/languages', label: 'Languages', icon: FiGlobe, description: 'Browse by language' },
     { href: '/genres', label: 'Genres', icon: FiGrid, description: 'Browse by genre' },
-    { href: '/movies', label: 'Movies', icon: FiFilm, description: 'Movie soundtracks' },
+    ...topLists.map(tl => ({
+      href: `/list/${tl.slug}`,
+      label: tl.title,
+      icon: FiTrendingUp,
+      description: `Top ${tl.count} songs`
+    })),
   ]
 
   return (

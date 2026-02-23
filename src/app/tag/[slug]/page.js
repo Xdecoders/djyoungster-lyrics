@@ -63,6 +63,19 @@ export async function generateMetadata({ params }) {
     alternates: {
       canonical: pageUrl,
     },
+    keywords: [
+      capitalizedName,
+      `${capitalizedName} songs`,
+      `${capitalizedName} lyrics`,
+      `${capitalizedName} music`,
+      'lyrics',
+      'songs',
+      'music',
+    ].join(', '),
+    robots: {
+      index: true,
+      follow: true,
+    },
   }
 }
 

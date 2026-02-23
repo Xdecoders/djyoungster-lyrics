@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateArtistSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import { toTitleCase } from '@/lib/utils'
+import PaginationHead from '@/components/PaginationHead'
 import ArtistPageClient from './ArtistPageClient'
 
 // ISR - Cache pages and revalidate every 60 seconds
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }) {
     const artist = await prisma.artist.findUnique({
       where: { slug },
       include: {
-        _count: { select: { songs: true, albums: true } },
+        _count: { select: { songs: { where: { song: { status: 'published' } } }, albums: true } },
         songs: { orderBy: { song: { createdAt: 'desc' } }, take: 1, select: { song: { select: { coverImage: true } } } }
       }
     })
@@ -127,7 +128,7 @@ async function getArtistData(slug, searchParams) {
           orderBy: { releaseDate: 'desc' }
         },
         _count: {
-          select: { songs: true }
+          select: { songs: { where: { song: { status: 'published' } } } }
         }
       }
     })
@@ -377,6 +378,12 @@ export default async function ArtistPage({ params, searchParams }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
         />
       )}
+      <PaginationHead
+        basePath={`/artist/${slug}`}
+        currentPage={data.pagination.page}
+        totalPages={data.pagination.totalPages}
+        searchParams={searchParamsResolved}
+      />
       <ArtistPageClient initialData={JSON.parse(JSON.stringify(data))} />
     </>
   )

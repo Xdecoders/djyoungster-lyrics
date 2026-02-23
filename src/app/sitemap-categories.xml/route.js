@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { getAbsoluteUrl } from '@/lib/seo'
 
 export const revalidate = 3600 // Regenerate every hour
 
@@ -7,18 +8,26 @@ export async function GET() {
 
   try {
     const categories = await prisma.category.findMany({
-      select: { slug: true, createdAt: true },
+      select: { slug: true, name: true, imageUrl: true, createdAt: true },
       orderBy: { createdAt: 'desc' },
     })
 
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${categories.map(category => `  <url>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${categories.map(category => {
+  const imageUrl = getAbsoluteUrl(category.imageUrl)
+  return `  <url>
     <loc>${baseUrl}/category/${category.slug}</loc>
     <lastmod>${(category.createdAt || new Date()).toISOString()}</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.6</priority>
-  </url>`).join('\n')}
+    <priority>0.6</priority>${imageUrl ? `
+    <image:image>
+      <image:loc>${imageUrl}</image:loc>
+      <image:title>${escapeXml(category.name)}</image:title>
+    </image:image>` : ''}
+  </url>`
+}).join('\n')}
 </urlset>`
 
     return new Response(xml, {
@@ -31,4 +40,14 @@ ${categories.map(category => `  <url>
     console.error('Error generating categories sitemap:', error)
     return new Response('Error generating sitemap', { status: 500 })
   }
+}
+
+function escapeXml(str) {
+  if (!str) return ''
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
 }

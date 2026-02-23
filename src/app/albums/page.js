@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import AlbumsPageClient from './AlbumsPageClient'
+import PaginationHead from '@/components/PaginationHead'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateBreadcrumbSchema } from '@/lib/schema'
 
@@ -99,6 +100,10 @@ export async function generateMetadata() {
     alternates: {
       canonical: `${siteUrl}/albums`,
     },
+    robots: {
+      index: true,
+      follow: true,
+    },
   }
 }
 
@@ -129,6 +134,12 @@ export default async function AlbumsPage({ searchParams }) {
 
   return (
     <>
+      <PaginationHead
+        basePath="/albums"
+        currentPage={data.pagination.page}
+        totalPages={data.pagination.totalPages}
+        searchParams={params}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
