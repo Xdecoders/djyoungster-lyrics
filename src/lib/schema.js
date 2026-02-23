@@ -130,23 +130,38 @@ export function generateSongSchema(song, artistNames) {
       ? [{ '@type': 'Person', name: artistNames }]
       : undefined
 
-  if (artistEntries) {
-    schema.recordedAs = {
-      '@type': 'MusicRecording',
-      name: song.title,
-      url: `${SITE_URL}/song/${song.slug}`,
-      byArtist: artistEntries
-    }
+  // Build recordedAs (MusicRecording) — holds byArtist, inAlbum, aggregateRating
+  const recording = {
+    '@type': 'MusicRecording',
+    name: song.title,
+    url: `${SITE_URL}/song/${song.slug}`,
   }
 
-  // Add album if available
+  if (artistEntries) {
+    recording.byArtist = artistEntries
+  }
+
+  // inAlbum is valid on MusicRecording, not MusicComposition
   if (song.album) {
-    schema.inAlbum = {
+    recording.inAlbum = {
       '@type': 'MusicAlbum',
       name: song.album.title,
       url: song.album.slug ? `${SITE_URL}/album/${song.album.slug}` : undefined
     }
   }
+
+  // aggregateRating is valid on MusicRecording for Google rich results
+  if (song.aggregateRating && song.aggregateRating.count > 0) {
+    recording.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: song.aggregateRating.average.toFixed(1),
+      ratingCount: song.aggregateRating.count.toString(),
+      bestRating: '5',
+      worstRating: '1'
+    }
+  }
+
+  schema.recordedAs = recording
 
   // Add genres if available
   if (song.genres?.length > 0) {
@@ -174,17 +189,6 @@ export function generateSongSchema(song, artistNames) {
         '@type': 'Person',
         name: authorName
       }
-    }
-  }
-
-  // Add aggregate rating if available
-  if (song.aggregateRating && song.aggregateRating.count > 0) {
-    schema.aggregateRating = {
-      '@type': 'AggregateRating',
-      ratingValue: song.aggregateRating.average.toFixed(1),
-      ratingCount: song.aggregateRating.count.toString(),
-      bestRating: '5',
-      worstRating: '1'
     }
   }
 

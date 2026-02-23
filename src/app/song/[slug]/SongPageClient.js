@@ -1412,43 +1412,45 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                       </span>
                     </button>
 
-                    <div itemProp="recordedAs" itemScope itemType="https://schema.org/MusicRecording" className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mb-3">
-                      {song.artists?.map(({ artist }) => (
-                        <Link
-                          key={artist.id}
-                          href={`/artist/${artist.slug}`}
-                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-full text-sm font-medium hover:bg-primary/10 hover:text-primary transition"
-                        >
-                          <FiUser className="w-3.5 h-3.5" />
-                          <span itemProp="byArtist" itemScope itemType="https://schema.org/MusicGroup">
-                            <span itemProp="name">{artist.name}</span>
-                          </span>
-                        </Link>
-                      ))}
-                    </div>
+                    <div itemProp="recordedAs" itemScope itemType="https://schema.org/MusicRecording" className="flex flex-col gap-3 mb-3">
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        {song.artists?.map(({ artist }) => (
+                          <Link
+                            key={artist.id}
+                            href={`/artist/${artist.slug}`}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-full text-sm font-medium hover:bg-primary/10 hover:text-primary transition"
+                          >
+                            <FiUser className="w-3.5 h-3.5" />
+                            <span itemProp="byArtist" itemScope itemType="https://schema.org/MusicGroup">
+                              <span itemProp="name">{artist.name}</span>
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
 
-                    {/* Meta Info */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400 mb-3">
-                      {song.album && (
-                        <Link href={`/album/${song.album.slug}`} className="flex items-center gap-1.5 hover:text-primary transition">
-                          <FiDisc className="w-4 h-4" />
-                          <span itemProp="inAlbum" itemScope itemType="https://schema.org/MusicAlbum">
-                            <span itemProp="name">{song.album.title}</span>
-                          </span>
-                        </Link>
-                      )}
+                      {/* Meta Info — inside recordedAs so inAlbum is on MusicRecording */}
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400">
+                        {song.album && (
+                          <Link href={`/album/${song.album.slug}`} className="flex items-center gap-1.5 hover:text-primary transition">
+                            <FiDisc className="w-4 h-4" />
+                            <span itemProp="inAlbum" itemScope itemType="https://schema.org/MusicAlbum">
+                              <span itemProp="name">{song.album.title}</span>
+                            </span>
+                          </Link>
+                        )}
                       {song.movie && (
                         <Link href={`/movie/${song.movie.slug}`} className="flex items-center gap-1.5 hover:text-primary transition">
                           <FiFilm className="w-4 h-4" />
                           <span>{song.movie.title}</span>
                         </Link>
                       )}
-                      {viewCount >= 1000 && (
-                        <span className="flex items-center gap-1.5">
-                          <FiEye className="w-4 h-4" />
-                          <span>{formatViews(viewCount)} views</span>
-                        </span>
-                      )}
+                        {viewCount >= 1000 && (
+                          <span className="flex items-center gap-1.5">
+                            <FiEye className="w-4 h-4" />
+                            <span>{formatViews(viewCount)} views</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     {/* Live Readers */}
