@@ -100,14 +100,42 @@ export function generateSongSchema(song, artistNames) {
     datePublished,
     ...(dateModified && { dateModified }),
     inLanguage: song.language || undefined,
-    // Use Person type for individual artists (not MusicGroup)
-    byArtist: song.artists?.length > 0 ? song.artists.map(sa => ({
+  }
+
+  // Add lyricist (valid for MusicComposition)
+  if (song.lyricist) {
+    schema.lyricist = {
       '@type': 'Person',
-      name: sa.artist.name,
-      url: sa.artist.slug ? `${SITE_URL}/artist/${sa.artist.slug}` : undefined
-    })) : {
+      name: song.lyricist
+    }
+  }
+
+  // Add composer (valid for MusicComposition)
+  if (song.composer) {
+    schema.composer = {
       '@type': 'Person',
-      name: artistNames
+      name: song.composer
+    }
+  }
+
+  // Add iswcCode if available
+  // Link artists via recordedAs → MusicRecording → byArtist
+  const artistEntries = song.artists?.length > 0
+    ? song.artists.map(sa => ({
+        '@type': 'Person',
+        name: sa.artist.name,
+        url: sa.artist.slug ? `${SITE_URL}/artist/${sa.artist.slug}` : undefined
+      }))
+    : artistNames
+      ? [{ '@type': 'Person', name: artistNames }]
+      : undefined
+
+  if (artistEntries) {
+    schema.recordedAs = {
+      '@type': 'MusicRecording',
+      name: song.title,
+      url: `${SITE_URL}/song/${song.slug}`,
+      byArtist: artistEntries
     }
   }
 
@@ -146,14 +174,6 @@ export function generateSongSchema(song, artistNames) {
         '@type': 'Person',
         name: authorName
       }
-    }
-  }
-
-  // Add music composer if available
-  if (song.composer) {
-    schema.composer = {
-      '@type': 'Person',
-      name: song.composer
     }
   }
 
