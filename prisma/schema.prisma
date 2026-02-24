@@ -462,44 +462,6 @@ model Annotation {
   @@index([songId])
 }
 
-model PushSubscription {
-  id        String   @id @default(uuid())
-  endpoint  String   @db.Text
-  authKey   String
-  p256dh    String
-  userAgent String?  @db.Text
-  ipAddress String?
-  status    String   @default("active") // active, unsubscribed
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([endpoint(length: 500)])
-  @@index([status])
-}
-
-model PushNotification {
-  id        String    @id @default(uuid())
-  title     String
-  body      String    @db.Text
-  url       String?
-  icon      String?
-  status    String    @default("draft") // draft, sent
-  sentTo    Int       @default(0)
-  failedTo  Int       @default(0)
-  clicks    Int       @default(0)
-  sentAt    DateTime?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-}
-
-model PwaInstall {
-  id        String   @id @default(uuid())
-  userAgent String?  @db.Text
-  ipAddress String?
-  platform  String?  // android, ios, desktop
-  createdAt DateTime @default(now())
-}
-
 model AppVisit {
   id        String   @id @default(uuid())
   ipAddress String?
