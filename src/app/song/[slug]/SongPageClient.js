@@ -1901,14 +1901,14 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   <FiX className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={enterStoryMode}
+                  onClick={() => { lyricsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); enterStoryMode() }}
                   className="px-3 py-1.5 text-sm font-semibold bg-white text-purple-700 rounded-lg hover:bg-purple-50 transition flex items-center gap-1.5"
                 >
                   <FiCamera className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Story</span>
                 </button>
                 <button
-                  onClick={enterClipMode}
+                  onClick={() => { lyricsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }); enterClipMode() }}
                   className="px-3 py-1.5 text-sm font-semibold bg-white text-cyan-700 rounded-lg hover:bg-cyan-50 transition flex items-center gap-1.5"
                 >
                   <FiVideo className="w-3.5 h-3.5" />
