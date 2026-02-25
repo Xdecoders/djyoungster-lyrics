@@ -82,6 +82,7 @@ export default function Footer() {
     { href: '/about-us', label: 'About Us' },
     { href: '/contact-us', label: 'Contact Us' },
     { href: '/request-song', label: 'Request Song Lyrics' },
+    { href: '/lyrics-instagram-story-maker', label: 'Lyrics Story Maker' },
     { href: '/privacy-policy', label: 'Privacy Policy' },
     { href: '/terms-and-conditions', label: 'Terms & Conditions' },
     { href: '/disclaimer', label: 'Disclaimer' },

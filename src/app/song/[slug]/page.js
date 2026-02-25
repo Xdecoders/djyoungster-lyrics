@@ -233,22 +233,17 @@ async function getSongData(slug) {
 
     if (!song) return null
 
-    // Fetch related songs
-    const artistIds = song.artists.map(sa => sa.artist.id)
-    const genreIds = song.genres.map(sg => sg.genre.id)
+    // Fetch related songs (same category, latest first, exclude current song)
+    const categoryIds = song.categories.map(sc => sc.category.id)
 
     const relatedSongs = await prisma.song.findMany({
       where: {
         AND: [
           { id: { not: song.id } },
           { status: 'published' },
-          {
-            OR: [
-              { artists: { some: { artistId: { in: artistIds } } } },
-              { genres: { some: { genreId: { in: genreIds } } } },
-              { albumId: song.albumId },
-            ]
-          }
+          ...(categoryIds.length > 0
+            ? [{ categories: { some: { categoryId: { in: categoryIds } } } }]
+            : [])
         ]
       },
       select: {
@@ -266,7 +261,7 @@ async function getSongData(slug) {
         }
       },
       take: 8,
-      orderBy: { views: 'desc' }
+      orderBy: { createdAt: 'desc' }
     })
 
     return { song, relatedSongs }

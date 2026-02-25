@@ -96,22 +96,17 @@ export async function GET(request, { params }) {
       data: { views: { increment: 1 } }
     }).catch(console.error)
 
-    // Fetch related songs (same artist or genre)
-    const artistIds = song.artists.map(sa => sa.artist.id)
-    const genreIds = song.genres.map(sg => sg.genre.id)
+    // Fetch related songs (same category, latest first, exclude current song)
+    const categoryIds = song.categories.map(sc => sc.category.id)
 
     const relatedSongs = await prisma.song.findMany({
       where: {
         AND: [
           { id: { not: song.id } },
           { status: 'published' },
-          {
-            OR: [
-              { artists: { some: { artistId: { in: artistIds } } } },
-              { genres: { some: { genreId: { in: genreIds } } } },
-              { albumId: song.albumId },
-            ]
-          }
+          ...(categoryIds.length > 0
+            ? [{ categories: { some: { categoryId: { in: categoryIds } } } }]
+            : [])
         ]
       },
       include: {
@@ -124,7 +119,7 @@ export async function GET(request, { params }) {
         }
       },
       take: 8,
-      orderBy: { views: 'desc' }
+      orderBy: { createdAt: 'desc' }
     })
 
     const response = NextResponse.json({ song, relatedSongs })

@@ -46,7 +46,7 @@ import {
   FiStar
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
-import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest } from 'react-icons/fa'
+import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest, FaInstagram } from 'react-icons/fa'
 import { FaXTwitter, FaLinkedinIn } from 'react-icons/fa6'
 
 // HTML helpers for backward-compatible rendering
@@ -1252,6 +1252,18 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const [headerTotalRatings, setHeaderTotalRatings] = useState(0)
   const lyricsRef = useRef(null)
   const ratingsRef = useRef(null)
+  const [showFloatingCta, setShowFloatingCta] = useState(false)
+  const [ctaDismissed, setCtaDismissed] = useState(false)
+
+  // Show floating CTA after scrolling 400px, hide if dismissed or in select mode
+  useEffect(() => {
+    const onScroll = () => {
+      if (ctaDismissed) return
+      setShowFloatingCta(window.scrollY > 400)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [ctaDismissed])
 
   // Story mode (dynamically imported)
   const {
@@ -1380,12 +1392,25 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   <div className="flex-1 text-center sm:text-left">
                     <h1 itemProp="name" className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">
                       {song.title} Lyrics
+                      {song.verified && (
+                        <svg className="inline-block w-[18px] h-[18px] sm:w-[21px] sm:h-[21px] ml-1.5 align-middle" viewBox="0 0 20 20" fill="none">
+                          <title>Verified Lyrics</title>
+                          <defs>
+                            <linearGradient id="gemGrad" x1="0" y1="0" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+                              <stop offset="0%" stopColor="#1DB954" />
+                              <stop offset="100%" stopColor="#059669" />
+                            </linearGradient>
+                          </defs>
+                          <rect x="10" y="1" width="12.73" height="12.73" rx="2.5" transform="rotate(45 10 1)" fill="url(#gemGrad)" />
+                          <path d="M7 10.5L9 12.5L13 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
                     </h1>
 
                     {/* Star Rating Summary */}
                     <button
                       onClick={() => ratingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                      className="inline-flex items-center gap-1.5 mb-3 group cursor-pointer"
+                      className="flex items-center gap-1.5 mb-3 group cursor-pointer justify-center sm:justify-start"
                       title="Rate this song"
                     >
                       <div className="flex items-center gap-0.5">
@@ -1857,6 +1882,43 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         onTemplateChange={handleClipTemplateChange}
         selectedTemplate={clipTemplate}
       />
+
+      {/* Floating CTA — Create Story / Reel */}
+      {showFloatingCta && !isAnySelectMode && (
+        <div className="fixed bottom-0 left-0 right-0 z-30">
+          <div className="bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 px-4 py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.15)] animate-slideUp">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-white min-w-0">
+                <FaInstagram className="w-5 h-5 flex-shrink-0" />
+                <span className="text-sm font-medium truncate">Create Lyrics Status for Instagram</span>
+              </div>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <button
+                  onClick={() => { setCtaDismissed(true); setShowFloatingCta(false) }}
+                  className="p-1.5 text-white/70 hover:text-white transition rounded-lg hover:bg-white/10"
+                  title="Dismiss"
+                >
+                  <FiX className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={enterStoryMode}
+                  className="px-3 py-1.5 text-sm font-semibold bg-white text-purple-700 rounded-lg hover:bg-purple-50 transition flex items-center gap-1.5"
+                >
+                  <FiCamera className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Story</span>
+                </button>
+                <button
+                  onClick={enterClipMode}
+                  className="px-3 py-1.5 text-sm font-semibold bg-white text-cyan-700 rounded-lg hover:bg-cyan-50 transition flex items-center gap-1.5"
+                >
+                  <FiVideo className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Reel</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Story Mode Floating Bottom Bar */}
       {isStoryMode && (
