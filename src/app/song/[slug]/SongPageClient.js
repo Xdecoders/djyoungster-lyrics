@@ -1410,14 +1410,14 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                     {/* Star Rating Summary */}
                     <button
                       onClick={() => ratingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                      className="flex items-center gap-1.5 mb-3 group cursor-pointer justify-center sm:justify-start"
+                      className="inline-flex items-center gap-1.5 mb-3 group cursor-pointer mx-auto sm:mx-0"
                       title="Rate this song"
                     >
                       <div className="flex items-center gap-0.5">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <svg
                             key={star}
-                            className={`w-4 h-4 transition-colors ${
+                            className={`w-5 h-5 transition-colors ${
                               star <= Math.round(headerAvgRating)
                                 ? 'text-amber-400 fill-amber-400'
                                 : 'text-slate-300 dark:text-slate-600 fill-slate-300 dark:fill-slate-600'
@@ -1430,7 +1430,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                           </svg>
                         ))}
                       </div>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 group-hover:text-primary transition">
+                      <span className="text-sm text-slate-500 dark:text-slate-400 group-hover:text-primary transition">
                         {headerTotalRatings > 0
                           ? `${headerAvgRating} (${headerTotalRatings})`
                           : 'Rate this song'}
