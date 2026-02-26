@@ -12,7 +12,7 @@ export async function GET() {
   try {
     const movies = await prisma.movie.findMany({
       orderBy: {
-        title: 'asc'
+        createdAt: 'desc'
       },
       include: {
         _count: {

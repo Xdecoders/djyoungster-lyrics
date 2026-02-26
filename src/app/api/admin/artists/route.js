@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const artists = await prisma.artist.findMany({
       orderBy: {
-        name: 'asc'
+        createdAt: 'desc'
       },
       include: {
         _count: {
