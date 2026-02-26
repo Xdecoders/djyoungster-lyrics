@@ -22,7 +22,7 @@ export default async function sitemap() {
   ]
 
   // Fetch all dynamic content (with image fields for image sitemap)
-  const [songs, artists, albums, movies, genres, categories, tags, topLists] = await Promise.all([
+  const [songs, artists, albums, movies, genres, categories, tags, topLists, redirects] = await Promise.all([
     prisma.song.findMany({
       where: { status: 'published' },
       select: { slug: true, coverImage: true, updatedAt: true, dateModified: true },
@@ -53,6 +53,10 @@ export default async function sitemap() {
     prisma.topList.findMany({
       where: { isPublished: true },
       select: { slug: true, updatedAt: true }
+    }),
+    prisma.redirect.findMany({
+      where: { isActive: true },
+      select: { newUrl: true, updatedAt: true }
     }),
   ])
 
@@ -121,6 +125,29 @@ export default async function sitemap() {
     }))
   ]
 
+  // Redirect destination pages — only local paths not already covered above
+  const existingUrls = new Set([
+    ...staticPages,
+    ...songPages,
+    ...artistPages,
+    ...albumPages,
+    ...moviePages,
+    ...genrePages,
+    ...categoryPages,
+    ...tagPages,
+    ...topListPages,
+  ].map(p => p.url))
+
+  const redirectPages = redirects
+    .filter(r => !r.newUrl.startsWith('http'))  // local paths only
+    .map(r => ({
+      url: `${baseUrl}${r.newUrl.startsWith('/') ? r.newUrl : `/${r.newUrl}`}`,
+      lastModified: r.updatedAt,
+      changeFrequency: 'monthly',
+      priority: 0.5,
+    }))
+    .filter(p => !existingUrls.has(p.url))  // deduplicate
+
   return [
     ...staticPages,
     ...songPages,
@@ -131,5 +158,6 @@ export default async function sitemap() {
     ...categoryPages,
     ...tagPages,
     ...topListPages,
+    ...redirectPages,
   ]
 }
