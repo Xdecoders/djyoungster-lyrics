@@ -22,7 +22,8 @@ import {
   FiDownload,
   FiDownloadCloud,
   FiInbox,
-  FiList
+  FiList,
+  FiCornerUpRight
 } from 'react-icons/fi'
 import { useState, useEffect } from 'react'
 
@@ -102,6 +103,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/categories', label: 'Categories', icon: FiGrid },
     { href: '/admin/movies', label: 'Movies', icon: FiFilm },
     { href: '/admin/top-lists', label: 'Top Lists', icon: FiList },
+    { href: '/admin/redirects', label: 'Redirects', icon: FiCornerUpRight },
 { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail, badgeType: 'subscriber' },
     { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badgeType: 'reports' },
     { href: '/admin/song-requests', label: 'Song Requests', icon: FiInbox, badgeType: 'songRequests' },
