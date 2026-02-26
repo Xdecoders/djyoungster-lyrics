@@ -217,7 +217,7 @@ export default function RedirectsPage() {
                     className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition font-mono text-sm"
                     required
                   />
-                  <p className="text-xs text-slate-400 mt-1">Path on your site, e.g. /old-song-name</p>
+                  <p className="text-xs text-slate-400 mt-1">Path on your site, e.g. /old-song-name — use /* for wildcard, e.g. /blog/*</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -349,7 +349,12 @@ export default function RedirectsPage() {
                   {paginated.map((redirect) => (
                     <tr key={redirect.id} className="hover:bg-slate-50/60 transition group">
                       <td className="px-5 py-3.5">
-                        <div className="font-mono text-sm text-slate-800 break-all">{redirect.oldUrl}</div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-mono text-sm text-slate-800 break-all">{redirect.oldUrl}</span>
+                          {redirect.oldUrl.endsWith('/*') && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-semibold bg-violet-100 text-violet-600 shrink-0">wildcard</span>
+                          )}
+                        </div>
                         {redirect.note && (
                           <div className="text-xs text-slate-400 mt-0.5">{redirect.note}</div>
                         )}

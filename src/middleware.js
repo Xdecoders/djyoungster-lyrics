@@ -51,9 +51,19 @@ export async function middleware(request) {
   if (!pathname.startsWith('/api/') && !pathname.startsWith('/admin')) {
     const origin = `${url.protocol}//${url.host}`
     const redirects = await getRedirects(origin)
-    const match = redirects.find(
+    // Exact match first
+    let match = redirects.find(
       r => r.oldUrl === pathname || r.oldUrl === pathname + '/'
     )
+
+    // Wildcard match (e.g. /blog/* matches /blog/anything)
+    if (!match) {
+      match = redirects.find(r => {
+        if (!r.oldUrl.endsWith('/*')) return false
+        const prefix = r.oldUrl.slice(0, -2) // strip /*
+        return pathname === prefix || pathname.startsWith(prefix + '/')
+      })
+    }
     if (match) {
       const target = match.newUrl.startsWith('http')
         ? match.newUrl
