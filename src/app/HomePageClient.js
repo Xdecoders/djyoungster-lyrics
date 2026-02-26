@@ -685,7 +685,7 @@ export default function HomePageClient({ initialData }) {
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mb-10 text-sm text-slate-600 dark:text-slate-400">
             <div className="flex items-center gap-2">
               <FiUsers className="w-5 h-5 text-primary" />
-              <span className="font-medium">15,000+ Active Users</span>
+              <span className="font-medium">35,000+ Active Users</span>
             </div>
             <div className="flex items-center gap-2">
               <FiCheckCircle className="w-5 h-5 text-emerald-500" />
