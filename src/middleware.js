@@ -3,23 +3,34 @@ import { jwtVerify } from 'jose'
 
 const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-change-in-production')
 
-// In-memory redirect cache (persists across warm edge instances)
+// In-memory redirect cache (persists across warm instances)
 let redirectCache = null
 let cacheExpiry = 0
 const CACHE_TTL = 60 * 1000 // 1 minute
 
-async function getRedirects(origin) {
+async function getRedirects(requestOrigin) {
   const now = Date.now()
   if (redirectCache !== null && now < cacheExpiry) {
     return redirectCache
   }
+
+  // Prefer the configured SITE_URL (avoids SSL/proxy overhead on VPS).
+  // Fall back to the origin derived from the incoming request.
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.SITE_URL ||
+    requestOrigin
+
   try {
-    const res = await fetch(`${origin}/api/redirects`)
+    const res = await fetch(`${base}/api/redirects`, { cache: 'no-store' })
     if (res.ok) {
       redirectCache = await res.json()
       cacheExpiry = now + CACHE_TTL
     }
-  } catch {}
+  } catch {
+    // Fetch failed — keep stale cache if available, otherwise return []
+  }
+
   return redirectCache || []
 }
 
