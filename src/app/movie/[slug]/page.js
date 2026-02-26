@@ -43,7 +43,7 @@ export async function generateMetadata({ params }) {
     const movieTitle = toTitleCase(movie.title)
     const title = movie.metaTitle || `${movieTitle}${movie.year ? ` (${movie.year})` : ''} Songs Lyrics with English Translation - DJYoungster`
     const description = movie.metaDescription ||
-      `Explore ${movieTitle} movie song lyrics and meanings. Djyoungster provides ${movieTitle} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `Explore ${movieTitle} movie song lyrics and meanings. DJYoungster provides ${movieTitle} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/movie/${slug}`

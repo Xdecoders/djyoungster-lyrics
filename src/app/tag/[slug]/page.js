@@ -34,7 +34,7 @@ export async function generateMetadata({ params }) {
 
   const capitalizedName = toTitleCase(tag.name)
   const title = tag.metaTitle || `${capitalizedName} Songs Lyrics with English Translation - DJYoungster`
-  const description = tag.metaDescription || `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
+  const description = tag.metaDescription || `Explore ${capitalizedName} song lyrics and meanings. DJYoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
   return {
     title,

@@ -93,7 +93,7 @@ export default function TagPageClient({ initialTag, initialSongs }) {
 
   // Generate description - use custom if available, otherwise auto-generate
   const tagDescription = tag?.metaDescription ||
-    `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
+    `Explore ${capitalizedName} song lyrics and meanings. DJYoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1

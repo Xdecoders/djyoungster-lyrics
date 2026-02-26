@@ -10,7 +10,7 @@ import { FiFilm, FiMusic, FiPlay, FiEye, FiChevronRight, FiCalendar, FiUser, FiU
 function MovieDescription({ movie }) {
   // Use custom metaDescription if available, otherwise auto-generate consistent format
   const description = movie.metaDescription ||
-    `Explore ${movie.title} movie song lyrics and meanings. Djyoungster provides ${movie.title} lyrics in English Translation, Hindi and Punjabi language variations.`
+    `Explore ${movie.title} movie song lyrics and meanings. DJYoungster provides ${movie.title} lyrics in English Translation, Hindi and Punjabi language variations.`
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">

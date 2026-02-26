@@ -373,10 +373,10 @@ export default function EditArtist() {
                   onChange={handleChange}
                   rows={3}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
-                  placeholder={`${formData.name} through his song lyrics and meanings. Djyoungster provides ${formData.name} lyrics in English Translation, Hindi and Punjabi language variations.`}
+                  placeholder={`${formData.name} through his song lyrics and meanings. DJYoungster provides ${formData.name} lyrics in English Translation, Hindi and Punjabi language variations.`}
                 />
                 {!formData.metaDescription && formData.name && (
-                  <p className="text-xs text-slate-400 mt-1">Default: {formData.name} through his song lyrics and meanings. Djyoungster provides {formData.name} lyrics in English Translation, Hindi and Punjabi language variations.</p>
+                  <p className="text-xs text-slate-400 mt-1">Default: {formData.name} through his song lyrics and meanings. DJYoungster provides {formData.name} lyrics in English Translation, Hindi and Punjabi language variations.</p>
                 )}
               </div>
             </div>

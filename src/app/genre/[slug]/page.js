@@ -39,7 +39,7 @@ export async function generateMetadata({ params }) {
     const capitalizedName = toTitleCase(genre.name)
     const title = genre.metaTitle || `${capitalizedName} Songs Lyrics with English Translation - DJYoungster`
     const description = genre.metaDescription ||
-      `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `Explore ${capitalizedName} song lyrics and meanings. DJYoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/genre/${slug}`

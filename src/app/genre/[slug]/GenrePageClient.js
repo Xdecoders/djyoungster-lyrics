@@ -95,7 +95,7 @@ export default function GenrePageClient({ initialData }) {
 
   // Generate description - use custom if available, otherwise auto-generate
   const genreDescription = genre?.metaDescription ||
-    `Explore ${capitalizedName} song lyrics and meanings. Djyoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
+    `Explore ${capitalizedName} song lyrics and meanings. DJYoungster provides ${capitalizedName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentPage = parseInt(searchParams.get('page')) || 1

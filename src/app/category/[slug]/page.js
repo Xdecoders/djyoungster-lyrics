@@ -39,7 +39,7 @@ export async function generateMetadata({ params }) {
     const categoryName = toTitleCase(category.name)
     const title = category.metaTitle || `${categoryName} Songs Lyrics with English Translation - DJYoungster`
     const description = category.metaDescription ||
-      `Explore ${categoryName} song lyrics and meanings. Djyoungster provides ${categoryName} lyrics in English Translation, Hindi and Punjabi language variations.`
+      `Explore ${categoryName} song lyrics and meanings. DJYoungster provides ${categoryName} lyrics in English Translation, Hindi and Punjabi language variations.`
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/category/${slug}`

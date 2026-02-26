@@ -94,7 +94,7 @@ export default function CategoryPageClient({ initialData }) {
 
   // Generate description - use custom if available, otherwise auto-generate
   const categoryDescription = category?.metaDescription ||
-    `Explore ${category?.name} song lyrics and meanings. Djyoungster provides ${category?.name} lyrics in English Translation, Hindi and Punjabi language variations.`
+    `Explore ${category?.name} song lyrics and meanings. DJYoungster provides ${category?.name} lyrics in English Translation, Hindi and Punjabi language variations.`
 
   const currentSort = searchParams.get('sort') || 'latest'
   const currentGenre = searchParams.get('genre') || ''
