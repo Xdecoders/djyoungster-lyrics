@@ -54,10 +54,10 @@ export default async function sitemap() {
       where: { isPublished: true },
       select: { slug: true, updatedAt: true }
     }),
-    prisma.redirect.findMany({
+    prisma.redirect?.findMany({
       where: { isActive: true },
       select: { newUrl: true, updatedAt: true }
-    }),
+    }) ?? Promise.resolve([]),
   ])
 
   const songPages = songs.map(song => ({
