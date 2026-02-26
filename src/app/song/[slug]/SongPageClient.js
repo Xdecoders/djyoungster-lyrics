@@ -1211,7 +1211,7 @@ function RatingsAndReactions({ slug, ratingsRef, onRatingChange }) {
       <div>
         <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-3">How does this song make you feel?</h3>
         <div className="flex flex-wrap gap-2">
-          {Object.entries(EMOJI_MAP).map(([key, { icon }]) => {
+          {Object.entries(EMOJI_MAP).map(([key, { icon, label }]) => {
             const isActive = userReactions.includes(key)
             const count = reactions[key] || 0
             return (
@@ -1219,14 +1219,14 @@ function RatingsAndReactions({ slug, ratingsRef, onRatingChange }) {
                 key={key}
                 onClick={() => handleReact(key)}
                 disabled={reactionsLoading}
-                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
+                className={`inline-flex flex-col items-center gap-1 px-3.5 py-2 rounded-xl text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-primary/10 dark:bg-primary/20 border-2 border-primary text-primary shadow-sm'
                     : 'bg-slate-50 dark:bg-slate-700/50 border-2 border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
                 } disabled:opacity-50`}
               >
-                <span className="text-lg">{icon}</span>
-                {count > 0 && <span>{count}</span>}
+                <span className="text-xl">{icon}</span>
+                <span className="text-xs leading-none">{label}{count > 0 ? ` ${count}` : ''}</span>
               </button>
             )
           })}
