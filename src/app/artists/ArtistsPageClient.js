@@ -10,7 +10,7 @@ function ArtistCard({ artist, priority = false }) {
   return (
     <Link href={`/artist/${artist.slug}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
       {displayImage ? (
-        <Image src={displayImage} alt={artist.name} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
+        <Image src={displayImage} alt={`${artist.name} – ${artist._count?.songs || 0} song${(artist._count?.songs || 0) !== 1 ? 's' : ''} on DJYoungster`} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
           <FiUser className="w-12 h-12 text-slate-400/50" />

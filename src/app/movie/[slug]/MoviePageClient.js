@@ -242,7 +242,7 @@ export default function MoviePageClient({ initialMovie }) {
               {movie.posterUrl || movie.songs?.[0]?.coverImage ? (
                 <Image
                   src={movie.posterUrl || movie.songs?.[0]?.coverImage}
-                  alt={movie.title}
+                  alt={`${movie.title}${movie.year ? ' (' + movie.year + ')' : ''} – movie poster and song lyrics`}
                   fill
                   sizes="(max-width: 640px) 144px, 176px"
                   className="object-cover"

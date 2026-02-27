@@ -11,7 +11,7 @@ function MovieCard({ movie, priority = false }) {
   return (
     <Link href={`/movie/${movie.slug || movie.id}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
       {posterImage ? (
-        <Image src={posterImage} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
+        <Image src={posterImage} alt={`${movie.title}${movie.year ? ' (' + movie.year + ')' : ''} – movie songs and lyrics`} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
           <FiFilm className="w-12 h-12 text-slate-400/50" />

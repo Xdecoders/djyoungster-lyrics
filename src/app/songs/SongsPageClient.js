@@ -12,7 +12,7 @@ function SongCard({ song, priority = false }) {
   return (
     <Link href={`/song/${song.slug}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
       {song.coverImage || song.album?.coverImage ? (
-        <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
+        <Image src={song.coverImage || song.album?.coverImage} alt={`${song.title} lyrics by ${artistNames}`} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
           <FiMusic className="w-12 h-12 text-slate-400/50" />
@@ -50,7 +50,7 @@ function SongRow({ song, index }) {
       <span className="w-8 text-center text-slate-400 dark:text-slate-500 font-medium">{index + 1}</span>
       <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden flex-shrink-0 relative">
         {song.coverImage || song.album?.coverImage ? (
-          <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="48px" className="object-cover" />
+          <Image src={song.coverImage || song.album?.coverImage} alt={`${song.title} by ${artistNames}`} fill sizes="48px" className="object-cover" />
         ) : (
           <FiMusic className="w-5 h-5 text-primary" />
         )}

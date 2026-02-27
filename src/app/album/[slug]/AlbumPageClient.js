@@ -281,7 +281,7 @@ export default function AlbumPageClient({ initialAlbum }) {
             {/* Cover Image - Larger Size */}
             <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden shadow-lg mx-auto sm:mx-0 flex-shrink-0 relative">
               {album.coverImage ? (
-                <Image src={album.coverImage} alt={album.title} fill sizes="(max-width: 640px) 176px, 208px" className="object-cover" />
+                <Image src={album.coverImage} alt={`${album.title}${album.artist?.name ? ' by ' + album.artist.name : ''} – album cover`} fill sizes="(max-width: 640px) 176px, 208px" className="object-cover" />
               ) : (
                 <FiDisc className="w-20 h-20 text-emerald-400" />
               )}

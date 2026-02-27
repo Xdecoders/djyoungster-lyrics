@@ -182,7 +182,7 @@ function HeroSection({ artist, featuredSongs, songs, socialLinks }) {
           {profileImage ? (
             <Image
               src={profileImage}
-              alt={artist?.name}
+              alt={`${artist?.name} – singer profile and song lyrics`}
               fill
               sizes="(max-width: 640px) 176px, 208px"
               className="object-cover"

@@ -21,7 +21,7 @@ function SongCard({ song }) {
   return (
     <Link href={`/song/${song.slug}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
       {song.coverImage || song.album?.coverImage ? (
-        <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+        <Image src={song.coverImage || song.album?.coverImage} alt={`${song.title} lyrics by ${artistNames}`} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
           <FiMusic className="w-12 h-12 text-slate-400/50" />
@@ -48,7 +48,7 @@ function ArtistCard({ artist }) {
     <Link href={`/artist/${artist.slug}`} className="group text-center">
       <div className="w-24 h-24 mx-auto rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md group-hover:scale-105 transition relative">
         {artist.imageUrl ? (
-          <Image src={artist.imageUrl} alt={artist.name} fill sizes="96px" className="object-cover" />
+          <Image src={artist.imageUrl} alt={`${artist.name} – singer photo`} fill sizes="96px" className="object-cover" />
         ) : (
           <FiUser className="w-10 h-10 text-emerald-400" />
         )}
@@ -64,7 +64,7 @@ function AlbumCard({ album }) {
     <Link href={`/album/${album.slug}`} className="group">
       <div className="aspect-square rounded-2xl bg-gradient-to-br from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
         {album.coverImage ? (
-          <Image src={album.coverImage} alt={album.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
+          <Image src={album.coverImage} alt={`${album.title}${album.artist?.name ? ' by ' + album.artist.name : ''} – album cover`} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
         ) : (
           <FiDisc className="w-12 h-12 text-emerald-400" />
         )}
@@ -80,7 +80,7 @@ function MovieCard({ movie }) {
     <Link href={`/movie/${movie.slug || movie.id}`} className="group">
       <div className="aspect-[3/4] rounded-2xl bg-gradient-to-br from-rose-100 to-pink-100 dark:from-rose-900/30 dark:to-pink-900/30 flex items-center justify-center overflow-hidden mb-3 shadow-sm group-hover:shadow-md transition relative">
         {movie.thumbnail ? (
-          <Image src={movie.thumbnail} alt={movie.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
+          <Image src={movie.thumbnail} alt={`${movie.title}${movie.year ? ' (' + movie.year + ')' : ''} – movie songs`} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover" />
         ) : (
           <FiFilm className="w-12 h-12 text-rose-400" />
         )}

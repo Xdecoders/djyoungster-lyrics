@@ -1382,7 +1382,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   {/* Cover Image - Larger Size */}
                   <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg mx-auto sm:mx-0 relative">
                     {song.coverImage ? (
-                      <Image src={song.coverImage} alt={`${song.title} Song Cover`} fill sizes="(max-width: 640px) 176px, 208px" className="object-cover" itemProp="image" />
+                      <Image src={song.coverImage} alt={`${song.title} by ${artistNames} – song cover art`} fill sizes="(max-width: 640px) 176px, 208px" className="object-cover" itemProp="image" />
                     ) : (
                       <FiMusic className="w-20 h-20 text-slate-400 dark:text-slate-500" />
                     )}
