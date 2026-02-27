@@ -6,13 +6,13 @@ import Image from '@/components/OptimizedImage'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiMusic, FiPlay, FiGrid, FiList, FiEye, FiChevronRight } from 'react-icons/fi'
 
-function SongCard({ song }) {
+function SongCard({ song, priority = false }) {
   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
 
   return (
     <Link href={`/song/${song.slug}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
       {song.coverImage || song.album?.coverImage ? (
-        <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+        <Image src={song.coverImage || song.album?.coverImage} alt={song.title} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
           <FiMusic className="w-12 h-12 text-slate-400/50" />
@@ -191,7 +191,7 @@ export default function SongsPageClient({ initialData }) {
           </div>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {songs.map((song) => <SongCard key={song.id} song={song} />)}
+            {songs.map((song, i) => <SongCard key={song.id} song={song} priority={i < 4} />)}
           </div>
         ) : (
           <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 divide-y divide-slate-50 dark:divide-slate-700">

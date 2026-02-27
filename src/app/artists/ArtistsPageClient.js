@@ -5,12 +5,12 @@ import Image from '@/components/OptimizedImage'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiUser, FiChevronRight } from 'react-icons/fi'
 
-function ArtistCard({ artist }) {
+function ArtistCard({ artist, priority = false }) {
   const displayImage = artist.imageUrl || artist.thumbnail
   return (
     <Link href={`/artist/${artist.slug}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
       {displayImage ? (
-        <Image src={displayImage} alt={artist.name} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+        <Image src={displayImage} alt={artist.name} fill sizes="(max-width: 640px) 50vw, 200px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
           <FiUser className="w-12 h-12 text-slate-400/50" />
@@ -71,7 +71,7 @@ export default function ArtistsPageClient({ initialData }) {
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-          {artists.map((artist) => <ArtistCard key={artist.id} artist={artist} />)}
+          {artists.map((artist, i) => <ArtistCard key={artist.id} artist={artist} priority={i < 4} />)}
         </div>
 
         {pagination && pagination.totalPages > 1 && (

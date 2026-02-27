@@ -5,13 +5,13 @@ import Image from '@/components/OptimizedImage'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FiFilm, FiChevronRight } from 'react-icons/fi'
 
-function MovieCard({ movie }) {
+function MovieCard({ movie, priority = false }) {
   const posterImage = movie.posterUrl || movie.songs?.[0]?.coverImage || null
 
   return (
     <Link href={`/movie/${movie.slug || movie.id}`} className="group relative rounded-2xl overflow-hidden aspect-[3/4]">
       {posterImage ? (
-        <Image src={posterImage} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover group-hover:scale-105 transition-transform duration-500" />
+        <Image src={posterImage} alt={movie.title} fill sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 16vw" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={priority} />
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
           <FiFilm className="w-12 h-12 text-slate-400/50" />
@@ -81,7 +81,7 @@ export default function MoviesPageClient({ initialData }) {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            {movies.map((movie) => <MovieCard key={movie.id} movie={movie} />)}
+            {movies.map((movie, i) => <MovieCard key={movie.id} movie={movie} priority={i < 4} />)}
           </div>
         )}
 

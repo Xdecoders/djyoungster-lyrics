@@ -11,12 +11,15 @@ function localImageLoader({ src, width }) {
   return `${basePath}.webp`
 }
 
-export default function OptimizedImage({ src, ...props }) {
+export default function OptimizedImage({ src, priority, loading, ...props }) {
   const isLocalUpload = typeof src === 'string' && src.startsWith('/uploads/')
+  // Be explicit about lazy loading so browsers and auditing tools see it.
+  // When priority is set Next.js preloads eagerly — don't set loading in that case.
+  const loadingProp = priority ? undefined : (loading ?? 'lazy')
 
   if (isLocalUpload) {
-    return <Image src={src} loader={localImageLoader} {...props} />
+    return <Image src={src} loader={localImageLoader} priority={priority} loading={loadingProp} {...props} />
   }
 
-  return <Image src={src} {...props} />
+  return <Image src={src} priority={priority} loading={loadingProp} {...props} />
 }
