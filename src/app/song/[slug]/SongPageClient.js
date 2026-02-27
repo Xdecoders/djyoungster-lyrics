@@ -1027,7 +1027,7 @@ const EMOJI_MAP = {
   hundred: { icon: '\uD83D\uDCAF', label: 'Perfect' }
 }
 
-function RatingsAndReactions({ slug, ratingsRef, onRatingChange }) {
+function RatingsAndReactions({ slug, songTitle, ratingsRef, onRatingChange }) {
   const [averageRating, setAverageRating] = useState(0)
   const [totalRatings, setTotalRatings] = useState(0)
   const [userRating, setUserRating] = useState(0)
@@ -1155,7 +1155,7 @@ function RatingsAndReactions({ slug, ratingsRef, onRatingChange }) {
       <div className="mb-6">
         <h2 className="text-lg font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
           <FiStar className="w-5 h-5 text-amber-500" />
-          Rate this Song
+          Rate "{songTitle}"
         </h2>
         <div className="flex items-center gap-1 mb-2">
           {[1, 2, 3, 4, 5].map((star) => (
@@ -1587,6 +1587,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
               {/* Ratings & Reactions */}
               <RatingsAndReactions
                 slug={params.slug}
+                songTitle={song.title}
                 ratingsRef={ratingsRef}
                 onRatingChange={(avg, total) => {
                   setHeaderAvgRating(avg)
