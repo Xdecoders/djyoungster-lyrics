@@ -15,7 +15,6 @@ export async function generateMetadata({ searchParams }) {
     return {
       title: 'Search Songs, Artists, Albums & Movies | DJYoungster',
       description: 'Search for song lyrics, artists, albums, and movies on DJYoungster. Find Hindi, Punjabi, English, Tamil, and Telugu song lyrics with just a few keystrokes.',
-      keywords: 'search lyrics, find songs, search artists, search albums, lyrics search, DJYoungster search',
       openGraph: {
         title: 'Search Songs, Artists, Albums & Movies | DJYoungster',
         description: 'Search for song lyrics, artists, albums, and movies on DJYoungster.',
@@ -54,7 +53,6 @@ export async function generateMetadata({ searchParams }) {
   return {
     title: `${displayQuery} - Search ${typeLabel} | DJYoungster`,
     description: `Search results for "${displayQuery}" on DJYoungster. Find ${typeLabel.toLowerCase()} matching "${displayQuery}" with complete lyrics, artist info, album details, and more.`,
-    keywords: `${displayQuery}, ${displayQuery} lyrics, ${displayQuery} song, ${displayQuery} artist, search ${displayQuery}, DJYoungster`,
     openGraph: {
       title: `${displayQuery} - Search ${typeLabel} | DJYoungster`,
       description: `Search results for "${displayQuery}" on DJYoungster. Find ${typeLabel.toLowerCase()} matching your search.`,

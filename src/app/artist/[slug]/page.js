@@ -79,32 +79,6 @@ export async function generateMetadata({ params }) {
     return {
       title,
       description,
-      keywords: [
-        artistName,
-        `${artistName} all songs lyrics`,
-        `${artistName} songs`,
-        `${artistName} lyrics`,
-        `${artistName} discography`,
-        `${artistName} albums`,
-        `${artistName} song list`,
-        `${artistName} new songs`,
-        `${artistName} latest songs`,
-        `${artistName} hits`,
-      ].join(', '),
-      openGraph: {
-        title,
-        description,
-        url: pageUrl,
-        siteName: 'DJYoungster',
-        type: 'profile',
-        images: [
-          {
-            url: imageUrl,
-            width: 1200,
-            height: 630,
-            alt: artistName,
-          },
-        ],
         locale: 'en_IN',
         alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
       },

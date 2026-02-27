@@ -118,19 +118,6 @@ export async function generateMetadata({ params }) {
     return {
       title: metaTitle,
       description: metaDescription,
-      keywords: [
-        songTitle,
-        `${songTitle} lyrics`,
-        artistNames,
-        `${artistNames} songs`,
-        movieTitle,
-        albumTitle,
-        genres,
-        'lyrics',
-        'song lyrics',
-        'music',
-      ].filter(Boolean).join(', '),
-      authors: [{ name: artistNames }],
       openGraph: {
         title: metaTitle,
         description: metaDescription,

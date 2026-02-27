@@ -34,7 +34,6 @@ export async function generateMetadata() {
   return {
     title: seo.metaTitle || 'Browse Songs by Language | DJYoungster',
     description: seo.metaDescription || 'Explore song lyrics in multiple languages including Hindi, Punjabi, English, Tamil, Telugu and more on DJYoungster.',
-    keywords: seo.metaKeywords || 'Hindi songs, Punjabi songs, English songs, Tamil songs, Telugu songs, song lyrics by language',
     openGraph: {
       title: seo.ogTitle || 'Browse Songs by Language | DJYoungster',
       description: seo.ogDescription || 'Explore song lyrics in multiple languages on DJYoungster.',

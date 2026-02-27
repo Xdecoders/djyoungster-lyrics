@@ -73,7 +73,6 @@ export async function generateMetadata() {
   return {
     title: seo.metaTitle,
     description: seo.metaDescription,
-    keywords: seo.metaKeywords,
     openGraph: {
       title: seo.ogTitle,
       description: seo.ogDescription,

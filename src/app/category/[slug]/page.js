@@ -49,31 +49,6 @@ export async function generateMetadata({ params }) {
     return {
       title,
       description,
-      keywords: [
-        categoryName,
-        `${categoryName} songs`,
-        `${categoryName} lyrics`,
-        `${categoryName} music`,
-        'lyrics',
-        'songs',
-        'music',
-      ].join(', '),
-      openGraph: {
-        title,
-        description,
-        url: pageUrl,
-        siteName: 'DJYoungster',
-        type: 'website',
-        images: [
-          {
-            url: imageUrl,
-            width: 1200,
-            height: 630,
-            alt: `${categoryName} Songs`,
-          },
-        ],
-        locale: 'en_IN',
-        alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
       },
       twitter: {
         card: 'summary_large_image',

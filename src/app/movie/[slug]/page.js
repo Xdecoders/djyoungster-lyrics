@@ -78,33 +78,6 @@ export async function generateMetadata({ params }) {
     return {
       title,
       description,
-      keywords: [
-        movieTitle,
-        `${movieTitle} songs`,
-        `${movieTitle} lyrics`,
-        `${movieTitle} soundtrack`,
-        `${movieTitle} movie songs`,
-        toTitleCase(movie.director),
-        movie.year?.toString(),
-        'movie songs',
-        'soundtrack',
-        'lyrics',
-        'music',
-      ].filter(Boolean).join(', '),
-      openGraph: {
-        title,
-        description,
-        url: pageUrl,
-        siteName: 'DJYoungster',
-        type: 'video.movie',
-        images: [
-          {
-            url: imageUrl,
-            width: 1200,
-            height: 630,
-            alt: `${movieTitle} Soundtrack`,
-          },
-        ],
         locale: 'en_IN',
         alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
       },

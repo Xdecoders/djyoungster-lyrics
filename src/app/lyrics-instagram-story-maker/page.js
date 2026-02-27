@@ -17,22 +17,6 @@ export async function generateMetadata() {
   return {
     title,
     description,
-    keywords: [
-      'lyrics instagram story maker',
-      'lyrics status maker',
-      'song lyrics status creator',
-      'instagram lyrics story',
-      'lyrics status for instagram',
-      'create lyrics status online free',
-      'whatsapp lyrics status maker',
-      'punjabi lyrics status',
-      'bollywood lyrics instagram story',
-      'lyrics reel maker',
-      'song lyrics reel creator',
-      'lyrics poster maker',
-      'instagram story lyrics template',
-      'lyrics status video maker',
-    ],
     alternates: { canonical: pageUrl },
     openGraph: {
       title,
