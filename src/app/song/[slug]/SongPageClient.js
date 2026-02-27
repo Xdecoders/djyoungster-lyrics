@@ -46,7 +46,7 @@ import {
   FiStar
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
-import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest, FaInstagram } from 'react-icons/fa'
+import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest, FaInstagram, FaTumblr } from 'react-icons/fa'
 import { FaXTwitter, FaLinkedinIn } from 'react-icons/fa6'
 
 // HTML helpers for backward-compatible rendering
@@ -667,6 +667,12 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
       ? `"${lyricsPreview}"\n\n— ${song.title} | Full lyrics on DJYoungster`
       : `Check out "${song.title}" lyrics on DJYoungster!`
 
+  const tumblrCaption = selectedText
+    ? `"${selectedText}"\n\n— ${song.title}`
+    : song.lyrics
+      ? `"${song.lyrics.replace(/<[^>]*>/g, '').split('\n').filter(l => l.trim()).slice(0, 3).join('\n')}"\n\n— ${song.title}`
+      : `Check out "${song.title}" lyrics on DJYoungster!`
+
   const shareLinks = [
     {
       name: 'WhatsApp',
@@ -697,6 +703,12 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
       icon: FaPinterest,
       color: 'bg-red-600 hover:bg-red-700',
       url: `https://pinterest.com/pin/create/button/?url=${encodeURIComponent(url)}&description=${encodeURIComponent(shareText)}`
+    },
+    {
+      name: 'Tumblr',
+      icon: FaTumblr,
+      color: 'bg-[#35465C] hover:bg-[#2a3849]',
+      url: `https://www.tumblr.com/share/link?url=${encodeURIComponent(url)}&name=${encodeURIComponent(song.title + ' Lyrics')}&description=${encodeURIComponent(tumblrCaption)}`
     },
   ]
 
