@@ -376,7 +376,7 @@ export function generateMovieSchema(movie, songs = []) {
     '@id': `${SITE_URL}/movie/${movie.slug}`,
     name: movie.title,
     url: `${SITE_URL}/movie/${movie.slug}`,
-    description: `${movie.title} movie soundtrack with ${movie._count?.songs || songs.length} songs. Find all lyrics on DJYoungster.`
+    description: `${movie.title} movie soundtrack with ${movie._count?.songs || songs.length} song${(movie._count?.songs || songs.length) !== 1 ? 's' : ''}. Find all lyrics on DJYoungster.`
   }
 
   // Add release year if available

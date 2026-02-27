@@ -51,15 +51,15 @@ export async function generateMetadata({ params }) {
       const firstSentence = clean.split(/(?<=[.!?])\s/)[0].replace(/[.!?]+$/, '').trim()
       const snippet = firstSentence.length > 115 ? firstSentence.slice(0, 112) + '...' : firstSentence
       const tail = songCount > 0
-        ? ` Browse all ${songCount} songs with lyrics on DJYoungster.`
+        ? ` Browse all ${songCount} song${songCount !== 1 ? 's' : ''} with lyrics on DJYoungster.`
         : ' Find their lyrics on DJYoungster.'
       description = `${snippet}.${tail}`
     } else if (artist.country && albumCount > 1) {
-      description = `${artistName} is a ${artist.country}-based artist with ${songCount} songs across ${albumCount} albums on DJYoungster. Full lyrics with English translation and Hindi/Punjabi versions.`
+      description = `${artistName} is a ${artist.country}-based artist with ${songCount} song${songCount !== 1 ? 's' : ''} across ${albumCount} albums on DJYoungster. Full lyrics with English translation and Hindi/Punjabi versions.`
     } else if (artist.country) {
       description = `${artistName} is a ${artist.country}-based artist. Read all ${songCount || 'their'} song${songCount !== 1 ? 's' : ''} with full lyrics, English translation, and Hindi/Punjabi versions on DJYoungster.`
     } else if (albumCount > 1) {
-      description = `Discover all ${songCount} ${artistName} songs across ${albumCount} albums on DJYoungster — complete lyrics with English translations, Hindi and Punjabi versions.`
+      description = `Discover all ${songCount} ${artistName} song${songCount !== 1 ? 's' : ''} across ${albumCount} albums on DJYoungster — complete lyrics with English translations, Hindi and Punjabi versions.`
     } else if (songCount > 10) {
       description = `${artistName} has ${songCount} songs on DJYoungster with full lyrics, English translations, and Hindi/Punjabi versions. Explore the complete collection.`
     } else if (songCount > 1) {
