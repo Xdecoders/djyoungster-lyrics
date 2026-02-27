@@ -321,7 +321,7 @@ function formatContribDate(dateStr) {
 function SongContributors({ song }) {
   const slug = song.slug || ''
   const hasTranslation = !!(song.lyricsTranslated || song.lyricsHindi || song.lyricsPunjabi)
-  const publishedDate = formatContribDate(song.datePublished)
+  const publishedDate = formatContribDate(song.datePublished || song.dateModified)
   const updatedDate = formatContribDate(song.dateModified)
 
   const contributors = []
