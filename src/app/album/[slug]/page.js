@@ -72,6 +72,13 @@ export async function generateMetadata({ params }) {
     return {
       title,
       description,
+      openGraph: {
+        title,
+        description,
+        url: pageUrl,
+        siteName: 'DJYoungster',
+        type: 'music.album',
+        images: [{ url: imageUrl, width: 1200, height: 630, alt: title }],
         locale: 'en_IN',
         alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
       },
