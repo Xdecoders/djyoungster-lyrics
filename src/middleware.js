@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-change-in-production')
+const secret = process.env.JWT_SECRET
+  ? new TextEncoder().encode(process.env.JWT_SECRET)
+  : null
 
 // In-memory redirect cache (persists across warm instances)
 let redirectCache = null
@@ -74,6 +76,10 @@ export async function middleware(request) {
 
   // 3. Protect admin API routes (except login)
   if (pathname.startsWith('/api/admin') && !pathname.startsWith('/api/admin/login')) {
+    if (!secret) {
+      return NextResponse.json({ message: 'Server misconfiguration: JWT_SECRET is not set' }, { status: 500 })
+    }
+
     const authHeader = request.headers.get('authorization')
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })

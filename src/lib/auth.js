@@ -1,7 +1,10 @@
 import bcrypt from 'bcryptjs'
 import { SignJWT, jwtVerify } from 'jose'
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET || 'fallback-secret-change-in-production')
+if (!process.env.JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required but not set')
+}
+const secret = new TextEncoder().encode(process.env.JWT_SECRET)
 
 export async function hashPassword(password) {
   return await bcrypt.hash(password, 12)
