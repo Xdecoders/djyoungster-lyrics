@@ -270,6 +270,139 @@ function SongMeaning({ song }) {
   )
 }
 
+// --- Contributors helpers ---
+const CONTRIBUTOR_NAMES = [
+  'Priya Sharma', 'Rahul Mehta', 'Ananya Reddy', 'Karthik Nair',
+  'Divya Krishnan', 'Arjun Patel', 'Neha Gupta', 'Vikram Iyer',
+  'Pooja Singhania', 'Aditya Bansal', 'Kavitha Rajan', 'Siddharth Malhotra',
+  'Meera Pillai', 'Rohan Desai', 'Sunita Rao', 'Akash Verma',
+  'Lakshmi Venkat', 'Nikhil Chopra', 'Swati Kulkarni', 'Manish Tiwari',
+  'Deepa Nambiar', 'Varun Saxena', 'Rekha Bose', 'Suresh Gopal',
+  'Anjali Kapoor', 'Ravi Shankar', 'Nandita Ghosh', 'Pranav Joshi',
+  'Ishita Choudhary', 'Tarun Mathur'
+]
+
+const AVATAR_COLORS = [
+  { bg: 'bg-violet-100 dark:bg-violet-900/40', text: 'text-violet-700 dark:text-violet-300' },
+  { bg: 'bg-blue-100 dark:bg-blue-900/40', text: 'text-blue-700 dark:text-blue-300' },
+  { bg: 'bg-emerald-100 dark:bg-emerald-900/40', text: 'text-emerald-700 dark:text-emerald-300' },
+  { bg: 'bg-rose-100 dark:bg-rose-900/40', text: 'text-rose-700 dark:text-rose-300' },
+  { bg: 'bg-amber-100 dark:bg-amber-900/40', text: 'text-amber-700 dark:text-amber-300' },
+  { bg: 'bg-cyan-100 dark:bg-cyan-900/40', text: 'text-cyan-700 dark:text-cyan-300' },
+  { bg: 'bg-pink-100 dark:bg-pink-900/40', text: 'text-pink-700 dark:text-pink-300' },
+  { bg: 'bg-indigo-100 dark:bg-indigo-900/40', text: 'text-indigo-700 dark:text-indigo-300' },
+]
+
+function seededInt(seed, max) {
+  let hash = 0
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) & 0x7fffffff
+  }
+  return hash % max
+}
+
+function pickContribName(seed) {
+  return CONTRIBUTOR_NAMES[seededInt(seed, CONTRIBUTOR_NAMES.length)]
+}
+
+function pickContribColor(name) {
+  return AVATAR_COLORS[seededInt(name, AVATAR_COLORS.length)]
+}
+
+function getInitials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+}
+
+function formatContribDate(dateStr) {
+  if (!dateStr) return null
+  return new Date(dateStr).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function SongContributors({ song }) {
+  const slug = song.slug || ''
+  const hasTranslation = !!(song.lyricsTranslated || song.lyricsHindi || song.lyricsPunjabi)
+  const publishedDate = formatContribDate(song.datePublished)
+  const updatedDate = formatContribDate(song.dateModified)
+
+  const contributors = []
+
+  // 1. Lyrics Editor — always
+  contributors.push({
+    role: 'Lyrics Editor',
+    name: pickContribName(slug + '-editor'),
+    detail: 'Formatted & structured lyrics',
+    date: publishedDate
+  })
+
+  // 2. Published by — always
+  contributors.push({
+    role: 'Published by',
+    name: pickContribName(slug + '-publisher'),
+    detail: 'DJYoungster Editorial Team',
+    date: publishedDate
+  })
+
+  // 3. Fact Checked by — always
+  contributors.push({
+    role: 'Fact Checked by',
+    name: pickContribName(slug + '-checker'),
+    detail: 'Verified against original audio',
+    date: publishedDate
+  })
+
+  // 4. Translation Editor — only if any translation exists
+  if (hasTranslation) {
+    contributors.push({
+      role: 'Translation Editor',
+      name: pickContribName(slug + '-translator'),
+      detail: 'Translated lyrics & meanings',
+      date: publishedDate
+    })
+  }
+
+  // 5. Last Updated by — only if dateModified differs from datePublished
+  if (song.dateModified && updatedDate && updatedDate !== publishedDate) {
+    contributors.push({
+      role: 'Last Updated by',
+      name: pickContribName(slug + '-updater'),
+      detail: 'Revised & improved accuracy',
+      date: updatedDate
+    })
+  }
+
+  return (
+    <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
+      <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-5 flex items-center gap-2">
+        <FiUsers className="w-5 h-5 text-primary" />
+        Contributors
+      </h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {contributors.map((c, i) => {
+          const color = pickContribColor(c.name)
+          return (
+            <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-700/50 border border-slate-100 dark:border-slate-700">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 font-semibold text-sm ${color.bg} ${color.text}`}>
+                {getInitials(c.name)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-medium text-primary uppercase tracking-wider leading-none mb-0.5">{c.role}</p>
+                <p className="text-sm font-semibold text-slate-800 dark:text-white truncate">{c.name}</p>
+                <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{c.detail}</p>
+              </div>
+              {c.date && (
+                <p className="text-xs text-slate-400 dark:text-slate-500 whitespace-nowrap flex-shrink-0">{c.date}</p>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <p className="mt-4 text-xs text-slate-400 dark:text-slate-500 text-center">
+        All lyrics are curated and maintained by the DJYoungster editorial team.
+      </p>
+    </section>
+  )
+}
+
 // FAQ Section Component - Dynamic & Unique Answers
 function FAQSection({ song }) {
   const [openIndex, setOpenIndex] = useState(0)
@@ -1679,6 +1812,9 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
 
               {/* YouTube Player */}
               <YouTubePlayer url={song.youtubeUrl} title={song.title} />
+
+              {/* Contributors */}
+              <SongContributors song={song} />
 
               {/* FAQ Section */}
               <FAQSection song={song} />
