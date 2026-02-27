@@ -1,6 +1,13 @@
 import { Inter_Tight } from 'next/font/google'
+import dynamic from 'next/dynamic'
 import './globals.css'
 import Header from '@/components/Header'
+import Footer from '@/components/Footer'
+import GoogleAnalytics from '@/components/GoogleAnalytics'
+import { ThemeProvider } from '@/context/ThemeContext'
+import { getSiteSettings } from '@/lib/seo'
+
+const VisitorTracker = dynamic(() => import('@/components/VisitorTracker'), { ssr: false })
 
 const interTight = Inter_Tight({
   subsets: ['latin'],
@@ -8,11 +15,6 @@ const interTight = Inter_Tight({
   display: 'swap',
   variable: '--font-inter-tight',
 })
-import Footer from '@/components/Footer'
-import GoogleAnalytics from '@/components/GoogleAnalytics'
-import VisitorTracker from '@/components/VisitorTracker'
-import { ThemeProvider } from '@/context/ThemeContext'
-import { getSiteSettings } from '@/lib/seo'
 
 export async function generateMetadata() {
   const siteSettings = await getSiteSettings()
