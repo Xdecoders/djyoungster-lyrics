@@ -41,9 +41,33 @@ export async function generateMetadata({ params }) {
     }
 
     const movieTitle = toTitleCase(movie.title)
-    const title = movie.metaTitle || `${movieTitle}${movie.year ? ` (${movie.year})` : ''} Songs Lyrics with English Translation - DJYoungster`
-    const description = movie.metaDescription ||
-      `Explore ${movieTitle} movie song lyrics and meanings. DJYoungster provides ${movieTitle} lyrics in English Translation, Hindi and Punjabi language variations.`
+    const songCount = movie._count?.songs || 0
+    const director = toTitleCase(movie.director)
+    const language = movie.language || ''
+    const year = movie.year || ''
+
+    const title = movie.metaTitle || `${movieTitle}${year ? ` (${year})` : ''} Songs Lyrics with English Translation - DJYoungster`
+
+    let description
+    if (movie.metaDescription) {
+      description = movie.metaDescription
+    } else if (year && director && language && songCount > 0) {
+      description = `${movieTitle} (${year}) is a ${language} film directed by ${director} with ${songCount} songs — lyrics and English translations on DJYoungster.`
+    } else if (year && director && songCount > 0) {
+      description = `${movieTitle} (${year}) directed by ${director} — read all ${songCount} songs with full lyrics and English translations on DJYoungster.`
+    } else if (year && language && songCount > 0) {
+      description = `${movieTitle} is a ${year} ${language} film with ${songCount} songs. Get full lyrics, English translations, and Hindi/Punjabi versions on DJYoungster.`
+    } else if (year && songCount > 0) {
+      description = `${movieTitle} (${year}) soundtrack — all ${songCount} songs with full lyrics and English translations on DJYoungster.`
+    } else if (director && songCount > 0) {
+      description = `${movieTitle} directed by ${director} — ${songCount} songs with full lyrics, English translations and Hindi/Punjabi versions on DJYoungster.`
+    } else if (songCount > 1) {
+      description = `${movieTitle} soundtrack has ${songCount} songs on DJYoungster. Read full lyrics with English translations, Hindi and Punjabi versions for every track.`
+    } else if (songCount === 1) {
+      description = `Read the ${movieTitle} song lyrics on DJYoungster — complete with English translation, Hindi and Punjabi versions.`
+    } else {
+      description = `Explore ${movieTitle} movie songs on DJYoungster. Browse the full soundtrack with lyrics, English translations, and Hindi/Punjabi versions.`
+    }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/movie/${slug}`
