@@ -39,10 +39,29 @@ export async function generateMetadata({ params }) {
     const artistName = toTitleCase(album.artist?.name) || 'Various Artists'
     const albumTitle = toTitleCase(album.title)
     const releaseYear = album.releaseDate ? new Date(album.releaseDate).getFullYear() : ''
+    const songCount = album._count?.songs || 0
+    const label = album.label || ''
 
     const title = album.metaTitle || `${albumTitle} Album Tracklist, Songs Lyrics & Info - DJYoungster`
-    const description = album.metaDescription ||
-      `Explore ${albumTitle} by ${artistName} complete tracklist with all songs lyrics and meanings. Read ${albumTitle} album info, song list and lyrics with English translation on DJYoungster.`
+
+    let description
+    if (album.metaDescription) {
+      description = album.metaDescription
+    } else if (releaseYear && label && songCount > 0) {
+      description = `${albumTitle} is a ${releaseYear} ${artistName} album released on ${label} — ${songCount} track${songCount !== 1 ? 's' : ''} with full lyrics and English translations on DJYoungster.`
+    } else if (releaseYear && songCount > 0) {
+      description = `${artistName}'s ${releaseYear} album ${albumTitle} features ${songCount} track${songCount !== 1 ? 's' : ''} — read every song's full lyrics with English translation on DJYoungster.`
+    } else if (releaseYear) {
+      description = `${albumTitle} by ${artistName} was released in ${releaseYear}. Explore the full tracklist with complete lyrics and English translations on DJYoungster.`
+    } else if (label && songCount > 0) {
+      description = `${albumTitle} by ${artistName} — ${songCount} track${songCount !== 1 ? 's' : ''} from ${label} with full lyrics, English translations and Hindi/Punjabi versions on DJYoungster.`
+    } else if (songCount > 1) {
+      description = `${albumTitle} by ${artistName} features ${songCount} songs — full lyrics with English translations and Hindi/Punjabi versions on DJYoungster.`
+    } else if (songCount === 1) {
+      description = `${albumTitle} by ${artistName} — read the song lyrics with English translation, Hindi and Punjabi versions on DJYoungster.`
+    } else {
+      description = `Explore ${albumTitle} by ${artistName} on DJYoungster. Browse the complete tracklist with lyrics, English translations, and Hindi/Punjabi versions.`
+    }
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/album/${slug}`
