@@ -33,9 +33,10 @@ export default function EditAlbum() {
     const selectedArtist = artists.find(a => String(a.id) === String(formData.artistId))
     setGeneratingMeta(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/generate-meta', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
           type: 'album',
           title: formData.title,

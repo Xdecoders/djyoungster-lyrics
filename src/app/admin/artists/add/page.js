@@ -28,9 +28,10 @@ export default function AddArtist() {
     }
     setGeneratingMeta(true)
     try {
+      const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/generate-meta', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ type: 'artist', name: formData.name, bio: formData.bio })
       })
       const data = await res.json()
