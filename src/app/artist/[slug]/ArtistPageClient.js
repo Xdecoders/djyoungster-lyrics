@@ -650,8 +650,14 @@ export default function ArtistPageClient({ initialData }) {
   }
 
   // Generate description - use custom if available, otherwise auto-generate
-  const artistDescription = artist?.metaDescription ||
-    `Explore ${artist?.name} complete discography and all songs lyrics. DJYoungster provides ${artist?.name} songs with English translation, Hindi and Punjabi language variations.`
+  const _artistSeed = (artist?.name?.length || 0) + (artist?.totalSongs || 0)
+  const _artistFallbacks = [
+    `${artist?.name} has ${artist?.totalSongs || 'several'} songs on DJYoungster, all with full lyrics, English translation, and both Hindi and Punjabi scripts. Pick any track and you get the words plus the meaning right there on the same page.`,
+    `All ${artist?.name} song lyrics are on DJYoungster with English translation, Hindi Devanagari, and Punjabi Gurmukhi scripts. Whether you want to understand a line or just sing along, the full lyrics are here.`,
+    `Looking for ${artist?.name} lyrics with translation? DJYoungster has the complete collection — English meaning, Hindi script, Punjabi script, all in one place. No jumping between tabs.`,
+    `${artist?.name} fans come to DJYoungster for one reason: the lyrics actually make sense here. Every song comes with English translation and script versions in Hindi and Punjabi.`,
+  ]
+  const artistDescription = artist?.metaDescription || _artistFallbacks[_artistSeed % _artistFallbacks.length]
 
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-900">

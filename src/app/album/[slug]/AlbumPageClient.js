@@ -264,8 +264,14 @@ export default function AlbumPageClient({ initialAlbum }) {
 
   // Generate description - use custom if available, otherwise auto-generate
   const artistName = album?.artist?.name || 'Various Artists'
-  const albumDescription = album?.metaDescription ||
-    `Explore ${album?.title} by ${artistName} complete tracklist with all songs lyrics and meanings. Read ${album?.title} album info, song list and lyrics with English translation on DJYoungster.`
+  const _albumSeed = (album?.title?.length || 0) + (album?.totalSongs || 0)
+  const _albumFallbacks = [
+    `${album?.title} is ${artistName}'s album with ${album?.totalSongs || 'all'} tracks listed here. Every song has full lyrics with English translation and Hindi and Punjabi scripts on DJYoungster.`,
+    `All songs from ${artistName}'s ${album?.title} album are on DJYoungster with lyrics, English meaning, and both Hindi and Punjabi script. Click any track to read the full lyrics.`,
+    `${album?.title} by ${artistName} — complete song list with full lyrics and English translation on DJYoungster. Hindi and Punjabi script versions are there too, all on the same page.`,
+    `Looking up ${album?.title} songs? DJYoungster has every track from this ${artistName} album with the full lyrics, English translation, and Hindi and Punjabi scripts ready to read.`,
+  ]
+  const albumDescription = album?.metaDescription || _albumFallbacks[_albumSeed % _albumFallbacks.length]
 
   const formatViews = (views) => {
     if (views >= 1000000) return (views / 1000000).toFixed(1) + 'M'

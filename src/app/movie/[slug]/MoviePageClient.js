@@ -8,9 +8,14 @@ import { FiFilm, FiMusic, FiPlay, FiEye, FiChevronRight, FiCalendar, FiUser, FiU
 
 // Auto-generated Movie Description Component
 function MovieDescription({ movie }) {
-  // Use custom metaDescription if available, otherwise auto-generate consistent format
-  const description = movie.metaDescription ||
-    `Explore ${movie.title} movie song lyrics and meanings. DJYoungster provides ${movie.title} lyrics in English Translation, Hindi and Punjabi language variations.`
+  const seed = (movie.title?.length || 0) + (movie.totalSongs || 0)
+  const fallbacks = [
+    `${movie.title}${movie.year ? ` (${movie.year})` : ''} has ${movie.totalSongs || 'all its'} songs listed on DJYoungster with full lyrics, English translation, and Hindi and Punjabi scripts. If you heard a track from this film and want to know what it means, you are in the right place.`,
+    `Every song from the ${movie.title} soundtrack is on DJYoungster with complete lyrics and English translation.${movie.musicDirector ? ` Music by ${movie.musicDirector}.` : ''} Hindi and Punjabi script versions are available too.`,
+    `${movie.title}${movie.year ? ` (${movie.year})` : ''} soundtrack lyrics, all in one place. DJYoungster has the full lyrics for every track with English meaning and Hindi and Punjabi scripts.${movie.director ? ` Directed by ${movie.director}.` : ''}`,
+    `Looking for ${movie.title} song lyrics? DJYoungster has the complete soundtrack with English translation and both Hindi and Punjabi scripts. Click any song from the list to read the full lyrics.`,
+  ]
+  const description = movie.metaDescription || fallbacks[seed % fallbacks.length]
 
   return (
     <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
