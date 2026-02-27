@@ -49,7 +49,7 @@ export default function GenresPageClient({ initialData }) {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
             <FiTag className="w-8 h-8 text-primary" />
-            Browse by Genre
+            Music Genres – Browse Songs by Style
           </h1>
           <p className="text-slate-500 dark:text-slate-400 mt-2">Explore songs by your favorite genres</p>
         </div>

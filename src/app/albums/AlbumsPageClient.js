@@ -58,7 +58,7 @@ export default function AlbumsPageClient({ initialData }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white">All Albums</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Music Albums – Complete Song Lyrics</h1>
           <select
             value={currentSort}
             onChange={(e) => updateFilters('sort', e.target.value)}

@@ -105,7 +105,7 @@ export default function SongsPageClient({ initialData }) {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h1 className="text-3xl font-bold text-slate-800 dark:text-white">All Songs</h1>
+          <h1 className="text-3xl font-bold text-slate-800 dark:text-white">Song Lyrics – Hindi, Punjabi, Bollywood &amp; More</h1>
           <div className="flex items-center gap-3">
             <select
               value={currentSort}

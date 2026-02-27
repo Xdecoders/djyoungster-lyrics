@@ -61,7 +61,7 @@ export default function MoviesPageClient({ initialData }) {
         <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
           <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
             <FiFilm className="w-8 h-8 text-rose-500" />
-            Movie Soundtracks
+            Movie Song Lyrics – Bollywood, Punjabi &amp; Regional Films
           </h1>
           <select
             value={currentSort}
