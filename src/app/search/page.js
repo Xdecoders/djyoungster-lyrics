@@ -1,5 +1,6 @@
 import SearchPageClient from './SearchPageClient'
 import { getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
+import { toTitleCase } from '@/lib/utils'
 
 export async function generateMetadata({ searchParams }) {
   const params = await searchParams
@@ -47,24 +48,25 @@ export async function generateMetadata({ searchParams }) {
   }
 
   const typeLabel = typeLabels[type] || typeLabels.all
+  const displayQuery = toTitleCase(query)
 
   return {
-    title: `${query} - Search ${typeLabel} | DJYoungster`,
-    description: `Search results for "${query}" on DJYoungster. Find ${typeLabel.toLowerCase()} matching "${query}" with complete lyrics, artist info, album details, and more.`,
-    keywords: `${query}, ${query} lyrics, ${query} song, ${query} artist, search ${query}, DJYoungster`,
+    title: `${displayQuery} - Search ${typeLabel} | DJYoungster`,
+    description: `Search results for "${displayQuery}" on DJYoungster. Find ${typeLabel.toLowerCase()} matching "${displayQuery}" with complete lyrics, artist info, album details, and more.`,
+    keywords: `${displayQuery}, ${displayQuery} lyrics, ${displayQuery} song, ${displayQuery} artist, search ${displayQuery}, DJYoungster`,
     openGraph: {
-      title: `${query} - Search ${typeLabel} | DJYoungster`,
-      description: `Search results for "${query}" on DJYoungster. Find ${typeLabel.toLowerCase()} matching your search.`,
+      title: `${displayQuery} - Search ${typeLabel} | DJYoungster`,
+      description: `Search results for "${displayQuery}" on DJYoungster. Find ${typeLabel.toLowerCase()} matching your search.`,
       url: `${siteUrl}/search?q=${encodeURIComponent(query)}`,
       siteName: 'DJYoungster',
       type: 'website',
-      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Search: ${query}` }],
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Search: ${displayQuery}` }],
       locale: 'en_US',
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${query} - Search | DJYoungster`,
-      description: `Search results for "${query}" on DJYoungster.`,
+      title: `${displayQuery} - Search | DJYoungster`,
+      description: `Search results for "${displayQuery}" on DJYoungster.`,
       images: [ogImageUrl],
       creator: '@djyoungstercom',
       site: '@djyoungstercom',

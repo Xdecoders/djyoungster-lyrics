@@ -86,6 +86,21 @@ export async function generateMetadata({ params }) {
     // Convert relative image URL to absolute URL
     const imageUrl = getAbsoluteUrl(song.coverImage) || 'https://djyoungster.com/uploads/1769674444129-djyoungster.webp'
 
+    // Build hreflang alternates — all variants live on the same URL via tabs,
+    // so self-referencing hreflang tells Google this page serves multiple languages.
+    const LANG_CODE = {
+      hindi: 'hi', punjabi: 'pa', english: 'en', tamil: 'ta',
+      telugu: 'te', kannada: 'kn', malayalam: 'ml', bengali: 'bn',
+      marathi: 'mr', gujarati: 'gu', odia: 'or', urdu: 'ur',
+      haryanvi: 'hi', bhojpuri: 'bho', rajasthani: 'raj',
+    }
+    const hreflang = { 'x-default': pageUrl }
+    const primaryCode = LANG_CODE[song.language?.toLowerCase()]
+    if (primaryCode) hreflang[primaryCode] = pageUrl
+    if (song.lyricsTranslated && !hreflang['en']) hreflang['en'] = pageUrl
+    if (song.lyricsHindi && !hreflang['hi']) hreflang['hi'] = pageUrl
+    if (song.lyricsPunjabi && !hreflang['pa']) hreflang['pa'] = pageUrl
+
     return {
       title: metaTitle,
       description: metaDescription,
@@ -129,6 +144,7 @@ export async function generateMetadata({ params }) {
       },
       alternates: {
         canonical: pageUrl,
+        languages: Object.keys(hreflang).length > 1 ? hreflang : undefined,
       },
       robots: {
         index: true,
