@@ -21,8 +21,11 @@ async function getArtistsPageData(searchParams) {
     if (sort === 'alphabetical') orderBy = { name: 'asc' }
     else if (sort === 'latest') orderBy = { createdAt: 'desc' }
 
+    const withSongs = { songs: { some: { song: { status: 'published' } } } }
+
     const [rawArtists, total] = await Promise.all([
       prisma.artist.findMany({
+        where: withSongs,
         include: {
           _count: { select: { songs: { where: { song: { status: 'published' } } } } },
           songs: {
@@ -39,7 +42,7 @@ async function getArtistsPageData(searchParams) {
         skip,
         take: limit
       }),
-      prisma.artist.count()
+      prisma.artist.count({ where: withSongs })
     ])
 
     // Add thumbnail fallback from latest song cover

@@ -9,9 +9,10 @@ import ArtistPageClient from './ArtistPageClient'
 // ISR - Cache pages and revalidate every 60 seconds
 export const revalidate = 60
 
-// Pre-render all artists at build time
+// Pre-render only artists with at least one published song at build time
 export async function generateStaticParams() {
   const artists = await prisma.artist.findMany({
+    where: { songs: { some: { song: { status: 'published' } } } },
     select: { slug: true }
   })
   return artists.map(artist => ({ slug: artist.slug }))
@@ -119,7 +120,7 @@ export async function generateMetadata({ params }) {
         canonical: pageUrl,
       },
       robots: {
-        index: true,
+        index: songCount > 0,
         follow: true,
       },
     }
