@@ -37,7 +37,7 @@ export default function AddSong() {
     lyricsHindi: '',
     lyricsPunjabi: '',
     meaning: '',
-    datePublished: new Date().toISOString().split('T')[0],
+    datePublished: '',
     artistIds: [],
     albumId: '',
     genreIds: [],
