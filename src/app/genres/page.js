@@ -25,20 +25,46 @@ async function getGenresPageData() {
 }
 
 export async function generateMetadata() {
-  const seo = await getSeoSettings('genres')
-  const siteSettings = await getSiteSettings()
+  const [seo, siteSettings, topGenres, totalGenres] = await Promise.all([
+    getSeoSettings('genres'),
+    getSiteSettings(),
+    prisma.genre.findMany({
+      where: { songs: { some: {} } },
+      select: { name: true },
+      orderBy: { songs: { _count: 'desc' } },
+      take: 5,
+    }),
+    prisma.genre.count({ where: { songs: { some: {} } } }),
+  ])
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
-  // Use page-specific OG image, fall back to global, then default
   const ogImageUrl = getAbsoluteUrl(seo.ogImage) || getAbsoluteUrl(siteSettings.ogImage) || `${siteUrl}/og-image.jpg`
+
+  // Build description from real genre names so it never lies about what exists
+  const genreNames = topGenres.map(g => g.name)
+  let description
+  if (genreNames.length === 0) {
+    description = 'Browse music genres on DJYoungster. Find complete song lyrics with English translations and Hindi/Punjabi versions.'
+  } else if (totalGenres <= genreNames.length) {
+    const last = genreNames[genreNames.length - 1]
+    const rest = genreNames.slice(0, -1)
+    const list = rest.length > 0 ? `${rest.join(', ')} and ${last}` : last
+    description = `Browse ${totalGenres} music genre${totalGenres !== 1 ? 's' : ''} on DJYoungster — ${list}. Find complete song lyrics with English translations and Hindi/Punjabi versions.`
+  } else {
+    description = `Browse ${totalGenres} music genres on DJYoungster including ${genreNames.join(', ')} and more. Find complete song lyrics with English translations and Hindi/Punjabi versions.`
+  }
+
+  const keywords = genreNames.length > 0
+    ? `${genreNames.map(n => `${n} songs`).join(', ')}, music genres, song lyrics, DJYoungster`
+    : 'music genres, song lyrics, DJYoungster'
 
   return {
     title: seo.metaTitle,
-    description: seo.metaDescription,
-    keywords: seo.metaKeywords,
+    description,
+    keywords,
     openGraph: {
       title: seo.ogTitle,
-      description: seo.ogDescription,
+      description,
       url: `${siteUrl}/genres`,
       siteName: 'DJYoungster',
       type: 'website',
@@ -56,7 +82,7 @@ export async function generateMetadata() {
     twitter: {
       card: 'summary_large_image',
       title: seo.ogTitle,
-      description: seo.ogDescription,
+      description,
       images: [ogImageUrl],
       creator: '@djyoungstercom',
       site: '@djyoungstercom',
@@ -82,12 +108,17 @@ export default async function GenresPage() {
     { name: 'All Genres', url: '/genres' }
   ])
 
+  const genreNameList = data.genres.map(g => g.name)
+  const schemaDesc = genreNameList.length > 0
+    ? `Browse songs by music genre on DJYoungster. Find ${genreNameList.slice(0, 5).join(', ')} songs and more with lyrics.`
+    : 'Browse songs by music genre on DJYoungster. Find complete song lyrics with English translations.'
+
   const collectionSchema = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
     name: 'All Genres - Music Genres Collection',
     url: `${siteUrl}/genres`,
-    description: 'Browse songs by music genre on DJYoungster. Find Pop, Rock, Hip-Hop, Classical, Romantic, Sad songs and more with lyrics.',
+    description: schemaDesc,
     isPartOf: {
       '@type': 'WebSite',
       name: 'DJYoungster',
