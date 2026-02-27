@@ -94,8 +94,22 @@ export async function generateMetadata({ params }) {
       marathi: 'mr', gujarati: 'gu', odia: 'or', urdu: 'ur',
       haryanvi: 'hi', bhojpuri: 'bho', rajasthani: 'raj',
     }
+    // og:locale uses language_REGION format (e.g. hi_IN, pa_IN)
+    const OG_LOCALE = {
+      hindi: 'hi_IN', punjabi: 'pa_IN', english: 'en_IN', tamil: 'ta_IN',
+      telugu: 'te_IN', kannada: 'kn_IN', malayalam: 'ml_IN', bengali: 'bn_IN',
+      marathi: 'mr_IN', gujarati: 'gu_IN', odia: 'or_IN', urdu: 'ur_IN',
+      haryanvi: 'hi_IN', bhojpuri: 'bho_IN', rajasthani: 'raj_IN',
+    }
+    const langKey = song.language?.toLowerCase()
+    const primaryOgLocale = OG_LOCALE[langKey] || 'en_IN'
+    // Build og:locale:alternate from available translation tabs
+    const ogAlternateLocales = new Set(['en_IN'])
+    if (song.lyricsHindi) ogAlternateLocales.add('hi_IN')
+    if (song.lyricsPunjabi) ogAlternateLocales.add('pa_IN')
+    ogAlternateLocales.delete(primaryOgLocale) // don't duplicate primary
     const hreflang = { 'x-default': pageUrl }
-    const primaryCode = LANG_CODE[song.language?.toLowerCase()]
+    const primaryCode = LANG_CODE[langKey]
     if (primaryCode) hreflang[primaryCode] = pageUrl
     if (song.lyricsTranslated && !hreflang['en']) hreflang['en'] = pageUrl
     if (song.lyricsHindi && !hreflang['hi']) hreflang['hi'] = pageUrl
@@ -131,7 +145,8 @@ export async function generateMetadata({ params }) {
             alt: `${songTitle} by ${artistNames}`,
           },
         ],
-        locale: 'en_US',
+        locale: primaryOgLocale,
+        alternateLocale: ogAlternateLocales.size > 0 ? [...ogAlternateLocales] : undefined,
         audio: song.spotifyUrl ? [{ url: song.spotifyUrl }] : undefined,
       },
       twitter: {

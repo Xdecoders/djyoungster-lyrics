@@ -21,7 +21,8 @@ export async function generateMetadata() {
           title: page.metaTitle || page.title,
           description: page.metaDescription || 'Contact DJYoungster',
           url: `${siteUrl}/${SLUG}`,
-          locale: 'en_US',
+          locale: 'en_IN',
+          alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
         },
         twitter: {
           card: 'summary',

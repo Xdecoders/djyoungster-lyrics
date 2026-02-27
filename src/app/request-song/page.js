@@ -10,7 +10,8 @@ export const metadata = {
     description: 'Can\'t find your favorite song lyrics? Request any song lyrics and we\'ll add them to DJYoungster.',
     url: `${siteUrl}/request-song`,
     type: 'website',
-    locale: 'en_US',
+    locale: 'en_IN',
+    alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
   },
   twitter: {
     card: 'summary',

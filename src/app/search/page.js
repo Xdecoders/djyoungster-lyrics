@@ -23,7 +23,8 @@ export async function generateMetadata({ searchParams }) {
         siteName: 'DJYoungster',
         type: 'website',
         images: [{ url: ogImageUrl, width: 1200, height: 630, alt: 'DJYoungster Search' }],
-        locale: 'en_US',
+        locale: 'en_IN',
+        alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
       },
       twitter: {
         card: 'summary_large_image',
@@ -61,7 +62,8 @@ export async function generateMetadata({ searchParams }) {
       siteName: 'DJYoungster',
       type: 'website',
       images: [{ url: ogImageUrl, width: 1200, height: 630, alt: `Search: ${displayQuery}` }],
-      locale: 'en_US',
+      locale: 'en_IN',
+      alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
     },
     twitter: {
       card: 'summary_large_image',

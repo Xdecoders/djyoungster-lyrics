@@ -90,7 +90,8 @@ export async function generateMetadata() {
           alt: 'DJYoungster Albums',
         },
       ],
-      locale: 'en_US',
+      locale: 'en_IN',
+      alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
     },
     twitter: {
       card: 'summary_large_image',

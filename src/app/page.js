@@ -26,7 +26,8 @@ export async function generateMetadata() {
       url: siteUrl,
       siteName: 'DJYoungster',
       type: 'website',
-      locale: 'en_US',
+      locale: 'en_IN',
+      alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
       images: [
         {
           url: ogImageUrl,

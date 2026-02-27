@@ -72,7 +72,8 @@ export async function generateMetadata({ params }) {
             alt: `${categoryName} Songs`,
           },
         ],
-        locale: 'en_US',
+        locale: 'en_IN',
+        alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
       },
       twitter: {
         card: 'summary_large_image',

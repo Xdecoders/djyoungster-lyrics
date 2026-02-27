@@ -6,7 +6,8 @@ export const metadata = {
   openGraph: {
     title: 'Unsubscribe | DJYoungster',
     description: 'Unsubscribe from DJYoungster newsletter.',
-    locale: 'en_US',
+    locale: 'en_IN',
+    alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
   },
   twitter: {
     card: 'summary',

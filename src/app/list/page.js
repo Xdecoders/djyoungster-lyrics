@@ -18,7 +18,8 @@ export async function generateMetadata() {
       url: `${siteUrl}/list`,
       siteName: 'DJYoungster',
       type: 'website',
-      locale: 'en_US',
+      locale: 'en_IN',
+      alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
     },
     twitter: {
       card: 'summary_large_image',
