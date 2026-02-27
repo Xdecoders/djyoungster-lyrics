@@ -4,6 +4,7 @@ import { scrapeLyricsMint } from './lyricsmint'
 import { scrapeLyricsRaag } from './lyricsraag'
 import { scrapeGaana } from './gaana'
 import { scrapeBharatLyrics } from './bharatlyrics'
+import { scrapeVergeLyrics } from './vergelyrics'
 
 export function generateSlug(title) {
   return title
@@ -35,7 +36,9 @@ export async function scrapeUrl(url) {
       return scrapeGaana(url)
     case 'bharatlyrics.com':
       return scrapeBharatLyrics(url)
+    case 'vergelyrics.com':
+      return scrapeVergeLyrics(url)
     default:
-      throw new Error(`Unsupported site: ${hostname}. Supported: genius.com, tamil2lyrics.com, lyricsmint.com, lyricsraag.com, gaana.com, bharatlyrics.com`)
+      throw new Error(`Unsupported site: ${hostname}. Supported: genius.com, tamil2lyrics.com, lyricsmint.com, lyricsraag.com, gaana.com, bharatlyrics.com, vergelyrics.com`)
   }
 }

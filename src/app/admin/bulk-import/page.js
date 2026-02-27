@@ -10,7 +10,8 @@ const SITES = [
   { key: 'tamil2lyrics.com', name: 'Tamil2Lyrics', type: 'sitemap', color: 'from-orange-500 to-orange-700' },
   { key: 'genius.com', name: 'Genius', type: 'manual', color: 'from-yellow-500 to-yellow-700' },
   { key: 'gaana.com', name: 'Gaana', type: 'both', color: 'from-red-500 to-red-700' },
-  { key: 'bharatlyrics.com', name: 'BharatLyrics', type: 'both', color: 'from-emerald-500 to-emerald-700' }
+  { key: 'bharatlyrics.com', name: 'BharatLyrics', type: 'both', color: 'from-emerald-500 to-emerald-700' },
+  { key: 'vergelyrics.com', name: 'VergeLyrics', type: 'both', color: 'from-teal-500 to-teal-700' }
 ]
 
 export default function BulkImportPage() {

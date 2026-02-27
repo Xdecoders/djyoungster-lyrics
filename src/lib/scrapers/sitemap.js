@@ -176,6 +176,29 @@ function filterBharatLyrics(urls) {
 }
 
 /**
+ * Filter URLs for vergelyrics.com
+ * Keep: /YYYY/MM/slug.html (song pages - path starts with 4-digit year)
+ * Exclude: /p/ static pages, homepage
+ */
+function filterVergeLyrics(urls) {
+  return urls.filter(url => {
+    try {
+      const path = new URL(url).pathname
+      if (!path || path === '/') return false
+      const segments = path.split('/').filter(Boolean)
+      if (segments.length < 3) return false
+      // First segment must be a 4-digit year
+      if (!/^\d{4}$/.test(segments[0])) return false
+      // Must end with .html
+      if (!segments[segments.length - 1].endsWith('.html')) return false
+      return true
+    } catch {
+      return false
+    }
+  })
+}
+
+/**
  * Main entry: discover all song URLs from a supported site
  */
 export async function discoverSongUrls(site) {
@@ -201,6 +224,9 @@ export async function discoverSongUrls(site) {
     'bharatlyrics.com': [
       'https://bharatlyrics.com/sitemap_index.xml',
       'https://bharatlyrics.com/post-sitemap.xml'
+    ],
+    'vergelyrics.com': [
+      'https://www.vergelyrics.com/sitemap.xml'
     ]
   }
 
@@ -209,7 +235,8 @@ export async function discoverSongUrls(site) {
     'lyricsraag.com': filterLyricsRaag,
     'tamil2lyrics.com': filterTamil2Lyrics,
     'gaana.com': filterGaana,
-    'bharatlyrics.com': filterBharatLyrics
+    'bharatlyrics.com': filterBharatLyrics,
+    'vergelyrics.com': filterVergeLyrics
   }
 
   const urls = sitemapUrls[site]
