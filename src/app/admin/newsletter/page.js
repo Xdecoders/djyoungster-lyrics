@@ -204,14 +204,25 @@ export default function NewsletterPage() {
 </html>`
   }
 
-  const handleSongSelect = (song) => {
+  const handleSongSelect = async (song) => {
     setSelectedSong(song)
     setSongSearch('')
     setShowSongDropdown(false)
 
     const artistNames = song.artists?.map(sa => sa.artist?.name).filter(Boolean).join(', ') || ''
     setSubject(`🎵 New Lyrics: ${song.title}${artistNames ? ` by ${artistNames}` : ''}`)
-    setContent(generateEmailTemplate(song))
+
+    // Fetch full song details (including lyrics) from individual endpoint
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch(`/api/admin/songs/${song.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const fullSong = res.ok ? await res.json() : song
+      setContent(generateEmailTemplate(fullSong))
+    } catch {
+      setContent(generateEmailTemplate(song))
+    }
   }
 
   const handleSave = async (sendNow = false) => {
