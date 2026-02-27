@@ -434,25 +434,33 @@ function FAQSection({ song }) {
   const getLyricistAnswer = () => {
     if (song.lyricist) {
       const phrases = [
-        `${song.lyricist} crafted the words for "${song.title}," bringing depth and emotion to every line.`,
-        `The pen behind "${song.title}" belongs to ${song.lyricist}, whose lyrics give the song its soul.`,
-        `Credit for the memorable lyrics goes to ${song.lyricist}, who wrote the words that fans love to sing along to.`
+        `${song.lyricist} wrote the lyrics for "${song.title}." Every line in this song came from their pen, and honestly you can feel the thought that went into it.`,
+        `The words in "${song.title}" were written by ${song.lyricist}. Good lyrics make or break a song, and ${song.lyricist} clearly knew what they were doing here.`,
+        `${song.lyricist} is the lyricist behind "${song.title}." The way the words sit in the song is not an accident — that is all ${song.lyricist}'s work.`
       ]
       return phrases[song.title.length % phrases.length]
     }
-    return `${firstArtist} wrote the lyrics, adding a personal touch that resonates throughout the track.`
+    const fallbacks = [
+      `${firstArtist} wrote the lyrics for this one, which adds a personal layer to the whole thing. When artists write their own stuff, it usually shows.`,
+      `The lyrics were penned by ${firstArtist} themselves. That kind of ownership over the words tends to make a difference in how the song lands.`
+    ]
+    return fallbacks[song.title.length % fallbacks.length]
   }
 
   const getComposerAnswer = () => {
     if (song.composer) {
       const phrases = [
-        `${song.composer} is the musical genius behind the composition, creating the melody that makes this song memorable.`,
-        `The music was composed by ${song.composer}, whose arrangement perfectly complements the vocals.`,
-        `${song.composer} crafted the musical arrangement, blending instruments and beats into something special.`
+        `${song.composer} handled the music composition for "${song.title}." The way the melody and beat work together in this track is directly their doing.`,
+        `The music for "${song.title}" was composed by ${song.composer}. A good composition is what gives a song its mood, and this one delivers.`,
+        `${song.composer} built the musical foundation of "${song.title}" from scratch. The arrangement, the beat, the overall feel — all ${song.composer}.`
       ]
       return phrases[song.title.length % phrases.length]
     }
-    return `${firstArtist} composed the music, showcasing versatility as both vocalist and musician.`
+    const fallbacks = [
+      `${firstArtist} took care of the music composition as well. Wearing both hats as a vocalist and composer is not easy, but it comes through in how tight the track feels.`,
+      `The composition credits go to ${firstArtist}, who put together the entire musical arrangement for this one.`
+    ]
+    return fallbacks[song.title.length % fallbacks.length]
   }
 
   const getSourceAnswer = () => {
@@ -520,31 +528,51 @@ function FAQSection({ song }) {
 
   // Q6: Genre (conditional)
   if (genres) {
+    const genreAnswers = [
+      `"${song.title}" sits in the ${genres} space. If that is your kind of music, this track is probably already in your playlist.`,
+      `Genre-wise, "${song.title}" falls under ${genres}. The sound fits right into that world and ${firstArtist} clearly knows how to work within it.`,
+      `${genres} is where "${song.title}" lives. The production choices and the overall vibe make that pretty obvious the moment it starts.`
+    ]
     faqs.push({
-      question: `What type of song is "${song.title}"?`,
-      answer: `"${song.title}" falls under ${genres}. The track blends these influences to create its distinctive sound.`
+      question: `What genre is "${song.title}"?`,
+      answer: genreAnswers[song.title.length % genreAnswers.length]
     })
   }
 
   // Q7: Streaming
+  const streamAnswers = [
+    `You can find "${song.title}" on Spotify, Apple Music, YouTube Music, Gaana, and JioSaavn.${song.youtubeUrl ? ' The official video is up on YouTube too.' : ''} And for the full lyrics with translation, you are already here.`,
+    `"${song.title}" is up on all the usual platforms: Spotify, Gaana, JioSaavn, Apple Music, YouTube Music.${song.youtubeUrl ? ' The video version is on YouTube.' : ''} DJYoungster has the complete lyrics whenever you need them.`,
+    `Stream "${song.title}" on Spotify, Apple Music, JioSaavn, Gaana, or YouTube Music.${song.youtubeUrl ? ' Official video is on YouTube.' : ''} The lyrics and translation are right here on DJYoungster.`
+  ]
   faqs.push({
-    question: `Where can I stream "${song.title}"?`,
-    answer: `"${song.title}" is available on major platforms including Spotify, Apple Music, YouTube Music, Gaana, and JioSaavn.${song.youtubeUrl ? ' The official video is on YouTube.' : ''} For the complete lyrics, you're already in the right place!`
+    question: `Where can I listen to "${song.title}"?`,
+    answer: streamAnswers[(song.title.length + artistNames.length) % streamAnswers.length]
   })
 
   // Q8: Producer (if available)
   if (song.producer) {
+    const producerAnswers = [
+      `${song.producer} produced "${song.title}." Production is what takes a song from a rough idea to something that actually sounds finished, and ${song.producer} delivered on that.`,
+      `The production on "${song.title}" is handled by ${song.producer}. Good production work tends to stay invisible — you just feel the song, which is exactly how it should work.`,
+      `${song.producer} is the one who shaped the final sound of "${song.title}" in the studio. Everything from the levels to the arrangement to the overall vibe went through them.`
+    ]
     faqs.push({
       question: `Who produced "${song.title}"?`,
-      answer: `${song.producer} handled the production, shaping the final sound you hear. Their work on mixing and arrangement gives the track its polished quality.`
+      answer: producerAnswers[song.title.length % producerAnswers.length]
     })
   }
 
   // Q9: Music Video Cast (if available)
   if (song.starring) {
+    const starringAnswers = [
+      `The music video for "${song.title}" features ${song.starring}. Worth watching alongside the lyrics if you have not already.`,
+      `${song.starring} appears in the "${song.title}" video. The visual side of the song adds another layer to what you hear.`,
+      `In the "${song.title}" music video, you will see ${song.starring}. The video gives the song a whole extra dimension.`
+    ]
     faqs.push({
-      question: `Who appears in the "${song.title}" music video?`,
-      answer: `The visual story features ${song.starring}, bringing the song's narrative to life on screen.`
+      question: `Who stars in the "${song.title}" music video?`,
+      answer: starringAnswers[song.title.length % starringAnswers.length]
     })
   }
 
@@ -552,12 +580,12 @@ function FAQSection({ song }) {
   if (song.annotations?.length > 0) {
     const annotationCount = song.annotations.length
     faqs.push({
-      question: `What do the highlighted lyrics in "${song.title}" mean?`,
-      answer: `"${song.title}" has ${annotationCount} annotated ${annotationCount === 1 ? 'section' : 'sections'} where our editors have broken down the meaning behind specific lines. Look for the highlighted text in the lyrics — tap any highlighted line to reveal a detailed explanation of the wordplay, cultural references, and deeper meaning behind ${firstArtist}'s words.`
+      question: `What do the highlighted lines in "${song.title}" mean?`,
+      answer: `There are ${annotationCount} annotated ${annotationCount === 1 ? 'section' : 'sections'} in "${song.title}" where specific lines get broken down in detail. Tap any highlighted part in the lyrics and you will see what that line actually means — the wordplay, the cultural reference, or the story behind what ${firstArtist} is saying. No guessing required.`
     })
     faqs.push({
-      question: `Does "${song.title}" have lyrics annotations like Genius?`,
-      answer: `Yes! DJYoungster provides Genius-style annotations for "${song.title}." Our editors have analyzed ${annotationCount} key ${annotationCount === 1 ? 'passage' : 'passages'} in the song, explaining the imagery, emotions, and cultural context. Simply click on any highlighted lyric line to read the annotation — no account or login needed.`
+      question: `Does "${song.title}" have line-by-line explanations?`,
+      answer: `Yes, DJYoungster has ${annotationCount} annotated ${annotationCount === 1 ? 'section' : 'sections'} for "${song.title}." Our editors went through the lyrics and picked out ${annotationCount === 1 ? 'a passage' : 'key passages'} worth explaining. Click any highlighted lyric to read what is really going on in that line. No login, no account needed.`
     })
   }
 

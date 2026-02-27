@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { FiSave, FiArrowLeft, FiDisc, FiUser, FiCalendar, FiImage, FiUpload, FiLink } from 'react-icons/fi'
+import { FiSave, FiArrowLeft, FiDisc, FiUser, FiCalendar, FiImage, FiUpload, FiLink, FiZap } from 'react-icons/fi'
 
 export default function EditAlbum() {
   const router = useRouter()
@@ -23,6 +23,36 @@ export default function EditAlbum() {
     metaDescription: ''
   })
   const [errors, setErrors] = useState({})
+  const [generatingMeta, setGeneratingMeta] = useState(false)
+
+  const handleGenerateMeta = async () => {
+    if (!formData.title.trim()) {
+      alert('Album title is required')
+      return
+    }
+    const selectedArtist = artists.find(a => String(a.id) === String(formData.artistId))
+    setGeneratingMeta(true)
+    try {
+      const res = await fetch('/api/admin/generate-meta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'album',
+          title: formData.title,
+          artistName: selectedArtist?.name || '',
+          label: formData.label
+        })
+      })
+      const data = await res.json()
+      if (data.metaDescription) {
+        setFormData(prev => ({ ...prev, metaDescription: data.metaDescription }))
+      }
+    } catch (error) {
+      console.error('Generate meta error:', error)
+    } finally {
+      setGeneratingMeta(false)
+    }
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -379,7 +409,18 @@ export default function EditAlbum() {
 
           {/* SEO Settings */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
-            <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4">SEO Settings</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800">SEO Settings</h2>
+              <button
+                type="button"
+                onClick={handleGenerateMeta}
+                disabled={generatingMeta}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary bg-emerald-50 hover:bg-emerald-100 rounded-lg transition disabled:opacity-50"
+              >
+                <FiZap className="w-3.5 h-3.5" />
+                {generatingMeta ? 'Generating...' : 'Auto Generate'}
+              </button>
+            </div>
 
             <div className="space-y-4">
               <div>
@@ -408,6 +449,9 @@ export default function EditAlbum() {
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
                   placeholder="Brief description for search engines..."
                 />
+                {formData.metaDescription && (
+                  <p className="text-xs text-slate-400 mt-1">{formData.metaDescription.length} characters</p>
+                )}
               </div>
             </div>
           </div>

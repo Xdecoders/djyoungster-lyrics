@@ -38,7 +38,7 @@ export async function POST(request) {
         label: data.label || null,
         artistId: data.artistId,
         metaTitle: data.metaTitle || `${data.title} Songs Lyrics with English Translation - DJYoungster`,
-        metaDescription: data.metaDescription || `Explore ${data.title} album song lyrics with meanings and translations on DJYoungster.`
+        metaDescription: data.metaDescription || `${data.title} album — all song lyrics with English translation and Hindi-Punjabi script on DJYoungster.`
       }
     })
 

@@ -189,66 +189,103 @@ function MovieFAQs({ movie }) {
   const [openIndex, setOpenIndex] = useState(null)
 
   const faqs = []
+  const seed = movie.title.length
 
   faqs.push({
-    q: `How many songs are in ${movie.title}?`,
-    a: `${movie.title} has ${movie.totalSongs} ${movie.totalSongs === 1 ? 'song' : 'songs'} in its soundtrack.${movie.musicDirector ? ` The music is composed by ${movie.musicDirector}.` : ''}`
+    q: `How many songs does ${movie.title} have?`,
+    a: [
+      `The ${movie.title} soundtrack has ${movie.totalSongs} ${movie.totalSongs === 1 ? 'song' : 'songs'}.${movie.musicDirector ? ` All the music was put together by ${movie.musicDirector}.` : ''} Every track has full lyrics on DJYoungster.`,
+      `${movie.title} comes with ${movie.totalSongs} ${movie.totalSongs === 1 ? 'track' : 'tracks'} in its soundtrack.${movie.musicDirector ? ` ${movie.musicDirector} handled the music.` : ''} Lyrics for all of them are right here.`,
+      `There are ${movie.totalSongs} ${movie.totalSongs === 1 ? 'song' : 'songs'} in the ${movie.title} soundtrack.${movie.musicDirector ? ` ${movie.musicDirector} composed the music for the film.` : ''} Full lyrics with translation on DJYoungster.`
+    ][seed % 3]
   })
 
   if (movie.director) {
     faqs.push({
-      q: `Who is the director of ${movie.title}?`,
-      a: `${movie.title} is directed by ${movie.director}.${movie.year ? ` The movie was released in ${movie.year}.` : ''}`
+      q: `Who directed ${movie.title}?`,
+      a: [
+        `${movie.title} was directed by ${movie.director}.${movie.year ? ` The film came out in ${movie.year}.` : ''} The director shapes the whole vision of a film, and ${movie.director} was at the helm here.`,
+        `${movie.director} directed ${movie.title}.${movie.year ? ` It released in ${movie.year}.` : ''} The film's tone, pacing, and story were all under ${movie.director}'s watch.`,
+        `The director behind ${movie.title} is ${movie.director}.${movie.year ? ` This was a ${movie.year} release.` : ''} A film's personality often comes down to its director and ${movie.director} made their mark on this one.`
+      ][seed % 3]
     })
   }
 
   if (movie.musicDirector) {
     faqs.push({
-      q: `Who is the music director of ${movie.title}?`,
-      a: `The music of ${movie.title} is composed by ${movie.musicDirector}.`
+      q: `Who composed the music for ${movie.title}?`,
+      a: [
+        `${movie.musicDirector} composed the music for ${movie.title}. Film music sets the emotional tone of every scene and ${movie.musicDirector} had that job for this one.`,
+        `The music for ${movie.title} was composed by ${movie.musicDirector}. A good film score is the thing you do not notice when it is working, and this soundtrack has that quality.`,
+        `${movie.musicDirector} is the music director of ${movie.title}. Every track in the soundtrack went through them, which means the sound you associate with this film is their work.`
+      ][seed % 3]
     })
   }
 
   if (movie.cast) {
     faqs.push({
-      q: `Who are the cast members of ${movie.title}?`,
-      a: `The cast of ${movie.title} includes ${movie.cast}.`
+      q: `Who is in the cast of ${movie.title}?`,
+      a: [
+        `The cast of ${movie.title} includes ${movie.cast}. These are the faces you will see when the songs play out in the film.`,
+        `${movie.title} features ${movie.cast} in the cast. The performances they gave are a big part of what made the songs hit harder in context.`,
+        `${movie.cast} are the cast members in ${movie.title}. Film songs tend to stick more when you know the actors behind them.`
+      ][seed % 3]
     })
   }
 
   if (movie.producer) {
     faqs.push({
       q: `Who produced ${movie.title}?`,
-      a: `${movie.title} is produced by ${movie.producer}.`
+      a: [
+        `${movie.producer} produced ${movie.title}. The producer is basically the person who makes the whole thing possible, from budget to final cut.`,
+        `The film was produced by ${movie.producer}. Behind every film there is a producer holding it all together, and that was ${movie.producer} here.`,
+        `${movie.producer} is the producer of ${movie.title}. Production credit means they were involved in getting this film made from the ground up.`
+      ][seed % 3]
     })
   }
 
   if (movie.writer) {
     faqs.push({
-      q: `Who wrote ${movie.title}?`,
-      a: `${movie.title} is written by ${movie.writer}.`
+      q: `Who wrote the story for ${movie.title}?`,
+      a: [
+        `${movie.writer} wrote ${movie.title}. The screenplay and story are their work, which means the characters, the plot, and the world the songs exist in came from their imagination.`,
+        `The writing credits for ${movie.title} go to ${movie.writer}. Good writing is what gives film songs their emotional weight in context.`,
+        `${movie.title} was written by ${movie.writer}. The story that the music plays over, the scenes that make the songs memorable — that all traces back to ${movie.writer}.`
+      ][seed % 3]
     })
   }
 
   if (movie.language) {
     faqs.push({
-      q: `What language is ${movie.title}?`,
-      a: `${movie.title} is a ${movie.language} language movie.${movie.genre ? ` It falls under the ${movie.genre} genre.` : ''}`
+      q: `What language is ${movie.title} in?`,
+      a: [
+        `${movie.title} is a ${movie.language} film.${movie.genre ? ` It is in the ${movie.genre} genre.` : ''} DJYoungster has the lyrics for all its songs with English translation so language is not a barrier.`,
+        `The film is in ${movie.language}.${movie.genre ? ` Genre: ${movie.genre}.` : ''} Whether you speak the language or not, DJYoungster has the English translation of every song ready.`,
+        `${movie.language} is the primary language of ${movie.title}.${movie.genre ? ` It is a ${movie.genre} film.` : ''} All the song lyrics come with English translation on DJYoungster.`
+      ][seed % 3]
     })
   }
 
   if (movie.year) {
     faqs.push({
-      q: `When was ${movie.title} released?`,
-      a: `${movie.title} was released in ${movie.year}.${movie.director ? ` It is directed by ${movie.director}.` : ''}`
+      q: `When did ${movie.title} release?`,
+      a: [
+        `${movie.title} released in ${movie.year}.${movie.director ? ` Directed by ${movie.director}.` : ''} ${new Date().getFullYear() - movie.year > 2 ? `It has been a few years but the songs from this film still get searched regularly.` : `A recent release with songs people are still looking up.`}`,
+        `The film came out in ${movie.year}.${movie.director ? ` ${movie.director} directed it.` : ''} Songs from ${movie.year} films tend to be the ones fans remember longest.`,
+        `${movie.title} was released in ${movie.year}.${movie.director ? ` Under the direction of ${movie.director}.` : ''} The soundtrack from that year is what brought people here to look up the lyrics.`
+      ][seed % 3]
     })
   }
 
   if (movie.songs?.length > 0) {
     const songNames = movie.songs.map(s => s.title).join(', ')
     faqs.push({
-      q: `What are the songs in ${movie.title}?`,
-      a: `The songs in ${movie.title} are: ${songNames}.`
+      q: `What are all the songs from ${movie.title}?`,
+      a: [
+        `The full song list from ${movie.title} is: ${songNames}. Click any title to get the complete lyrics with English translation.`,
+        `${movie.title}'s soundtrack includes: ${songNames}. All of them have their own lyrics page on DJYoungster.`,
+        `Here are all the songs from ${movie.title}: ${songNames}. Every track has full lyrics and translation ready for you.`
+      ][seed % 3]
     })
   }
 

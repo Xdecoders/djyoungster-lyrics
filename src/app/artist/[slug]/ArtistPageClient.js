@@ -490,45 +490,71 @@ function ArtistFAQs({ artist, featuredSongs, movies }) {
   const [openIndex, setOpenIndex] = useState(null)
 
   const faqs = []
+  const seed = artist.name.length
 
   faqs.push({
-    q: `How many songs does ${artist.name} have?`,
-    a: `${artist.name} has ${artist.totalSongs || 0} ${artist.totalSongs === 1 ? 'song' : 'songs'} on DJYoungster with full lyrics and English translation.`
+    q: `How many songs does ${artist.name} have on DJYoungster?`,
+    a: [
+      `${artist.name} has ${artist.totalSongs || 0} ${artist.totalSongs === 1 ? 'song' : 'songs'} on DJYoungster right now, each with full lyrics and English translation. The list keeps growing as new tracks get added.`,
+      `There are ${artist.totalSongs || 0} ${artist.name} songs on DJYoungster with complete lyrics and English translation. If you are looking for a specific track, the search at the top of the page will get you there fast.`,
+      `DJYoungster currently has ${artist.totalSongs || 0} songs by ${artist.name}, all with full lyrics, English translation, and Hindi and Punjabi scripts too.`
+    ][seed % 3]
   })
 
   if (artist.albums?.length > 0) {
+    const albumList = artist.albums.map(a => a.title).join(', ')
     faqs.push({
-      q: `How many albums does ${artist.name} have?`,
-      a: `${artist.name} has ${artist.albums.length} ${artist.albums.length === 1 ? 'album' : 'albums'}: ${artist.albums.map(a => a.title).join(', ')}.`
+      q: `What albums has ${artist.name} released?`,
+      a: [
+        `${artist.name} has put out ${artist.albums.length} ${artist.albums.length === 1 ? 'album' : 'albums'}: ${albumList}. All album lyrics are on DJYoungster.`,
+        `Albums by ${artist.name}: ${albumList}. That is ${artist.albums.length} ${artist.albums.length === 1 ? 'project' : 'projects'} worth of music to go through.`,
+        `${artist.name} has ${artist.albums.length} ${artist.albums.length === 1 ? 'album' : 'albums'} in their catalogue: ${albumList}. Each one has its own page on DJYoungster with all the song lyrics.`
+      ][seed % 3]
     })
   }
 
   if (featuredSongs?.length > 0) {
     const topSongs = featuredSongs.map(s => s.title).join(', ')
     faqs.push({
-      q: `What are the most popular songs by ${artist.name}?`,
-      a: `The most popular songs by ${artist.name} include: ${topSongs}.`
+      q: `What are ${artist.name}'s most known songs?`,
+      a: [
+        `Some of the songs that get the most attention from ${artist.name} are: ${topSongs}. These are the ones fans keep coming back to.`,
+        `${artist.name}'s popular tracks include ${topSongs}. If you are just getting into their music, these are worth starting with.`,
+        `The tracks that keep people coming back to ${artist.name} include: ${topSongs}. All lyrics are right here on DJYoungster.`
+      ][seed % 3]
     })
   }
 
   if (artist.country) {
     faqs.push({
       q: `Where is ${artist.name} from?`,
-      a: `${artist.name} is from ${artist.country}.`
+      a: [
+        `${artist.name} is from ${artist.country}. Their music carries that background in ways you can pick up if you listen closely to the lyrics.`,
+        `${artist.country} is where ${artist.name} comes from. That regional sound and culture shows up in their music pretty naturally.`,
+        `${artist.name} is a ${artist.country}-based artist. The influence of their roots comes through in the language, the style, and the themes they write about.`
+      ][seed % 3]
     })
   }
 
   if (movies?.length > 0) {
     const movieNames = movies.map(m => m.title).join(', ')
     faqs.push({
-      q: `Which movies has ${artist.name} sung for?`,
-      a: `${artist.name} has sung songs for the following movies: ${movieNames}.`
+      q: `Which films has ${artist.name} sung for?`,
+      a: [
+        `${artist.name} has contributed songs to these films: ${movieNames}. Film tracks bring their voice to a wider audience and these were no different.`,
+        `On the film side, ${artist.name} has lent their voice to: ${movieNames}. Some artists shine in movie soundtracks and ${artist.name} is one of them.`,
+        `${artist.name}'s voice has been part of the soundtracks for ${movieNames}. Film songs are a whole different space and ${artist.name} made their mark there too.`
+      ][seed % 3]
     })
   }
 
   faqs.push({
-    q: `Where can I read ${artist.name} song lyrics?`,
-    a: `You can read all ${artist.name} song lyrics with English translation, Hindi and Punjabi language variations on DJYoungster.`
+    q: `Where can I find ${artist.name} lyrics with translation?`,
+    a: [
+      `DJYoungster has all ${artist.name} lyrics in one place with English translation, Hindi script, and Punjabi script. Just scroll through their song list or use the search to find a specific track.`,
+      `Right here. DJYoungster has the full collection of ${artist.name} lyrics with English translation and both Hindi and Punjabi scripts. Click any song from the list to get started.`,
+      `Every ${artist.name} song on DJYoungster comes with full lyrics, English translation, and Hindi and Punjabi language versions. No searching around multiple sites.`
+    ][seed % 3]
   })
 
   if (faqs.length === 0) return null

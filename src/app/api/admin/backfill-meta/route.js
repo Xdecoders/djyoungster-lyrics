@@ -15,7 +15,7 @@ export async function POST() {
         updates.metaTitle = `${artist.name} Songs Lyrics with English Translation - DJYoungster`
       }
       if (!artist.metaDescription) {
-        updates.metaDescription = `Explore ${artist.name} song lyrics with meanings and translations. Read ${artist.name} lyrics in English, Hindi, and Punjabi on DJYoungster.`
+        updates.metaDescription = `${artist.name} song lyrics with English translation, Hindi and Punjabi script — all tracks in one place on DJYoungster.`
       }
       if (Object.keys(updates).length > 0) {
         await prisma.artist.update({ where: { id: artist.id }, data: updates })
@@ -35,7 +35,7 @@ export async function POST() {
         updates.metaTitle = `${album.title} Songs Lyrics with English Translation - DJYoungster`
       }
       if (!album.metaDescription) {
-        updates.metaDescription = `Explore ${album.title} album song lyrics with meanings and translations on DJYoungster.`
+        updates.metaDescription = `${album.title} album — all song lyrics with English translation and Hindi-Punjabi script on DJYoungster.`
       }
       if (Object.keys(updates).length > 0) {
         await prisma.album.update({ where: { id: album.id }, data: updates })
@@ -55,7 +55,7 @@ export async function POST() {
         updates.metaTitle = `${movie.title}${movie.year ? ` (${movie.year})` : ''} Songs Lyrics - DJYoungster`
       }
       if (!movie.metaDescription) {
-        updates.metaDescription = `Explore ${movie.title} movie song lyrics with meanings and translations on DJYoungster.`
+        updates.metaDescription = `All songs from ${movie.title}${movie.year ? ` (${movie.year})` : ''} with lyrics, English translation and Hindi-Punjabi script on DJYoungster.`
       }
       if (Object.keys(updates).length > 0) {
         await prisma.movie.update({ where: { id: movie.id }, data: updates })

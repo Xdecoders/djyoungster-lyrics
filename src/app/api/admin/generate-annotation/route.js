@@ -31,22 +31,30 @@ export async function POST(request) {
       messages: [
         {
           role: 'system',
-          content: 'You are a music analyst and lyrics annotator, similar to Genius.com contributors. Write concise, insightful annotations that explain the meaning, imagery, wordplay, and cultural significance of song lyrics. Your annotations should be 40-120 words, written in a knowledgeable but accessible tone. Do not use markdown formatting. Write plain text only.'
+          content: 'You annotate song lyrics the way a real fan would — someone who knows the culture, listens carefully, and writes like a person not a press release. Plain text only, no markdown, no bullet points.'
         },
         {
           role: 'user',
-          content: `Write an annotation for the following lyrics from "${songTitle || 'this song'}" by ${artistNames || 'the artist'}${language ? ` (${language} song)` : ''}.
+          content: `Write an annotation for these lyrics from "${songTitle || 'this song'}" by ${artistNames || 'the artist'}${language ? ` (${language} song)` : ''}.
 ${singers ? `Singer(s): ${singers}` : ''}
 ${lyricist ? `Lyricist/Writer: ${lyricist}` : ''}
 
-Lyrics to annotate:
+Lyrics:
 "${lyricsText}"
 
-${songMeaning ? `Context about the song's meaning: ${songMeaning.substring(0, 500)}` : ''}
+${songMeaning ? `Song context: ${songMeaning.substring(0, 500)}` : ''}
 
-IMPORTANT: Always refer to the singer/artist and lyricist by their actual names provided above. Never use generic terms like "the singer", "the artist", "the writer", or "the lyricist" — use the real names instead.
+Write 50-100 words. Be specific to these lines only, not the whole song.
 
-Explain the meaning, imagery, wordplay, metaphors, cultural references, or emotional significance of these specific lines. Be specific to these lyrics — don't give a general song overview.`
+RULES — follow all of them:
+- Always use the real names (${artistNames || 'the artist'}${lyricist ? `, ${lyricist}` : ''}) instead of "the singer", "the artist", "the writer"
+- BANNED words: delve, tapestry, testament, poignant, resonate, navigate, journey, showcase, underscore, elevate, heartfelt, moreover, furthermore, profound, captivating, compelling, it is worth noting
+- No hyphens used as pauses or em dashes
+- Do not start with "These lines" or "In these lines" or "This line" — find a more natural entry point
+- Write like a Genius.com contributor who actually gets the culture, not like someone summarizing a Wikipedia article
+- One specific observation about word choice, double meaning, cultural slang, or regional reference if relevant — something that adds real value
+- Short sentences are fine. You don't need to sound academic
+- Plain text only, no formatting`
         }
       ]
     })

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiFilm, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiCalendar, FiX, FiChevronLeft, FiChevronRight, FiImage, FiUpload, FiLink, FiEye, FiSearch } from 'react-icons/fi'
+import { FiFilm, FiPlus, FiEdit2, FiTrash2, FiArrowLeft, FiCheck, FiMusic, FiCalendar, FiX, FiChevronLeft, FiChevronRight, FiImage, FiUpload, FiLink, FiEye, FiSearch, FiZap } from 'react-icons/fi'
 
 const ITEMS_PER_PAGE = 20
 
@@ -29,8 +29,11 @@ export default function MoviesPage() {
     writer: '',
     genre: '',
     language: '',
-    posterUrl: ''
+    posterUrl: '',
+    metaTitle: '',
+    metaDescription: ''
   })
+  const [generatingMeta, setGeneratingMeta] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -101,11 +104,45 @@ export default function MoviesPage() {
       writer: '',
       genre: '',
       language: '',
-      posterUrl: ''
+      posterUrl: '',
+      metaTitle: '',
+      metaDescription: ''
     })
     setImageMode('url')
     setShowForm(false)
     setEditingId(null)
+  }
+
+  const handleGenerateMeta = async () => {
+    if (!formData.title.trim()) {
+      alert('Enter the movie title first')
+      return
+    }
+    setGeneratingMeta(true)
+    try {
+      const res = await fetch('/api/admin/generate-meta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'movie',
+          title: formData.title,
+          year: formData.year,
+          language: formData.language,
+          director: formData.director,
+          cast: formData.cast,
+          musicDirector: formData.musicDirector,
+          genre: formData.genre
+        })
+      })
+      const data = await res.json()
+      if (data.metaDescription) {
+        setFormData(prev => ({ ...prev, metaDescription: data.metaDescription }))
+      }
+    } catch (error) {
+      console.error('Generate meta error:', error)
+    } finally {
+      setGeneratingMeta(false)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -145,7 +182,9 @@ export default function MoviesPage() {
       writer: movie.writer || '',
       genre: movie.genre || '',
       language: movie.language || '',
-      posterUrl: movie.posterUrl || ''
+      posterUrl: movie.posterUrl || '',
+      metaTitle: movie.metaTitle || '',
+      metaDescription: movie.metaDescription || ''
     })
     setEditingId(movie.id)
     setShowForm(true)
@@ -419,6 +458,50 @@ export default function MoviesPage() {
                   placeholder="Movie description (optional - will be auto-generated if empty)"
                 />
               </div>
+
+              {/* SEO Settings */}
+              <div className="border-t border-slate-100 pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-medium text-slate-700">SEO Settings</p>
+                  <button
+                    type="button"
+                    onClick={handleGenerateMeta}
+                    disabled={generatingMeta}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary bg-emerald-50 hover:bg-emerald-100 rounded-lg transition disabled:opacity-50"
+                  >
+                    <FiZap className="w-3.5 h-3.5" />
+                    {generatingMeta ? 'Generating...' : 'Auto Generate'}
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Meta Title</label>
+                    <input
+                      type="text"
+                      name="metaTitle"
+                      value={formData.metaTitle}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition text-sm"
+                      placeholder={formData.title ? `${formData.title}${formData.year ? ` (${formData.year})` : ''} Songs Lyrics - DJYoungster` : 'SEO optimized title'}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-600 mb-1.5">Meta Description</label>
+                    <textarea
+                      name="metaDescription"
+                      value={formData.metaDescription}
+                      onChange={handleChange}
+                      rows={2}
+                      className="w-full px-3 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none text-sm"
+                      placeholder="Brief description for search engines..."
+                    />
+                    {formData.metaDescription && (
+                      <p className="text-xs text-slate-400 mt-1">{formData.metaDescription.length} characters</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"

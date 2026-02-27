@@ -159,45 +159,70 @@ function AlbumFAQs({ album }) {
   const artistName = album?.artist?.name || 'Various Artists'
 
   const faqs = []
+  const seed = album.title.length
 
   faqs.push({
-    q: `How many songs are in ${album.title} album?`,
-    a: `${album.title} by ${artistName} has ${album.totalSongs} ${album.totalSongs === 1 ? 'song' : 'songs'} in its tracklist.`
+    q: `How many songs does ${album.title} have?`,
+    a: [
+      `${album.title} has ${album.totalSongs} ${album.totalSongs === 1 ? 'track' : 'tracks'} in total. ${album.totalSongs > 8 ? `That is a pretty full body of work from ${artistName}.` : `Short but every track counts.`} All lyrics are available on DJYoungster.`,
+      `${artistName} packed ${album.totalSongs} ${album.totalSongs === 1 ? 'song' : 'songs'} into ${album.title}. You can find the lyrics for every single one of them right here.`,
+      `There are ${album.totalSongs} ${album.totalSongs === 1 ? 'song' : 'songs'} on ${album.title}. ${album.totalSongs >= 10 ? 'A full album worth of content' : 'Each track pulls its weight'} and DJYoungster has all the lyrics ready.`
+    ][seed % 3]
   })
 
   if (album.artist?.name) {
     faqs.push({
-      q: `Who is the artist of ${album.title}?`,
-      a: `${album.title} is an album by ${artistName}.${album.label ? ` It was released under ${album.label}.` : ''}`
+      q: `Who is ${album.title} by?`,
+      a: [
+        `${album.title} is ${artistName}'s album.${album.label ? ` It came out through ${album.label}.` : ''} The whole project is theirs from start to finish.`,
+        `This album belongs to ${artistName}.${album.label ? ` Released via ${album.label}.` : ''} If you are new to their music, this is a solid place to start.`,
+        `${artistName} is the artist behind ${album.title}.${album.label ? ` The album dropped under ${album.label}.` : ''} Every track in this collection is their work.`
+      ][seed % 3]
     })
   }
 
   if (album.releaseDate) {
     const year = new Date(album.releaseDate).getFullYear()
     faqs.push({
-      q: `When was ${album.title} released?`,
-      a: `${album.title} by ${artistName} was released in ${year}.`
+      q: `When did ${album.title} come out?`,
+      a: [
+        `${album.title} came out in ${year}. ${artistName} put this together and it has been part of their catalogue ever since.`,
+        `${artistName} dropped ${album.title} in ${year}. It has been ${new Date().getFullYear() - year} ${new Date().getFullYear() - year === 1 ? 'year' : 'years'} and fans are still coming back to the lyrics.`,
+        `The album came out in ${year}. At the time, ${album.title} was a solid release from ${artistName} and the songs still hold up.`
+      ][seed % 3]
     })
   }
 
   if (album.label) {
     faqs.push({
-      q: `Which label released ${album.title}?`,
-      a: `${album.title} was released under the ${album.label} label.`
+      q: `Which label put out ${album.title}?`,
+      a: [
+        `${album.title} was released through ${album.label}. The label backed ${artistName} on this project.`,
+        `${album.label} handled the release of ${album.title}. That is the label name you will see attached to this one.`,
+        `The album came out under ${album.label}. They were the ones who pushed ${album.title} out to the public.`
+      ][seed % 3]
     })
   }
 
   if (album.songs?.length > 0) {
     const songNames = album.songs.map(s => s.title).join(', ')
     faqs.push({
-      q: `What are the songs in ${album.title}?`,
-      a: `The songs in ${album.title} are: ${songNames}.`
+      q: `What songs are on ${album.title}?`,
+      a: [
+        `The tracklist for ${album.title} includes: ${songNames}. Click any title above to get the full lyrics and translation.`,
+        `${album.title} has these tracks: ${songNames}. Every song has its own lyrics page on DJYoungster.`,
+        `Here is what ${artistName} put on ${album.title}: ${songNames}. All lyrics with English translation are one click away.`
+      ][seed % 3]
     })
   }
 
   faqs.push({
-    q: `Where can I read ${album.title} song lyrics?`,
-    a: `You can read all ${album.title} song lyrics with English translation and meanings on DJYoungster.`
+    q: `Where can I find ${album.title} lyrics with English translation?`,
+    a: [
+      `Right here on DJYoungster. Every song from ${album.title} has the full lyrics, English translation, and Hindi and Punjabi scripts. Just pick a track from the list.`,
+      `DJYoungster has all ${album.title} lyrics in one place with English translation, Hindi and Punjabi script. Click any song from the tracklist above and you are set.`,
+      `You are already in the right spot. DJYoungster has every track from ${album.title} with full lyrics and English translation ready to read.`
+    ][seed % 3]
   })
 
   if (faqs.length === 0) return null

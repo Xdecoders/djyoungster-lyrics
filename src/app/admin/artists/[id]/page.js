@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { FiSave, FiArrowLeft, FiUser, FiGlobe, FiImage, FiUpload, FiLink } from 'react-icons/fi'
+import { FiSave, FiArrowLeft, FiUser, FiGlobe, FiImage, FiUpload, FiLink, FiZap } from 'react-icons/fi'
 
 export default function EditArtist() {
   const router = useRouter()
@@ -21,6 +21,30 @@ export default function EditArtist() {
     metaDescription: ''
   })
   const [errors, setErrors] = useState({})
+  const [generatingMeta, setGeneratingMeta] = useState(false)
+
+  const handleGenerateMeta = async () => {
+    if (!formData.name.trim()) {
+      alert('Artist name is required')
+      return
+    }
+    setGeneratingMeta(true)
+    try {
+      const res = await fetch('/api/admin/generate-meta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'artist', name: formData.name, bio: formData.bio })
+      })
+      const data = await res.json()
+      if (data.metaDescription) {
+        setFormData(prev => ({ ...prev, metaDescription: data.metaDescription }))
+      }
+    } catch (error) {
+      console.error('Generate meta error:', error)
+    } finally {
+      setGeneratingMeta(false)
+    }
+  }
 
   useEffect(() => {
     if (!params.id) return // Wait for params to be available
@@ -342,8 +366,18 @@ export default function EditArtist() {
 
           {/* SEO Settings */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
-            <h2 className="text-base sm:text-lg font-semibold text-slate-800 mb-4">SEO Settings</h2>
-            <p className="text-sm text-slate-500 mb-4">Leave empty to use auto-generated defaults shown below.</p>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-base sm:text-lg font-semibold text-slate-800">SEO Settings</h2>
+              <button
+                type="button"
+                onClick={handleGenerateMeta}
+                disabled={generatingMeta}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary bg-emerald-50 hover:bg-emerald-100 rounded-lg transition disabled:opacity-50"
+              >
+                <FiZap className="w-3.5 h-3.5" />
+                {generatingMeta ? 'Generating...' : 'Auto Generate'}
+              </button>
+            </div>
 
             <div className="space-y-4">
               <div>
@@ -358,9 +392,6 @@ export default function EditArtist() {
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition"
                   placeholder={`${formData.name} Songs Lyrics with English Translation - DJYoungster`}
                 />
-                {!formData.metaTitle && formData.name && (
-                  <p className="text-xs text-slate-400 mt-1">Default: {formData.name} Songs Lyrics with English Translation - DJYoungster</p>
-                )}
               </div>
 
               <div>
@@ -373,10 +404,10 @@ export default function EditArtist() {
                   onChange={handleChange}
                   rows={3}
                   className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition resize-none"
-                  placeholder={`${formData.name} through his song lyrics and meanings. DJYoungster provides ${formData.name} lyrics in English Translation, Hindi and Punjabi language variations.`}
+                  placeholder="Brief description for search engines..."
                 />
-                {!formData.metaDescription && formData.name && (
-                  <p className="text-xs text-slate-400 mt-1">Default: {formData.name} through his song lyrics and meanings. DJYoungster provides {formData.name} lyrics in English Translation, Hindi and Punjabi language variations.</p>
+                {formData.metaDescription && (
+                  <p className="text-xs text-slate-400 mt-1">{formData.metaDescription.length} characters</p>
                 )}
               </div>
             </div>

@@ -65,7 +65,7 @@ export async function POST(request) {
         genre: data.genre || null,
         language: data.language || null,
         metaTitle: data.metaTitle || `${data.title}${data.year ? ` (${data.year})` : ''} Songs Lyrics - DJYoungster`,
-        metaDescription: data.metaDescription || `Explore ${data.title} movie song lyrics with meanings and translations on DJYoungster.`
+        metaDescription: data.metaDescription || `All songs from ${data.title}${data.year ? ` (${data.year})` : ''} with lyrics, English translation and Hindi-Punjabi script on DJYoungster.`
       }
     })
 
