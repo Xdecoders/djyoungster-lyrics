@@ -102,10 +102,11 @@ export async function scrapeVergeLyrics(url) {
 
     if (node.name === 'span') {
       if (el.hasClass('hLB')) {
+        // data-head already contains bracket notation e.g. "[Verse 1]"
         const head = el.attr('data-head') || ''
         if (head.trim()) {
           if (lyricsLines.length > 0) lyricsLines.push('')
-          lyricsLines.push(`[${head.trim()}]`)
+          lyricsLines.push(head.trim())
         }
       } else if (el.hasClass('hLT')) {
         const line = el.text().trim()
