@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiSave, FiX, FiMusic, FiUser, FiDisc, FiTag, FiFilm, FiCalendar, FiGlobe, FiImage, FiEye, FiType, FiAlignLeft, FiSearch, FiPlus, FiFolder, FiVideo, FiUpload, FiLink, FiEdit3, FiMic, FiUsers, FiAward, FiStar, FiBookOpen, FiDownload, FiExternalLink, FiAlertTriangle, FiCheck, FiLoader, FiYoutube } from 'react-icons/fi'
+import { FiSave, FiX, FiMusic, FiUser, FiDisc, FiTag, FiFilm, FiCalendar, FiGlobe, FiImage, FiEye, FiType, FiAlignLeft, FiSearch, FiPlus, FiFolder, FiVideo, FiUpload, FiLink, FiEdit3, FiMic, FiUsers, FiAward, FiStar, FiBookOpen, FiDownload, FiExternalLink, FiAlertTriangle, FiCheck, FiLoader } from 'react-icons/fi'
 import { FaSpotify, FaApple, FaYoutube } from 'react-icons/fa'
 import useSpellCheck from '@/hooks/useSpellCheck'
 import SpellCheckPanel from '@/components/admin/SpellCheckPanel'
