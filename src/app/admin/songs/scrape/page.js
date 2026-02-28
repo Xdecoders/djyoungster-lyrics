@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiSave, FiX, FiMusic, FiUser, FiDisc, FiTag, FiFilm, FiCalendar, FiGlobe, FiImage, FiEye, FiType, FiAlignLeft, FiSearch, FiPlus, FiFolder, FiVideo, FiUpload, FiLink, FiEdit3, FiMic, FiUsers, FiAward, FiStar, FiBookOpen, FiDownload, FiExternalLink, FiAlertTriangle, FiCheck, FiLoader } from 'react-icons/fi'
-import { FaSpotify, FaApple } from 'react-icons/fa'
+import { FiSave, FiX, FiMusic, FiUser, FiDisc, FiTag, FiFilm, FiCalendar, FiGlobe, FiImage, FiEye, FiType, FiAlignLeft, FiSearch, FiPlus, FiFolder, FiVideo, FiUpload, FiLink, FiEdit3, FiMic, FiUsers, FiAward, FiStar, FiBookOpen, FiDownload, FiExternalLink, FiAlertTriangle, FiCheck, FiLoader, FiYoutube } from 'react-icons/fi'
+import { FaSpotify, FaApple, FaYoutube } from 'react-icons/fa'
 import useSpellCheck from '@/hooks/useSpellCheck'
 import SpellCheckPanel from '@/components/admin/SpellCheckPanel'
 import TransliterateTextarea from '@/components/admin/TransliterateTextarea'
@@ -12,12 +12,21 @@ import TransliterateTextarea from '@/components/admin/TransliterateTextarea'
 export default function ScrapeSong() {
   const router = useRouter()
 
-  // Phase 1: URL input state
+  // Phase 1: mode toggle
+  const [importMode, setImportMode] = useState('scrape') // 'scrape' | 'youtube'
+
+  // Phase 1: lyrics URL scrape state
   const [scrapeUrl, setScrapeUrl] = useState('')
   const [scraping, setScraping] = useState(false)
   const [scrapeError, setScrapeError] = useState('')
   const [scraped, setScraped] = useState(false)
   const [scrapeResult, setScrapeResult] = useState(null)
+
+  // Phase 1: YouTube import state
+  const [youtubeInputUrl, setYoutubeInputUrl] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState('')
+  const [lyricsSource, setLyricsSource] = useState(null) // 'description' | 'genius' | null
 
   // Phase 2: Form state (same as add page)
   const [loading, setLoading] = useState(false)
@@ -333,11 +342,85 @@ export default function ScrapeSong() {
     }
   }
 
+  // ========== YOUTUBE IMPORT HANDLER ==========
+  const handleYoutubeImport = async () => {
+    if (!youtubeInputUrl.trim()) return
+    const token = localStorage.getItem('adminToken')
+    setImporting(true)
+    setImportError('')
+    setLyricsSource(null)
+
+    try {
+      const res = await fetch('/api/admin/import-youtube', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ url: youtubeInputUrl.trim() })
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Import failed')
+      }
+
+      setLyricsSource(data.lyricsSource)
+
+      // Re-fetch artists list
+      const artistsRes = await fetch('/api/admin/artists', { headers: { 'Authorization': `Bearer ${token}` } })
+      const freshArtists = await artistsRes.json()
+      setArtists(freshArtists)
+
+      // Populate form
+      setFormData(prev => ({
+        ...prev,
+        title: data.title || '',
+        slug: generateSlug(data.title || ''),
+        lyrics: data.lyrics || '',
+        lyricsRomanized: '',
+        lyricsTranslated: '',
+        lyricsHindi: '',
+        lyricsPunjabi: '',
+        meaning: '',
+        datePublished: data.datePublished || '',
+        coverImage: data.coverImage || '',
+        youtubeUrl: data.youtubeUrl || '',
+        lyricist: data.lyricist || '',
+        composer: data.composer || '',
+        singers: data.singers || '',
+        label: data.label || '',
+        starring: data.starring || '',
+        producer: data.producer || '',
+        director: data.director || '',
+        metaTitle: data.title || '',
+        status: 'draft'
+      }))
+
+      if (data.coverImage) setImagePreview(data.coverImage)
+
+      // Match artists by name
+      if (data.artistNames?.length) {
+        const matched = data.artistNames
+          .map(name => freshArtists.find(a => a.name.toLowerCase() === name.toLowerCase()))
+          .filter(Boolean)
+        if (matched.length > 0) setSelectedArtists(matched)
+      }
+
+      setScraped(true)
+    } catch (error) {
+      setImportError(error.message)
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const handleScrapeNew = () => {
     setScraped(false)
     setScrapeResult(null)
     setScrapeUrl('')
     setScrapeError('')
+    setYoutubeInputUrl('')
+    setImportError('')
+    setLyricsSource(null)
     setDuplicateWarning(null)
     setSelectedArtists([])
     setSelectedMovie(null)
@@ -755,68 +838,137 @@ export default function ScrapeSong() {
 
         <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="bg-white rounded-xl shadow-sm p-8">
-            <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-violet-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <FiGlobe className="w-8 h-8 text-violet-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">Paste a Lyrics URL</h2>
-              <p className="text-gray-500">Auto-extract song data from supported lyrics websites</p>
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900 mb-1">Import Song</h2>
+              <p className="text-gray-500 text-sm">Choose how you want to import the song</p>
             </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Lyrics Page URL</label>
-                <input
-                  type="url"
-                  value={scrapeUrl}
-                  onChange={(e) => setScrapeUrl(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleScrape()}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-lg text-gray-900"
-                  placeholder="https://genius.com/Artist-song-title-lyrics"
-                  autoFocus
-                />
-              </div>
-
-              {scrapeError && (
-                <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <FiAlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-red-800 font-medium">Scrape Failed</p>
-                    <p className="text-red-600 text-sm mt-1">{scrapeError}</p>
-                  </div>
-                </div>
-              )}
-
+            {/* Mode Tabs */}
+            <div className="flex gap-2 mb-6 p-1 bg-gray-100 rounded-xl">
               <button
-                onClick={handleScrape}
-                disabled={scraping || !scrapeUrl.trim()}
-                className="w-full px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl hover:from-violet-700 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg shadow-lg shadow-violet-200"
+                onClick={() => { setImportMode('scrape'); setScrapeError(''); setImportError('') }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition ${importMode === 'scrape' ? 'bg-white text-violet-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
               >
-                {scraping ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Scraping...
-                  </>
-                ) : (
-                  <>
-                    <FiDownload className="w-5 h-5" />
-                    Scrape Song Data
-                  </>
-                )}
+                <FiGlobe className="w-4 h-4" />
+                Lyrics Website
+              </button>
+              <button
+                onClick={() => { setImportMode('youtube'); setScrapeError(''); setImportError('') }}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition ${importMode === 'youtube' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              >
+                <FaYoutube className="w-4 h-4" />
+                YouTube URL
               </button>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-gray-100">
-              <p className="text-sm font-medium text-gray-700 mb-3">Supported Sites:</p>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-full text-sm font-medium">genius.com</span>
-                <span className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">tamil2lyrics.com</span>
-                <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-medium">lyricsmint.com</span>
-                <span className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">lyricsraag.com</span>
-                <span className="px-3 py-1.5 bg-orange-50 text-orange-700 rounded-full text-sm font-medium">gaana.com</span>
-                <span className="px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">vergelyrics.com</span>
+            {/* ── LYRICS WEBSITE TAB ── */}
+            {importMode === 'scrape' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Lyrics Page URL</label>
+                  <input
+                    type="url"
+                    value={scrapeUrl}
+                    onChange={(e) => setScrapeUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleScrape()}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none text-lg text-gray-900"
+                    placeholder="https://genius.com/Artist-song-title-lyrics"
+                    autoFocus
+                  />
+                </div>
+
+                {scrapeError && (
+                  <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <FiAlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-red-800 font-medium">Scrape Failed</p>
+                      <p className="text-red-600 text-sm mt-1">{scrapeError}</p>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleScrape}
+                  disabled={scraping || !scrapeUrl.trim()}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-xl hover:from-violet-700 hover:to-purple-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg shadow-lg shadow-violet-200"
+                >
+                  {scraping ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Scraping...
+                    </>
+                  ) : (
+                    <>
+                      <FiDownload className="w-5 h-5" />
+                      Scrape Song Data
+                    </>
+                  )}
+                </button>
+
+                <div className="pt-4 border-t border-gray-100">
+                  <p className="text-sm font-medium text-gray-700 mb-3">Supported Sites:</p>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-full text-sm font-medium">genius.com</span>
+                    <span className="px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium">tamil2lyrics.com</span>
+                    <span className="px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-medium">lyricsmint.com</span>
+                    <span className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">lyricsraag.com</span>
+                    <span className="px-3 py-1.5 bg-orange-50 text-orange-700 rounded-full text-sm font-medium">gaana.com</span>
+                    <span className="px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">vergelyrics.com</span>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* ── YOUTUBE TAB ── */}
+            {importMode === 'youtube' && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">YouTube Video URL</label>
+                  <input
+                    type="url"
+                    value={youtubeInputUrl}
+                    onChange={(e) => setYoutubeInputUrl(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleYoutubeImport()}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-400 focus:border-transparent outline-none text-lg text-gray-900"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    autoFocus
+                  />
+                </div>
+
+                <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-sm text-blue-700">
+                  <p className="font-medium mb-1">What gets auto-filled:</p>
+                  <p className="text-blue-600">Song title, artists, credits (singer, lyricist, music director, label), thumbnail, release date. Lyrics extracted from video description or fetched from Genius automatically.</p>
+                </div>
+
+                {importError && (
+                  <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <FiAlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-red-800 font-medium">Import Failed</p>
+                      <p className="text-red-600 text-sm mt-1">{importError}</p>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={handleYoutubeImport}
+                  disabled={importing || !youtubeInputUrl.trim()}
+                  className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl hover:from-red-600 hover:to-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium text-lg shadow-lg shadow-red-200"
+                >
+                  {importing ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <FaYoutube className="w-5 h-5" />
+                      Import from YouTube
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
           </div>
         </main>
       </div>
@@ -909,6 +1061,26 @@ export default function ScrapeSong() {
               <p className="text-amber-800 font-medium">Possible Duplicate</p>
               <p className="text-amber-600 text-sm mt-1">{duplicateWarning}. The slug will be auto-adjusted (e.g. &quot;-2&quot;) on save if not changed.</p>
             </div>
+          </div>
+        )}
+
+        {/* Lyrics source notice (YouTube import only) */}
+        {lyricsSource === 'description' && (
+          <div className="mb-6 flex items-start gap-3 p-4 bg-green-50 border border-green-200 rounded-xl">
+            <FiCheck className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+            <p className="text-green-800 text-sm">Lyrics found in the YouTube video description and auto-filled.</p>
+          </div>
+        )}
+        {lyricsSource === 'genius' && (
+          <div className="mb-6 flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
+            <FiCheck className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+            <p className="text-blue-800 text-sm">Lyrics not in description — fetched automatically from Genius.com.</p>
+          </div>
+        )}
+        {lyricsSource === null && importMode === 'youtube' && scraped && (
+          <div className="mb-6 flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+            <FiAlertTriangle className="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" />
+            <p className="text-amber-800 text-sm">Lyrics not found in description or Genius. Paste the lyrics manually below, or switch to the Lyrics Website tab to scrape them.</p>
           </div>
         )}
 
