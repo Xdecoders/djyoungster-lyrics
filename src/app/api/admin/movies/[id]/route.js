@@ -48,7 +48,9 @@ export async function PUT(request, { params }) {
         writer: data.writer || null,
         genre: data.genre || null,
         language: data.language || null,
-        posterUrl: data.posterUrl || null
+        posterUrl: data.posterUrl || null,
+        metaTitle: data.metaTitle || null,
+        metaDescription: data.metaDescription || null
       }
     })
 
