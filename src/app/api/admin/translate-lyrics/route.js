@@ -32,7 +32,7 @@ export async function POST(request) {
       messages: [
         {
           role: 'system',
-          content: 'You are a professional lyrics translator and music analyst. You MUST respond with ONLY raw JSON — no markdown, no code fences, no explanation text before or after. Use \\n for line breaks inside JSON string values. Escape any special characters properly for valid JSON.'
+          content: 'You are a music fan who writes honest, personal song explanations on Reddit and personal blogs. You have strong opinions, you use "I" naturally, and you write the way you actually talk — not like a journalist or a press release. You MUST respond with ONLY raw JSON — no markdown, no code fences, no explanation text before or after. Use \\n for line breaks inside JSON string values. Escape any special characters properly for valid JSON.'
         },
         {
           role: 'user',
@@ -50,7 +50,24 @@ Return ONLY a JSON object with these 7 fields:
 - "lyricsTranslated": English translation (actual meaning translation into English)
 - "lyricsHindi": The SAME original lyrics written in Devanagari script (transliteration, NOT translation). IMPORTANT: Use correct Hindi matras, nuktas, and spelling — e.g. proper use of ि vs ी, ु vs ू, ं vs ँ, and conjuncts. Do not produce sloppy or approximate Devanagari — each word must be spelled accurately.
 - "lyricsPunjabi": The SAME original lyrics written in Gurmukhi script (transliteration, NOT translation). IMPORTANT: Use correct Gurmukhi matras, tippis, bindis, and adhak — e.g. proper use of ਿ vs ੀ, ੁ vs ੂ, ੰ vs ਂ, and ੱ for gemination. Each word must be spelled accurately in Gurmukhi.
-- "meaning": Write a song meaning for ${songTitle}${artistName ? ` by ${artistName}` : ''} in 300-400 words. Write it the way a real music fan would write — someone who actually listened to the track, felt something, and is now explaining it to a friend. No bullet points, no headers. Just plain flowing paragraphs like a blog post or forum writeup. Rules: (1) Sound like a human fan, NOT a music journalist or AI. (2) BANNED words — never use: delve, tapestry, testament, poignant, resonate, navigate, journey, showcase, underscore, elevate, heartfelt, moreover, furthermore, in conclusion, profound, captivating, compelling. (3) No hyphens used as pauses or em dashes. (4) Do not over-explain every line — pick 2-3 key moments and talk about why they hit. (5) Add one unique angle: cultural context, production vibe, how it fits the artist's story, or something listeners might miss. (6) Mix short and long sentences naturally. (7) Include exactly 1 small natural spelling mistake anywhere in the text (e.g. "definitly", "recieve", "acheive", "truely"). (8) Do NOT start with the song title or artist name — hook the reader first. (9) Never write "the song explores" or "the lyrics paint a picture".
+- "meaning": Write a personal, opinionated explanation of ${songTitle}${artistName ? ` by ${artistName}` : ''} in 300-400 words. Think of it as a Reddit comment or a personal blog post where you are telling someone why this song hits the way it does. No bullet points. No headers. Just paragraphs — messy, real, personal.
+
+HARD RULES for the meaning field — break any of these and the output is wrong:
+
+BANNED WORDS (never use any of these): delve, tapestry, testament, poignant, resonate, navigate, journey, showcase, underscore, elevate, heartfelt, moreover, furthermore, in conclusion, profound, captivating, compelling, timeless, soulful, haunting, masterpiece, beautifully, perfectly, seamlessly, intricate, nuanced, eloquent, evocative, visceral, raw emotion, speaks to, speaks volumes, it is worth noting, one can, one cannot, in many ways, at its core, overall, ultimately, in essence, throughout the song, throughout the track, the listener, the audience.
+
+BANNED SENTENCE STARTERS — never begin a paragraph or sentence with: "The song...", "The track...", "This song...", "This track...", "What makes...", "At its core...", "Overall...", "Ultimately...", "In conclusion...", "The lyrics...", "The music...".
+
+STRUCTURE RULES:
+- Do NOT start with the song title or artist name in the first sentence. Open with a feeling, a situation, a question, or a direct statement that pulls the reader in.
+- Use "I" at least twice. Share what you personally feel about specific moments — which line got you, which part of the beat surprised you.
+- Talk directly to the reader using "you" at least once — like "if you have ever felt..." or "you know that feeling when...".
+- Pick 2 or 3 specific lines from the lyrics and quote them. Talk about why those lines work, not just what they mean.
+- Add one angle a casual listener would miss — something about the cultural background, the way the artist usually writes vs this song, the production choice, or a double meaning in a word.
+- Do NOT wrap up with a neat conclusion. End mid-thought or with a personal reaction, the way real writing ends.
+- Mix sentence lengths aggressively. One sentence can be two words. The next can run for a while and build on itself before landing.
+- Include exactly 1 natural spelling mistake somewhere (e.g. "definitly", "truely", "acheive", "recieve", "beleive") — just one, keep it subtle.
+- No hyphens used as pauses or em dashes anywhere.
 - "metaTitle": An SEO-optimized page title. EXACT format: "${title || '[Song Name]'} Lyrics - ${artistName || '[Artist Name]'} [Meaning & Translation] - DJYoungster". Use the exact song name and artist name provided, do not abbreviate or change them.
 - "metaDescription": A meta description between 150-160 characters for this song page. Include the song name and a short hook or key phrase from the lyrics. Mention lyrics and translation. End with "- DJYoungster". RULES: NEVER start with "Discover" or "Explore". No hyphens as pauses. No banned words (delve, tapestry, testament, resonate, captivating, compelling, heartfelt). Sound like a real person wrote it, not an SEO bot.
 
