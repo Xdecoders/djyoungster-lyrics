@@ -167,15 +167,15 @@ export default function MoviesPage() {
       }
       setFormData(prev => ({
         ...prev,
-        year: data.year || prev.year,
-        director: data.director || prev.director,
-        producer: data.producer || prev.producer,
-        musicDirector: data.musicDirector || prev.musicDirector,
-        writer: data.writer || prev.writer,
-        cast: data.cast || prev.cast,
-        genre: data.genre || prev.genre,
-        language: data.language || prev.language,
-        description: data.description || prev.description
+        ...(data.year && { year: data.year }),
+        ...(data.director && { director: data.director }),
+        ...(data.producer && { producer: data.producer }),
+        ...(data.musicDirector && { musicDirector: data.musicDirector }),
+        ...(data.writer && { writer: data.writer }),
+        ...(data.cast && { cast: data.cast }),
+        ...(data.genre && { genre: data.genre }),
+        ...(data.language && { language: data.language }),
+        ...(data.description && { description: data.description })
       }))
     } catch (error) {
       console.error('Auto-fill error:', error)
