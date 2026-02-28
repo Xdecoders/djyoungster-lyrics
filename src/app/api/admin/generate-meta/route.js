@@ -40,8 +40,15 @@ ${label ? `Label: ${label}` : ''}
 ${language ? `Language: ${language}` : ''}
 
 Write a meta description for the ${title} album page on DJYoungster — all songs from this album with lyrics, English translation, Hindi and Punjabi script.`
+    } else if (type === 'song') {
+      contextBlock = `Song title: ${title}
+${name || artistName ? `Artist: ${name || artistName}` : ''}
+${genre ? `Genre: ${genre}` : ''}
+${language ? `Language: ${language}` : ''}
+
+Write a meta description for the ${title} song lyrics page on DJYoungster. The page has the full lyrics with English translation, Hindi Devanagari script, and Punjabi Gurmukhi script.`
     } else {
-      return NextResponse.json({ error: 'Invalid type. Use artist, movie, or album.' }, { status: 400 })
+      return NextResponse.json({ error: 'Invalid type. Use artist, movie, album, or song.' }, { status: 400 })
     }
 
     const completion = await client.chat.completions.create({

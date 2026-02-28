@@ -34,6 +34,7 @@ export default function MoviesPage() {
     metaDescription: ''
   })
   const [generatingMeta, setGeneratingMeta] = useState(false)
+  const [autofilling, setAutofilling] = useState(false)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -143,6 +144,44 @@ export default function MoviesPage() {
       console.error('Generate meta error:', error)
     } finally {
       setGeneratingMeta(false)
+    }
+  }
+
+  const handleAutoFill = async () => {
+    if (!formData.title.trim()) {
+      alert('Enter the movie title first')
+      return
+    }
+    setAutofilling(true)
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/autofill-movie', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ title: formData.title, language: formData.language })
+      })
+      const data = await res.json()
+      if (data.error) {
+        alert('Auto-fill failed: ' + data.error)
+        return
+      }
+      setFormData(prev => ({
+        ...prev,
+        year: data.year || prev.year,
+        director: data.director || prev.director,
+        producer: data.producer || prev.producer,
+        musicDirector: data.musicDirector || prev.musicDirector,
+        writer: data.writer || prev.writer,
+        cast: data.cast || prev.cast,
+        genre: data.genre || prev.genre,
+        language: data.language || prev.language,
+        description: data.description || prev.description
+      }))
+    } catch (error) {
+      console.error('Auto-fill error:', error)
+      alert('Auto-fill failed')
+    } finally {
+      setAutofilling(false)
     }
   }
 
@@ -302,6 +341,17 @@ export default function MoviesPage() {
                     max={new Date().getFullYear() + 5}
                   />
                 </div>
+              </div>
+              <div className="flex justify-end">
+                <button
+                  type="button"
+                  onClick={handleAutoFill}
+                  disabled={autofilling}
+                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700 rounded-xl transition disabled:opacity-50 shadow-md shadow-purple-200"
+                >
+                  <FiZap className="w-4 h-4" />
+                  {autofilling ? 'Filling...' : 'Auto Fill from Title'}
+                </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { FiSave, FiX, FiMusic, FiUser, FiDisc, FiTag, FiFilm, FiCalendar, FiGlobe, FiImage, FiEye, FiType, FiAlignLeft, FiSearch, FiPlus, FiFolder, FiVideo, FiUpload, FiLink, FiEdit3, FiMic, FiUsers, FiAward, FiStar, FiBookOpen } from 'react-icons/fi'
+import { FiSave, FiX, FiMusic, FiUser, FiDisc, FiTag, FiFilm, FiCalendar, FiGlobe, FiImage, FiEye, FiType, FiAlignLeft, FiSearch, FiPlus, FiFolder, FiVideo, FiUpload, FiLink, FiEdit3, FiMic, FiUsers, FiAward, FiStar, FiBookOpen, FiZap } from 'react-icons/fi'
 import { FaSpotify, FaApple } from 'react-icons/fa'
 import RichTextEditor from '@/components/RichTextEditor'
 import useAutoSaveDraft from '@/hooks/useAutoSaveDraft'
@@ -78,6 +78,7 @@ export default function EditSong() {
   // Lyrics tab state
   const [activeLyricsTab, setActiveLyricsTab] = useState('main')
   const [translating, setTranslating] = useState(false)
+  const [generatingMeta, setGeneratingMeta] = useState(false)
 
   // Spell check
   const {
@@ -970,6 +971,35 @@ export default function EditSong() {
     }
   }
 
+  const handleGenerateMeta = async () => {
+    if (!formData.title.trim()) {
+      alert('Enter the song title first')
+      return
+    }
+    setGeneratingMeta(true)
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/generate-meta', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          type: 'song',
+          title: formData.title,
+          name: selectedArtists.map(a => a.name).join(', '),
+          genre: selectedGenres.map(g => g.name).join(', ')
+        })
+      })
+      const data = await res.json()
+      if (data.metaDescription) {
+        setFormData(prev => ({ ...prev, metaDescription: data.metaDescription }))
+      }
+    } catch (error) {
+      console.error('Generate meta error:', error)
+    } finally {
+      setGeneratingMeta(false)
+    }
+  }
+
   const lyricsTabs = [
     { id: 'main', label: 'Main Lyrics', field: 'lyrics', required: true },
     { id: 'romanized', label: 'Romanized', field: 'lyricsRomanized' },
@@ -1567,7 +1597,18 @@ export default function EditSong() {
 
               {/* SEO Settings */}
               <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">SEO Settings</h2>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-lg font-semibold text-gray-900">SEO Settings</h2>
+                  <button
+                    type="button"
+                    onClick={handleGenerateMeta}
+                    disabled={generatingMeta}
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-primary bg-emerald-50 hover:bg-emerald-100 rounded-lg transition disabled:opacity-50"
+                  >
+                    <FiZap className="w-3.5 h-3.5" />
+                    {generatingMeta ? 'Generating...' : 'Auto Generate'}
+                  </button>
+                </div>
 
                 <div className="space-y-4">
                   <div>
@@ -1596,6 +1637,9 @@ export default function EditSong() {
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
                       placeholder="Brief description for search engines..."
                     />
+                    {formData.metaDescription && (
+                      <p className="text-xs text-gray-400 mt-1">{formData.metaDescription.length} characters</p>
+                    )}
                   </div>
                 </div>
               </div>
