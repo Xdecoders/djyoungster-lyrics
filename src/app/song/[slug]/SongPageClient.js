@@ -515,7 +515,7 @@ function FAQSection({ song }) {
   const getStoryReelAnswer = () => {
     const phrases = [
       `Yes! On DJYoungster, you can create beautiful Instagram Stories and Reels directly from "${song.title}" lyrics. Just tap "Create Story" or "Create Reel" on the lyrics page, select your favorite lines by ${firstArtist}, pick a template style, and download a ready-to-share image or animated video clip.`,
-      `Absolutely! DJYoungster lets you turn "${song.title}" lyrics into stunning IG Stories and animated Reels. Choose 2-4 lines for a story image or up to 8 lines for a video reel, select from 6 unique templates, and share your creation with friends — no extra apps needed.`,
+      `Absolutely! DJYoungster lets you turn "${song.title}" lyrics into stunning IG Stories and animated Reels. Choose up to 8 lines for a story image or a video reel, select from 6 unique templates, and share your creation with friends — no extra apps needed.`,
       `DJYoungster makes it easy to share "${song.title}" lyrics on Instagram. Use "Create Story" to generate a gorgeous lyrics poster or "Create Reel" to create an animated 20-second video clip. Pick your favorite lines by ${firstArtist}, choose a style that fits the mood, and download instantly.`,
     ]
     return phrases[(song.title.length + artistNames.length) % phrases.length]
@@ -1726,7 +1726,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   <div className="mb-4 px-4 py-3 bg-gradient-to-r from-purple-600/10 to-pink-600/10 dark:from-purple-600/20 dark:to-pink-600/20 rounded-xl border border-purple-200 dark:border-purple-800">
                     <p className="text-sm text-purple-700 dark:text-purple-300 font-medium flex items-center gap-2">
                       <FiCamera className="w-4 h-4 flex-shrink-0" />
-                      Tap 2-4 lines below to create a shareable story image
+                      Tap 2-8 lines below to create a shareable story image
                     </p>
                   </div>
                 )}
@@ -2102,7 +2102,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         <div className="fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 shadow-lg px-4 py-3">
           <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
             <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">
-              {selectedLines.length} / 4 lines selected
+              {selectedLines.length} / 8 lines selected
             </span>
             <div className="flex items-center gap-3">
               <button

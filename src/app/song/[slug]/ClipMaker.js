@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { FiX, FiDownload, FiShare2, FiVideo, FiCheck } from 'react-icons/fi'
+import { FiX, FiDownload, FiShare2, FiVideo, FiCheck, FiMail } from 'react-icons/fi'
 import { ensureGoogleFont, paintBackground, wrapText } from './StoryCreator'
 
 // Clip/Reel Templates (separate from Story templates)
@@ -706,6 +706,10 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
   const [blobUrl, setBlobUrl] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [isRegenerating, setIsRegenerating] = useState(false)
+  const [showGate, setShowGate] = useState(false)
+  const [gateEmail, setGateEmail] = useState('')
+  const [gateLoading, setGateLoading] = useState(false)
+  const [gateMsg, setGateMsg] = useState('')
 
   useEffect(() => {
     if (clipVideoBlob) {
@@ -725,6 +729,14 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
     }
     setPreviewUrl(null)
   }, [clipPreviewImage])
+
+  useEffect(() => {
+    if (!isOpen) {
+      setShowGate(false)
+      setGateEmail('')
+      setGateMsg('')
+    }
+  }, [isOpen])
 
   if (!isOpen) return null
 
@@ -754,6 +766,34 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
     } else {
       handleDownload()
     }
+  }
+
+  const handleDownloadClick = () => {
+    if (localStorage.getItem('dj_subscribed')) {
+      handleDownload()
+    } else {
+      setShowGate(true)
+    }
+  }
+
+  const handleGateSubmit = async (e) => {
+    e.preventDefault()
+    if (!gateEmail.includes('@')) {
+      setGateMsg('Enter a valid email')
+      return
+    }
+    setGateLoading(true)
+    try {
+      await fetch('/api/public/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: gateEmail }),
+      })
+    } catch {}
+    localStorage.setItem('dj_subscribed', '1')
+    setGateLoading(false)
+    handleDownload()
+    setShowGate(false)
   }
 
   return (
@@ -838,22 +878,56 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
               ))}
             </div>
 
-            <div className="flex gap-3 flex-shrink-0">
-              <button
-                onClick={handleDownload}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-medium hover:from-cyan-700 hover:to-blue-700 transition"
-              >
-                <FiDownload className="w-4 h-4" />
-                Download
-              </button>
-              <button
-                onClick={handleShare}
-                className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-teal-700 transition"
-              >
-                <FiShare2 className="w-4 h-4" />
-                Share
-              </button>
-            </div>
+            {showGate ? (
+              <form onSubmit={handleGateSubmit} className="flex-shrink-0">
+                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 mb-2 flex items-center gap-1.5">
+                  <FiMail className="w-4 h-4 text-cyan-500" />
+                  Enter your email to download
+                </p>
+                <div className="flex gap-2 mb-2">
+                  <input
+                    type="email"
+                    value={gateEmail}
+                    onChange={e => setGateEmail(e.target.value)}
+                    placeholder="your@email.com"
+                    autoFocus
+                    className="flex-1 px-3 py-2 border border-slate-300 dark:border-slate-600 rounded-xl text-sm bg-white dark:bg-slate-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={gateLoading}
+                    className="px-4 py-2 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl text-sm font-medium hover:from-cyan-700 hover:to-blue-700 transition disabled:opacity-50"
+                  >
+                    {gateLoading ? '...' : 'Get'}
+                  </button>
+                </div>
+                {gateMsg && <p className="text-xs text-red-500 mb-1.5">{gateMsg}</p>}
+                <button
+                  type="button"
+                  onClick={() => { localStorage.setItem('dj_subscribed', '1'); setShowGate(false); handleDownload() }}
+                  className="text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 underline"
+                >
+                  Skip, just download
+                </button>
+              </form>
+            ) : (
+              <div className="flex gap-3 flex-shrink-0">
+                <button
+                  onClick={handleDownloadClick}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-medium hover:from-cyan-700 hover:to-blue-700 transition"
+                >
+                  <FiDownload className="w-4 h-4" />
+                  Download
+                </button>
+                <button
+                  onClick={handleShare}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-medium hover:from-emerald-600 hover:to-teal-700 transition"
+                >
+                  <FiShare2 className="w-4 h-4" />
+                  Share
+                </button>
+              </div>
+            )}
           </>
         ) : null}
       </div>
