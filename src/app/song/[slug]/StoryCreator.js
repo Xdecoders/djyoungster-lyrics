@@ -451,7 +451,7 @@ export function StoryTemplatePickerModal({ isOpen, onClose, onSelect, sampleLine
 
 
 // Story Preview Modal Component
-export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGenerating, songTitle, onTemplateChange, selectedTemplate }) {
+export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGenerating, songTitle, songId, onTemplateChange, selectedTemplate }) {
   const [blobUrl, setBlobUrl] = useState(null)
   const [isRegenerating, setIsRegenerating] = useState(false)
   const [showGate, setShowGate] = useState(false)
@@ -481,6 +481,11 @@ export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGeneratin
 
   const handleDownload = () => {
     if (!blobUrl) return
+    fetch('/api/public/song-share-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ songId, type: 'story' }),
+    }).catch(() => {})
     const a = document.createElement('a')
     a.href = blobUrl
     a.download = `${songTitle?.replace(/[^a-zA-Z0-9]/g, '-') || 'story'}-lyrics.png`

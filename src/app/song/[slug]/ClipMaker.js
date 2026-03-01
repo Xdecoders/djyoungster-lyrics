@@ -702,7 +702,7 @@ export function TemplatePickerModal({ isOpen, onClose, onSelect, sampleLines }) 
 
 // ── ClipPreviewModal Component ───────────────────────────────────────────────
 
-export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewImage, isGenerating, clipProgress, songTitle, onTemplateChange, selectedTemplate }) {
+export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewImage, isGenerating, clipProgress, songTitle, songId, onTemplateChange, selectedTemplate }) {
   const [blobUrl, setBlobUrl] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [isRegenerating, setIsRegenerating] = useState(false)
@@ -742,6 +742,11 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
 
   const handleDownload = () => {
     if (!blobUrl) return
+    fetch('/api/public/song-share-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ songId, type: 'reel' }),
+    }).catch(() => {})
     const a = document.createElement('a')
     a.href = blobUrl
     a.download = `${songTitle?.replace(/[^a-zA-Z0-9]/g, '-') || 'clip'}-lyrics-clip.mp4`

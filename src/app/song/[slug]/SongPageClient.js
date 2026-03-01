@@ -768,17 +768,17 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
           </div>
         )}
 
-        <div className="flex justify-center gap-4 mb-6">
+        <div className="flex flex-wrap justify-center gap-2 mb-6">
           {shareLinks.map((link) => (
             <a
               key={link.name}
               href={link.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={`p-3 rounded-full text-white ${link.color} transition-all hover:scale-110`}
+              className={`p-2.5 rounded-full text-white ${link.color} transition-all hover:scale-110`}
               title={link.name}
             >
-              <link.icon className="w-6 h-6" />
+              <link.icon className="w-5 h-5" />
             </a>
           ))}
         </div>
@@ -2039,6 +2039,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         storyImageBlob={storyImageBlob}
         isGenerating={isGeneratingStory}
         songTitle={song.title}
+        songId={song.id}
         onTemplateChange={handleTemplateChange}
         selectedTemplate={storyTemplate}
       />
@@ -2056,6 +2057,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         isGenerating={isGeneratingClip}
         clipProgress={clipProgress}
         songTitle={song.title}
+        songId={song.id}
         onTemplateChange={handleClipTemplateChange}
         selectedTemplate={clipTemplate}
       />

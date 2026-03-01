@@ -52,11 +52,12 @@ model Song {
   genres     SongGenre[]
   categories SongCategory[]
   tags       SongTag[]
-  songLikes  SongLike[]
-  reports    Report[]
-  ratings    SongRating[]
-  reactions  SongReaction[]
+  songLikes   SongLike[]
+  reports     Report[]
+  ratings     SongRating[]
+  reactions   SongReaction[]
   annotations Annotation[]
+  shareEvents SongShareEvent[]
 
   @@index([slug])
   @@index([title])
@@ -486,4 +487,25 @@ model Redirect {
 
   @@index([isActive])
   @@index([oldUrl])
+}
+model SongShareEvent {
+  id        String   @id @default(uuid())
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId    String
+  type      String   // 'story' | 'reel'
+  createdAt DateTime @default(now())
+
+  @@index([songId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model SearchEvent {
+  id          String   @id @default(uuid())
+  query       String
+  resultCount Int
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([query])
 }

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getSearchIndexes } from '@/lib/searchIndex'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request) {
   try {
@@ -73,6 +74,10 @@ export async function GET(request) {
     }
 
     const totalResults = totalSongs + totalArtists + totalAlbums + totalMovies
+
+    prisma.searchEvent.create({
+      data: { query: searchTerm, resultCount: totalResults }
+    }).catch(() => {})
 
     return NextResponse.json({
       query: searchTerm,
