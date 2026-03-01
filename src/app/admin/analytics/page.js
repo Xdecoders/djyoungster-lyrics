@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { FiArrowLeft, FiCamera, FiVideo, FiTrendingUp, FiMusic, FiSearch, FiGlobe } from 'react-icons/fi'
+import { FiArrowLeft, FiCamera, FiVideo, FiTrendingUp, FiMusic, FiSearch, FiGlobe, FiChevronLeft, FiChevronRight, FiClock } from 'react-icons/fi'
 
 export default function AnalyticsPage() {
   const router = useRouter()
@@ -11,15 +11,24 @@ export default function AnalyticsPage() {
   const [searchData, setSearchData] = useState(null)
   const [referrerData, setReferrerData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [recentLoading, setRecentLoading] = useState(false)
   const [days, setDays] = useState(30)
+  const [recentPage, setRecentPage] = useState(1)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
     if (!token) { router.push('/admin/login'); return }
-    fetchAll()
+    setRecentPage(1)
+    fetchAll(1)
   }, [days])
 
-  const fetchAll = async () => {
+  useEffect(() => {
+    // Skip page 1 — fetchAll already loads it. Only fire for subsequent pages.
+    if (!searchData || recentPage === 1) return
+    fetchRecentPage(recentPage)
+  }, [recentPage])
+
+  const fetchAll = async (rPage = 1) => {
     try {
       setLoading(true)
       const token = localStorage.getItem('adminToken')
@@ -27,7 +36,7 @@ export default function AnalyticsPage() {
 
       const [shareRes, searchRes, referrerRes] = await Promise.all([
         fetch(`/api/admin/analytics/share-events?days=${days}`, { headers }),
-        fetch(`/api/admin/analytics/search-events?days=${days}`, { headers }),
+        fetch(`/api/admin/analytics/search-events?days=${days}&recentPage=${rPage}`, { headers }),
         fetch(`/api/admin/analytics/referrers?days=${days}`, { headers }),
       ])
 
@@ -44,6 +53,24 @@ export default function AnalyticsPage() {
       console.error(e)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchRecentPage = async (page) => {
+    try {
+      setRecentLoading(true)
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch(`/api/admin/analytics/search-events?days=${days}&recentPage=${page}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const json = await res.json()
+      if (json.daily) {
+        setSearchData(prev => ({ ...prev, recentQueries: json.recentQueries, recentPage: json.recentPage, recentTotalPages: json.recentTotalPages }))
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setRecentLoading(false)
     }
   }
 
@@ -253,7 +280,7 @@ export default function AnalyticsPage() {
                 </div>
 
                 {/* Top Queries + Zero Result Queries */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
                   {/* Top Queries */}
                   <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
                     <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200 mb-5">Top Queries</h3>
@@ -306,6 +333,95 @@ export default function AnalyticsPage() {
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Recent Queries (paginated) */}
+                <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-10">
+                  <div className="flex items-center justify-between mb-5">
+                    <div>
+                      <h3 className="text-base font-semibold text-slate-700 dark:text-slate-200 flex items-center gap-2">
+                        <FiClock className="w-4 h-4 text-violet-500" /> Recent Queries
+                      </h3>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
+                        {searchData.total.toLocaleString()} total — showing page {searchData.recentPage} of {searchData.recentTotalPages}
+                      </p>
+                    </div>
+                    {searchData.recentTotalPages > 1 && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setRecentPage(p => Math.max(1, p - 1))}
+                          disabled={searchData.recentPage <= 1 || recentLoading}
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition"
+                        >
+                          <FiChevronLeft className="w-4 h-4" />
+                        </button>
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: Math.min(searchData.recentTotalPages, 7) }, (_, i) => {
+                            const total = searchData.recentTotalPages
+                            const cur = searchData.recentPage
+                            let page
+                            if (total <= 7) {
+                              page = i + 1
+                            } else if (cur <= 4) {
+                              page = i + 1
+                            } else if (cur >= total - 3) {
+                              page = total - 6 + i
+                            } else {
+                              page = cur - 3 + i
+                            }
+                            return (
+                              <button
+                                key={page}
+                                onClick={() => setRecentPage(page)}
+                                disabled={recentLoading}
+                                className={`w-7 h-7 rounded-lg text-xs font-medium transition ${
+                                  page === cur
+                                    ? 'bg-primary text-white'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                                }`}
+                              >
+                                {page}
+                              </button>
+                            )
+                          })}
+                        </div>
+                        <button
+                          onClick={() => setRecentPage(p => Math.min(searchData.recentTotalPages, p + 1))}
+                          disabled={searchData.recentPage >= searchData.recentTotalPages || recentLoading}
+                          className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-primary hover:text-primary disabled:opacity-40 disabled:cursor-not-allowed transition"
+                        >
+                          <FiChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {recentLoading ? (
+                    <div className="flex justify-center py-10">
+                      <div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                    </div>
+                  ) : searchData.recentQueries?.length === 0 ? (
+                    <p className="text-sm text-slate-400 dark:text-slate-500 py-6 text-center">No searches yet</p>
+                  ) : (
+                    <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                      {searchData.recentQueries?.map((row, i) => (
+                        <div key={i} className="flex items-center gap-3 py-2.5">
+                          <FiSearch className="w-3.5 h-3.5 text-slate-300 dark:text-slate-600 flex-shrink-0" />
+                          <span className="text-sm text-slate-700 dark:text-slate-200 flex-1 truncate">{row.query}</span>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${
+                            row.resultCount === 0
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                              : 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400'
+                          }`}>
+                            {row.resultCount === 0 ? 'no results' : `${row.resultCount} results`}
+                          </span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500 flex-shrink-0 w-28 text-right">
+                            {new Date(row.createdAt).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </>
             )}

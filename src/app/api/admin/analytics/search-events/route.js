@@ -10,6 +10,8 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('days') || '30')
+    const recentPage = Math.max(1, parseInt(searchParams.get('recentPage') || '1'))
+    const recentLimit = 25
     const since = new Date()
     since.setDate(since.getDate() - days)
 
@@ -71,7 +73,22 @@ export async function GET(request) {
     }
     const daily = Object.values(dailyMap)
 
-    return NextResponse.json({ total, zeroResults, topQueries, zeroResultQueries, daily })
+    // Paginated recent individual queries
+    const recentRaw = await prisma.searchEvent.findMany({
+      where: { createdAt: { gte: since } },
+      select: { query: true, resultCount: true, createdAt: true },
+      orderBy: { createdAt: 'desc' },
+      skip: (recentPage - 1) * recentLimit,
+      take: recentLimit,
+    })
+    const recentQueries = recentRaw.map(r => ({
+      query: r.query,
+      resultCount: r.resultCount,
+      createdAt: r.createdAt,
+    }))
+    const recentTotalPages = Math.ceil(total / recentLimit)
+
+    return NextResponse.json({ total, zeroResults, topQueries, zeroResultQueries, daily, recentQueries, recentPage, recentTotalPages, recentLimit })
   } catch (error) {
     console.error('Search events analytics error:', error)
     return NextResponse.json({ error: 'Failed to fetch analytics' }, { status: 500 })
