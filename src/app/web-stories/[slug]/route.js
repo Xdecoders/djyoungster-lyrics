@@ -348,7 +348,7 @@ export async function GET(request, { params }) {
   return new Response(ampHtml, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
     }
   })
 }
