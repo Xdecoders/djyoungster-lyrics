@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 const SITE_URL = 'https://djyoungster.com'
 const PUBLISHER = 'DJYoungster'
 const LOGO_URL = `${SITE_URL}/logo.png`
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || ''
 
 function getLyricChunks(rawLyrics) {
   const text = rawLyrics
@@ -80,6 +81,8 @@ export async function GET(request, { params }) {
   <script async src="https://cdn.ampproject.org/v0.js"></script>
   <script async custom-element="amp-story"
     src="https://cdn.ampproject.org/v0/amp-story-1.0.js"></script>
+  <script async custom-element="amp-analytics"
+    src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
   <title>${titleEsc} - Lyric Story | ${PUBLISHER}</title>
   <link rel="canonical" href="${storyUrl}">
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
@@ -257,6 +260,16 @@ export async function GET(request, { params }) {
   </style>
 </head>
 <body>
+  ${GA_ID ? `<amp-analytics type="gtag" data-credentials="include">
+    <script type="application/json">
+      {
+        "vars": {
+          "gtag_id": "${GA_ID}",
+          "config": { "${GA_ID}": { "groups": "default" } }
+        }
+      }
+    </script>
+  </amp-analytics>` : ''}
   <amp-story standalone
     title="${titleEsc}"
     publisher="${PUBLISHER}"
