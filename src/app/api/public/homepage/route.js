@@ -129,6 +129,35 @@ export async function GET() {
       }
     })
 
+    // Fetch lyric stories with a lyrics snippet
+    const lyricStoriesRaw = await prisma.song.findMany({
+      where: { hasWebStory: true, status: 'published' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        coverImage: true,
+        lyrics: true,
+        artists: {
+          select: { artist: { select: { name: true } } }
+        }
+      },
+      orderBy: { updatedAt: 'desc' },
+      take: 10,
+    })
+
+    const lyricStories = lyricStoriesRaw.map(({ lyrics, ...rest }) => ({
+      ...rest,
+      lyricsSnippet: (lyrics || '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean)
+        .slice(0, 4)
+        .join('\n')
+    }))
+
     return NextResponse.json({
       latestSongs,
       trendingSongs,
@@ -136,7 +165,8 @@ export async function GET() {
       genres,
       artists,
       albums,
-      tags
+      tags,
+      lyricStories
     }, {
       headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' }
     })

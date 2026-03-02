@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from '@/components/OptimizedImage'
-import { FiMusic, FiPlay, FiUser, FiTrendingUp, FiClock, FiTag, FiUsers, FiGlobe, FiCamera, FiVideo, FiInstagram } from 'react-icons/fi'
+import { FiMusic, FiPlay, FiTrendingUp, FiClock, FiTag, FiUsers, FiGlobe, FiCamera, FiVideo, FiInstagram, FiBookOpen } from 'react-icons/fi'
 import SearchWithAutocomplete from './SearchClient'
 import LiveTicker from './LiveTicker'
 import Carousel from './Carousel'
@@ -118,6 +118,68 @@ export default function HomeContent({ data, siteSettings }) {
           </section>
         )}
 
+        {/* Lyric Stories */}
+        {data?.lyricStories?.length > 0 && (
+          <section className="mb-12">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500 to-primary shadow-lg">
+                  <FiBookOpen className="w-5 h-5 text-white" />
+                </div>
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Lyric Stories</h2>
+              </div>
+              <Link href="/web-stories" className="text-sm text-primary hover:text-primary-hover font-medium">
+                View All
+              </Link>
+            </div>
+
+            <Carousel>
+              <div className="flex gap-3 w-max">
+                {data.lyricStories.map((song, index) => {
+                  const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+                  return (
+                    <Link
+                      key={song.id}
+                      href={`/web-stories/${song.slug}`}
+                      className="flex-shrink-0 w-40 sm:w-48 group relative rounded-2xl overflow-hidden aspect-[3/4]"
+                    >
+                      {/* Blurred cover bg */}
+                      {song.coverImage ? (
+                        <Image src={song.coverImage} alt={song.title} fill sizes="192px" className="object-cover scale-110 blur-sm" priority={index < 4} />
+                      ) : (
+                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-800 to-slate-900" />
+                      )}
+                      <div className="absolute inset-0 bg-black/65" />
+
+                      {/* Story badge */}
+                      <div className="absolute top-2.5 left-2.5 z-10">
+                        <span className="px-2 py-0.5 bg-gradient-to-r from-emerald-500 to-primary text-white text-[9px] font-bold uppercase tracking-wider rounded-full shadow-lg">Story</span>
+                      </div>
+
+                      {/* Lyrics preview */}
+                      {song.lyricsSnippet && (
+                        <div className="absolute inset-0 flex items-center justify-center px-3 pt-7 pb-14">
+                          <p className="text-white text-[10px] sm:text-[11px] leading-[1.65] text-center font-medium whitespace-pre-line opacity-90" style={{ textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
+                            {song.lyricsSnippet}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Glass info bar */}
+                      <div className="absolute bottom-0 left-0 right-0 p-2.5">
+                        <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
+                          <h3 className="font-semibold text-white text-xs truncate">{song.title}</h3>
+                          <p className="text-white/70 text-[10px] truncate mt-0.5">{artistNames}</p>
+                        </div>
+                      </div>
+                    </Link>
+                  )
+                })}
+              </div>
+            </Carousel>
+          </section>
+        )}
+
         {/* Fresh Drops */}
         {data?.latestSongs?.length > 0 && (
           <section className="mb-12">
@@ -168,62 +230,6 @@ export default function HomeContent({ data, siteSettings }) {
                         <div className="bg-white/15 backdrop-blur-md rounded-xl px-3 py-2 border border-white/20">
                           <h3 className="font-semibold text-white text-sm truncate">{song.title}</h3>
                           <p className="text-white/70 text-xs truncate mt-0.5">{artistNames}</p>
-                        </div>
-                      </div>
-                    </Link>
-                  )
-                })}
-              </div>
-            </Carousel>
-          </section>
-        )}
-
-        {/* Popular Artists */}
-        {data?.artists?.length > 0 && (
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-5">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/80 dark:border-white/10">
-                  <FiUser className="w-5 h-5 text-primary" />
-                </div>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Popular Artists</h2>
-              </div>
-              <Link href="/artists" className="text-sm text-primary hover:text-primary-hover font-medium">
-                View All
-              </Link>
-            </div>
-            <Carousel>
-              <div className="flex gap-4 w-max">
-                {data.artists.map((artist, index) => {
-                  const colors = [
-                    { icon: 'bg-rose-400', bar: 'bg-rose-400', text: 'text-rose-900' },
-                    { icon: 'bg-emerald-400', bar: 'bg-emerald-400', text: 'text-emerald-900' },
-                    { icon: 'bg-blue-400', bar: 'bg-blue-400', text: 'text-blue-900' },
-                    { icon: 'bg-purple-400', bar: 'bg-purple-400', text: 'text-purple-900' },
-                    { icon: 'bg-orange-400', bar: 'bg-orange-400', text: 'text-orange-900' },
-                    { icon: 'bg-cyan-400', bar: 'bg-cyan-400', text: 'text-cyan-900' },
-                  ]
-                  const c = colors[index % colors.length]
-                  const initials = artist.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
-                  const songCount = artist._count?.songs || 0
-                  return (
-                    <Link key={artist.id} href={`/artist/${artist.slug}`} className="flex-shrink-0 w-32 group">
-                      <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-all duration-300 group-hover:-translate-y-1">
-                        <div className="flex items-center justify-center pt-5 pb-2">
-                          <div className={`${c.icon} w-16 h-16 rounded-2xl flex items-center justify-center shadow-sm`}>
-                            <span className={`text-xl font-bold ${c.text}`}>{initials}</span>
-                          </div>
-                        </div>
-                        <div className="px-2.5 pb-1.5 text-center">
-                          <h3 className="font-semibold text-slate-800 dark:text-white text-sm truncate">{artist.name}</h3>
-                          <p className="text-xs text-slate-400 dark:text-slate-500">{songCount} songs</p>
-                          <div className="mt-1.5 h-1 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                            <div className={`h-full ${c.bar} rounded-full`} style={{ width: `${Math.min(songCount * 10, 100)}%` }} />
-                          </div>
-                        </div>
-                        <div className="px-2.5 py-2 mt-1 border-t border-slate-100 dark:border-slate-700 flex items-center justify-center gap-1.5">
-                          <FiMusic className="w-3 h-3 text-slate-400" />
-                          <span className="text-[11px] font-medium text-slate-400 uppercase tracking-wide">Lyrics</span>
                         </div>
                       </div>
                     </Link>

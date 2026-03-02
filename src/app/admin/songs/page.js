@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
-import { FiMusic, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiCheck, FiX, FiEye, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown } from 'react-icons/fi'
+import { FiMusic, FiPlus, FiEdit2, FiTrash2, FiSearch, FiArrowLeft, FiCheck, FiX, FiEye, FiChevronLeft, FiChevronRight, FiArrowUp, FiArrowDown, FiBookOpen } from 'react-icons/fi'
 
 const ITEMS_PER_PAGE = 10
 
@@ -55,6 +55,21 @@ export default function SongsList() {
       }
     } catch (error) {
       console.error('Error deleting song:', error)
+    }
+  }
+
+  const createStory = async (id) => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch(`/api/admin/songs/${id}/web-story`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.ok) {
+        setSongs(songs.map(s => s.id === id ? { ...s, hasWebStory: true } : s))
+      }
+    } catch (error) {
+      console.error('Error creating web story:', error)
     }
   }
 
@@ -301,6 +316,24 @@ export default function SongsList() {
                           >
                             <FiEye className="w-4 h-4" />
                           </Link>
+                          {song.hasWebStory ? (
+                            <Link
+                              href={`/web-stories/${song.slug}`}
+                              target="_blank"
+                              className="p-2 text-emerald-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                              title="View Story"
+                            >
+                              <FiBookOpen className="w-4 h-4" />
+                            </Link>
+                          ) : (
+                            <button
+                              onClick={() => createStory(song.id)}
+                              className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition"
+                              title="Create Story"
+                            >
+                              <FiBookOpen className="w-4 h-4" />
+                            </button>
+                          )}
                           <Link
                             href={`/admin/songs/${song.id}`}
                             className="p-2 text-slate-500 hover:text-primary hover:bg-emerald-50 rounded-lg transition"

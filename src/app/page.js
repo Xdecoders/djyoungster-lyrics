@@ -121,7 +121,7 @@ async function getHomepageData() {
     }
 
     // Run all queries in parallel
-    const [latestSongs, instagramViralSongs, categories, artists, tags, siteSettings] = await Promise.all([
+    const [latestSongs, instagramViralSongs, categories, artists, tags, siteSettings, lyricStoriesRaw] = await Promise.all([
       prisma.song.findMany({
         where: { status: 'published' },
         orderBy: { createdAt: 'desc' },
@@ -158,7 +158,32 @@ async function getHomepageData() {
         orderBy: { songs: { _count: 'desc' } }
       }),
       getSiteSettings(),
+      prisma.song.findMany({
+        where: { hasWebStory: true, status: 'published' },
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          coverImage: true,
+          lyrics: true,
+          artists: { select: { artist: { select: { name: true } } } }
+        },
+        orderBy: { updatedAt: 'desc' },
+        take: 10,
+      }),
     ])
+
+    const lyricStories = lyricStoriesRaw.map(({ lyrics, ...rest }) => ({
+      ...rest,
+      lyricsSnippet: (lyrics || '')
+        .replace(/<[^>]*>/g, '')
+        .replace(/&nbsp;/g, ' ')
+        .split('\n')
+        .map(l => l.trim())
+        .filter(Boolean)
+        .slice(0, 4)
+        .join('\n')
+    }))
 
     return {
       latestSongs,
@@ -166,6 +191,7 @@ async function getHomepageData() {
       categories,
       artists,
       tags,
+      lyricStories,
       siteSettings: {
         heroHeading: siteSettings.heroHeading || 'Discover Your Favorite *Song Lyrics*',
         heroDescription: siteSettings.heroDescription || 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
@@ -179,6 +205,7 @@ async function getHomepageData() {
       categories: [],
       artists: [],
       tags: [],
+      lyricStories: [],
       siteSettings: {
         heroHeading: 'Discover Your Favorite *Song Lyrics*',
         heroDescription: 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'

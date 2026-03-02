@@ -17,7 +17,8 @@ import {
   FiMoon,
   FiGlobe,
   FiList,
-  FiTrendingUp
+  FiTrendingUp,
+  FiBookOpen
 } from 'react-icons/fi'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -104,6 +105,7 @@ export default function Header() {
   const browseLinks = [
     { href: '/languages', label: 'Languages', icon: FiGlobe, description: 'Browse by language' },
     { href: '/genres', label: 'Genres', icon: FiGrid, description: 'Browse by genre' },
+    { href: '/web-stories', label: 'Lyric Stories', icon: FiBookOpen, description: 'Tap-through lyric stories' },
     ...topLists.map(tl => ({
       href: `/list/${tl.slug}`,
       label: tl.title,

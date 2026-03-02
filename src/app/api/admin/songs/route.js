@@ -37,7 +37,8 @@ export async function GET() {
             tag: { select: { id: true, name: true, slug: true } }
           }
         },
-        movie: { select: { id: true, title: true, slug: true } }
+        movie: { select: { id: true, title: true, slug: true } },
+        hasWebStory: true
       },
       orderBy: {
         createdAt: 'desc'

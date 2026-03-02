@@ -1655,21 +1655,32 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                     <LiveReaders songTitle={song.title} />
 
                     {/* Action Buttons */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
+                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
                       <button
                         onClick={() => setShowShareModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
                       >
-                        <FiShare2 className="w-4 h-4" />
+                        <FiShare2 className="w-3.5 h-3.5" />
                         Share
                       </button>
                       <button
                         onClick={copyLyrics}
-                        className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-xl font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
                       >
-                        {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiCopy className="w-4 h-4" />}
+                        {copied ? <FiCheck className="w-3.5 h-3.5 text-green-500" /> : <FiCopy className="w-3.5 h-3.5" />}
                         {copied ? 'Copied!' : 'Copy Lyrics'}
                       </button>
+                      {song.hasWebStory && (
+                        <a
+                          href={`/web-stories/${song.slug}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-emerald-500 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium hover:bg-emerald-50 dark:hover:bg-emerald-950 transition"
+                        >
+                          <FiBookOpen className="w-3.5 h-3.5" />
+                          Lyric Story
+                        </a>
+                      )}
                     </div>
                   </div>
                 </div>
