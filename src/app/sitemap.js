@@ -14,6 +14,7 @@ export default async function sitemap() {
     { url: `${baseUrl}/movies`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${baseUrl}/languages`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${baseUrl}/lyrics-instagram-story-maker`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
+    { url: `${baseUrl}/web-stories`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
     { url: `${baseUrl}/about-us`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${baseUrl}/contact-us`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },
     { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.3 },
@@ -22,7 +23,7 @@ export default async function sitemap() {
   ]
 
   // Fetch all dynamic content (with image fields for image sitemap)
-  const [songs, artists, albums, movies, genres, categories, tags, topLists, redirects] = await Promise.all([
+  const [songs, artists, albums, movies, genres, categories, tags, topLists, redirects, webStories] = await Promise.all([
     prisma.song.findMany({
       where: { status: 'published' },
       select: { slug: true, coverImage: true, updatedAt: true, dateModified: true },
@@ -58,6 +59,11 @@ export default async function sitemap() {
       where: { isActive: true },
       select: { newUrl: true, updatedAt: true }
     }) ?? Promise.resolve([]),
+    prisma.song.findMany({
+      where: { hasWebStory: true, status: 'published' },
+      select: { slug: true, coverImage: true, updatedAt: true },
+      orderBy: { updatedAt: 'desc' }
+    }),
   ])
 
   const songPages = songs.map(song => ({
@@ -115,6 +121,14 @@ export default async function sitemap() {
     priority: 0.4,
   }))
 
+  const webStoryPages = webStories.map(story => ({
+    url: `${baseUrl}/web-stories/${story.slug}`,
+    lastModified: story.updatedAt,
+    changeFrequency: 'weekly',
+    priority: 0.9,
+    ...(story.coverImage && { images: [getAbsoluteUrl(story.coverImage)] }),
+  }))
+
   const topListPages = [
     { url: `${baseUrl}/list`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.7 },
     ...topLists.map(tl => ({
@@ -150,6 +164,7 @@ export default async function sitemap() {
 
   return [
     ...staticPages,
+    ...webStoryPages,
     ...songPages,
     ...artistPages,
     ...albumPages,
