@@ -40,6 +40,8 @@ export async function GET(request, { params }) {
       lyrics: true,
       coverImage: true,
       hasWebStory: true,
+      createdAt: true,
+      updatedAt: true,
       artists: {
         select: { artist: { select: { name: true } } }
       }
@@ -258,6 +260,32 @@ export async function GET(request, { params }) {
       box-shadow: 0 4px 20px rgba(16,185,129,0.4);
     }
   </style>
+  <script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": `${song.title} Lyrics Story`,
+    "image": coverImg,
+    "url": storyUrl,
+    "datePublished": song.createdAt,
+    "dateModified": song.updatedAt,
+    "author": {
+      "@type": "Organization",
+      "name": PUBLISHER,
+      "url": SITE_URL
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": PUBLISHER,
+      "logo": {
+        "@type": "ImageObject",
+        "url": LOGO_URL
+      }
+    },
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": storyUrl
+    }
+  })}</script>
 </head>
 <body>
   ${GA_ID ? `<amp-analytics type="gtag" data-credentials="include">
