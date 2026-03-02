@@ -288,21 +288,22 @@ export async function GET(request, { params }) {
   })}</script>
 </head>
 <body>
-  ${GA_ID ? `<amp-analytics type="gtag" data-credentials="include">
-    <script type="application/json">
-      {
-        "vars": {
-          "gtag_id": "${GA_ID}",
-          "config": { "${GA_ID}": { "groups": "default" } }
-        }
-      }
-    </script>
-  </amp-analytics>` : ''}
   <amp-story standalone
     title="${titleEsc}"
     publisher="${PUBLISHER}"
     publisher-logo-src="${LOGO_URL}"
     poster-portrait-src="${escapeHtml(coverImg)}">
+
+    ${GA_ID ? `<amp-analytics type="gtag" data-credentials="include">
+      <script type="application/json">
+        {
+          "vars": {
+            "gtag_id": "${GA_ID}",
+            "config": { "${GA_ID}": { "groups": "default" } }
+          }
+        }
+      </script>
+    </amp-analytics>` : ''}
 
     <!-- Cover slide -->
     <amp-story-page id="cover">

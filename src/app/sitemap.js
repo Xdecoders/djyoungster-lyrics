@@ -1,6 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { getAbsoluteUrl } from '@/lib/seo'
 
+export const revalidate = 3600
+
 export default async function sitemap() {
   const baseUrl = process.env.SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
 
