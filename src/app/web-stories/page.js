@@ -4,8 +4,8 @@ import { FiBookOpen, FiMusic, FiChevronLeft, FiChevronRight } from 'react-icons/
 import { prisma } from '@/lib/prisma'
 
 export const metadata = {
-  title: 'Lyric Stories | DJYoungster',
-  description: 'Browse all Lyric Stories — tap-through song lyrics in Google Web Stories format.',
+  title: 'Song Lyrics Stories – Hindi, Punjabi & More | DJYoungster',
+  description: 'Browse tap-through lyric stories for Hindi, Punjabi, English, Tamil & Telugu songs on DJYoungster. Swipe slide-by-slide through your favourite song lyrics.',
 }
 
 export const revalidate = 60
