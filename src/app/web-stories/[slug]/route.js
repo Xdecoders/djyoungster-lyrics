@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 
-export const revalidate = 300 // Cache for 5 minutes at Next.js level
+export const revalidate = 3600 // Cache for 1 hour at Next.js level
 
 const SITE_URL = 'https://djyoungster.com'
 const PUBLISHER = 'DJYoungster'
@@ -392,7 +392,8 @@ export async function GET(request, { params }) {
   return new Response(ampHtml, {
     headers: {
       'Content-Type': 'text/html; charset=utf-8',
-      'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=3600',
+      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      'Vary': 'Accept-Encoding',
     }
   })
 }
