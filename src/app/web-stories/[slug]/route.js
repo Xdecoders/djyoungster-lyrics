@@ -68,6 +68,8 @@ export async function GET(request, { params }) {
     <amp-story-page id="lyrics-${i}">
       <amp-story-grid-layer template="fill">
         <amp-img src="${escapeHtml(coverStoryImg)}" width="720" height="1280" layout="fill" class="lyrics-bg"></amp-img>
+      </amp-story-grid-layer>
+      <amp-story-grid-layer template="fill">
         <div class="lyrics-overlay"></div>
       </amp-story-grid-layer>
       <amp-story-grid-layer template="fill">
@@ -146,8 +148,8 @@ export async function GET(request, { params }) {
       transform: scale(1.08);
     }
     .lyrics-overlay {
-      position: absolute;
-      inset: 0;
+      width: 100%;
+      height: 100%;
       background: rgba(0,0,0,0.65);
     }
     .lyrics-center-wrap {
