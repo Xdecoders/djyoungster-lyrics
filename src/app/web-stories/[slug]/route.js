@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma'
 
+export const revalidate = 300 // Cache for 5 minutes at Next.js level
+
 const SITE_URL = 'https://djyoungster.com'
 const PUBLISHER = 'DJYoungster'
 const LOGO_URL = `${SITE_URL}/logo.png`
