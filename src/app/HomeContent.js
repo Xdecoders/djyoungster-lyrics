@@ -137,19 +137,17 @@ export default function HomeContent({ data, siteSettings }) {
               <div className="flex gap-3 w-max">
                 {data.lyricStories.map((song, index) => {
                   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+                  const TEMPLATES = ['story-dark-1','story-dark-2','story-dark-3','story-light-1','story-light-2','story-light-3']
+                  const templateSrc = `/templates/${TEMPLATES[index % TEMPLATES.length]}.png`
                   return (
                     <Link
                       key={song.id}
                       href={`/web-stories/${song.slug}`}
                       className="flex-shrink-0 w-40 sm:w-48 group relative rounded-2xl overflow-hidden aspect-[3/4]"
                     >
-                      {/* Blurred cover bg */}
-                      {song.coverImage ? (
-                        <Image src={song.coverImage} alt={song.title} fill sizes="192px" className="object-cover scale-110 blur-sm" priority={index < 4} />
-                      ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-emerald-800 to-slate-900" />
-                      )}
-                      <div className="absolute inset-0 bg-black/65" />
+                      {/* Template background */}
+                      <Image src={templateSrc} alt="" fill sizes="192px" className="object-cover" priority={index < 4} />
+                      <div className="absolute inset-0 bg-black/55" />
 
                       {/* Story badge */}
                       <div className="absolute top-2.5 left-2.5 z-10">

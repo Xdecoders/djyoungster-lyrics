@@ -94,28 +94,25 @@ export default async function WebStoriesPage({ searchParams }) {
           <>
             {/* Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 mb-10">
-              {stories.map((song) => {
+              {stories.map((song, index) => {
                 const artistNames = song.artists.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
+                const TEMPLATES = ['story-dark-1','story-dark-2','story-dark-3','story-light-1','story-light-2','story-light-3']
+                const templateSrc = `/templates/${TEMPLATES[index % TEMPLATES.length]}.png`
                 return (
                   <Link
                     key={song.id}
                     href={`/web-stories/${song.slug}`}
                     className="group relative rounded-2xl overflow-hidden aspect-[3/4] bg-slate-900 shadow-sm hover:shadow-xl transition-shadow"
                   >
-                    {/* Blurred cover bg */}
-                    {song.coverImage ? (
-                      <Image
-                        src={song.coverImage}
-                        alt={song.title}
-                        fill
-                        sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
-                        className="object-cover scale-110 blur-sm"
-                        unoptimized
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-900 to-slate-900" />
-                    )}
-                    <div className="absolute inset-0 bg-black/65" />
+                    {/* Template background */}
+                    <Image
+                      src={templateSrc}
+                      alt=""
+                      fill
+                      sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/55" />
 
                     {/* Story badge */}
                     <div className="absolute top-2.5 left-2.5 z-10">
