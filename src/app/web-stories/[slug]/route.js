@@ -64,10 +64,21 @@ export async function GET(request, { params }) {
   const titleEsc = escapeHtml(song.title)
   const artistEsc = escapeHtml(artistNames)
 
-  const lyricSlides = chunks.map((chunk, i) => `
+  const STORY_TEMPLATES = [
+    `${SITE_URL}/templates/story-dark-1.png`,
+    `${SITE_URL}/templates/story-dark-2.png`,
+    `${SITE_URL}/templates/story-dark-3.png`,
+    `${SITE_URL}/templates/story-light-1.png`,
+    `${SITE_URL}/templates/story-light-2.png`,
+    `${SITE_URL}/templates/story-light-3.png`,
+  ]
+
+  const lyricSlides = chunks.map((chunk, i) => {
+    const templateSrc = STORY_TEMPLATES[i % STORY_TEMPLATES.length]
+    return `
     <amp-story-page id="lyrics-${i}">
       <amp-story-grid-layer template="fill">
-        <amp-img src="${escapeHtml(coverStoryImg)}" width="720" height="1280" layout="fill" class="lyrics-bg"></amp-img>
+        <amp-img src="${templateSrc}" width="1080" height="1920" layout="fill"></amp-img>
       </amp-story-grid-layer>
       <amp-story-grid-layer template="fill">
         <div class="lyrics-overlay"></div>
@@ -80,7 +91,8 @@ export async function GET(request, { params }) {
           <p class="slide-watermark">DJYoungster</p>
         </div>
       </amp-story-grid-layer>
-    </amp-story-page>`).join('')
+    </amp-story-page>`
+  }).join('')
 
   const ampHtml = `<!doctype html>
 <html ⚡ lang="en">
@@ -143,14 +155,10 @@ export async function GET(request, { params }) {
       text-align: center;
     }
     /* Lyric slides */
-    .lyrics-bg {
-      filter: blur(6px);
-      transform: scale(1.08);
-    }
     .lyrics-overlay {
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.65);
+      background: rgba(0,0,0,0.55);
     }
     .lyrics-center-wrap {
       position: relative;
