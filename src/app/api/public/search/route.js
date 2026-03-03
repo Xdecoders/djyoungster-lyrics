@@ -8,7 +8,8 @@ const NOISE_WORDS = new Set([
   'song', 'songs', 'new', 'latest', 'old', 'best', 'top', 'hit', 'hits',
   'mp3', 'mp4', 'video', 'audio', 'download', 'free', 'full', 'official',
   'lyrics', 'lyric', 'ft', 'feat', 'featuring',
-  'punjabi', 'hindi', 'haryanvi', 'bhojpuri', 'english',
+  // Note: language/category words (punjabi, hindi, etc.) are intentionally NOT
+  // noise words — they map to real categories and must be searchable.
 ])
 
 function cleanQuery(q) {

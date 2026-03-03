@@ -3,10 +3,11 @@ import { writeFile, mkdir } from 'fs/promises'
 import path from 'path'
 
 const SIZES = [
-  { suffix: '',      maxWidth: 1200 }, // Large (main/original)
-  { suffix: '-md',   maxWidth: 640 },  // Medium (desktop cards)
-  { suffix: '-sm',   maxWidth: 320 },  // Small (mobile cards)
-  { suffix: '-thumb', maxWidth: 96 },  // Thumbnail (lists)
+  { suffix: '',       maxWidth: 1200 },                         // Large (main/original)
+  { suffix: '-md',    maxWidth: 640 },                          // Medium (desktop cards)
+  { suffix: '-sm',    maxWidth: 320 },                          // Small (mobile cards)
+  { suffix: '-thumb', maxWidth: 96 },                           // Thumbnail (lists)
+  { suffix: '-story', fixedWidth: 720, fixedHeight: 1280 },     // AMP Web Story portrait 9:16
 ]
 
 /**
@@ -23,13 +24,16 @@ export async function generateImageSizes(buffer, baseName, uploadDir) {
   const metadata = await image.metadata()
   const originalWidth = metadata.width || 1200
 
-  for (const { suffix, maxWidth } of SIZES) {
+  for (const { suffix, maxWidth, fixedWidth, fixedHeight } of SIZES) {
     const filename = `${baseName}${suffix}.webp`
     const filepath = path.join(uploadDir, filename)
 
     let pipeline = sharp(buffer)
 
-    if (originalWidth > maxWidth) {
+    if (fixedWidth && fixedHeight) {
+      // Center-crop to exact portrait dimensions (e.g. AMP Web Story)
+      pipeline = pipeline.resize({ width: fixedWidth, height: fixedHeight, fit: 'cover', position: 'centre' })
+    } else if (originalWidth > maxWidth) {
       pipeline = pipeline.resize({ width: maxWidth, withoutEnlargement: true })
     }
 

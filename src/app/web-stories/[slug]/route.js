@@ -55,6 +55,10 @@ export async function GET(request, { params }) {
   const artistNames = song.artists.map(sa => sa.artist.name).join(', ') || PUBLISHER
   const chunks = getLyricChunks(song.lyrics || '')
   const coverImg = song.coverImage || `${SITE_URL}/og-default.jpg`
+  // Use portrait-cropped story variant for AMP images if available (720×1280)
+  const coverStoryImg = coverImg.startsWith('/uploads/') && coverImg.endsWith('.webp')
+    ? coverImg.replace(/\.webp$/, '-story.webp')
+    : coverImg
   const songUrl = `${SITE_URL}/song/${song.slug}`
   const storyUrl = `${SITE_URL}/web-stories/${song.slug}`
   const titleEsc = escapeHtml(song.title)
@@ -63,7 +67,7 @@ export async function GET(request, { params }) {
   const lyricSlides = chunks.map((chunk, i) => `
     <amp-story-page id="lyrics-${i}">
       <amp-story-grid-layer template="fill">
-        <amp-img src="${escapeHtml(coverImg)}" width="720" height="1280" layout="fill" class="lyrics-bg"></amp-img>
+        <amp-img src="${escapeHtml(coverStoryImg)}" width="720" height="1280" layout="fill" class="lyrics-bg"></amp-img>
         <div class="lyrics-overlay"></div>
       </amp-story-grid-layer>
       <amp-story-grid-layer template="fill">
@@ -292,7 +296,7 @@ export async function GET(request, { params }) {
     title="${titleEsc}"
     publisher="${PUBLISHER}"
     publisher-logo-src="${LOGO_URL}"
-    poster-portrait-src="${escapeHtml(coverImg)}">
+    poster-portrait-src="${escapeHtml(coverStoryImg)}">
 
     ${GA_ID ? `<amp-analytics type="gtag" data-credentials="include">
       <script type="application/json">
@@ -308,7 +312,7 @@ export async function GET(request, { params }) {
     <!-- Cover slide -->
     <amp-story-page id="cover">
       <amp-story-grid-layer template="fill">
-        <amp-img src="${escapeHtml(coverImg)}" width="720" height="1280" layout="fill" class="cover-bg"></amp-img>
+        <amp-img src="${escapeHtml(coverStoryImg)}" width="720" height="1280" layout="fill" class="cover-bg"></amp-img>
       </amp-story-grid-layer>
       <amp-story-grid-layer template="fill" class="cover-overlay">
         <div class="cover-content">
@@ -324,7 +328,7 @@ export async function GET(request, { params }) {
     <!-- CTA slide -->
     <amp-story-page id="end">
       <amp-story-grid-layer template="fill">
-        <amp-img src="${escapeHtml(coverImg)}" width="720" height="1280" layout="fill" class="cover-bg"></amp-img>
+        <amp-img src="${escapeHtml(coverStoryImg)}" width="720" height="1280" layout="fill" class="cover-bg"></amp-img>
       </amp-story-grid-layer>
       <amp-story-grid-layer template="fill" class="end-overlay">
         <div class="end-content">

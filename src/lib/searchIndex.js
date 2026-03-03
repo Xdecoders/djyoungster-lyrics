@@ -19,6 +19,8 @@ const songFuseOptions = {
   keys: [
     { name: 'title', weight: 1.0 },
     { name: 'artistNames', weight: 0.8 },
+    { name: 'categoryNames', weight: 0.9 },
+    { name: 'genreNames', weight: 0.7 },
     { name: 'singers', weight: 0.7 },
     { name: 'starring', weight: 0.6 },
     { name: 'lyricist', weight: 0.5 },
@@ -98,6 +100,11 @@ async function loadData() {
           select: {
             genre: { select: { id: true, name: true, slug: true } }
           }
+        },
+        categories: {
+          select: {
+            category: { select: { id: true, name: true, slug: true } }
+          }
         }
       },
       orderBy: { views: 'desc' }
@@ -158,6 +165,8 @@ async function loadData() {
       ...s,
       lyrics: undefined, // Don't store full lyrics in memory
       artistNames: s.artists?.map(sa => sa.artist.name).join(', ') || '',
+      categoryNames: s.categories?.map(sc => sc.category.name).join(', ') || '',
+      genreNames: s.genres?.map(sg => sg.genre.name).join(', ') || '',
       albumTitle: s.album?.title || '',
       movieTitle: s.movie?.title || '',
       lyricsSnippet,
