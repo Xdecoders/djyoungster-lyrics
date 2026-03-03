@@ -300,6 +300,7 @@ export default async function SongPage({ params }) {
   }
 
   const { song, relatedSongs } = data
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
 
   // Increment view count (fire and forget) - don't await
   prisma.song.update({
@@ -331,6 +332,9 @@ export default async function SongPage({ params }) {
 
   return (
     <>
+      {song.hasWebStory && (
+        <link rel="amphtml" href={`${siteUrl}/web-stories/${song.slug}`} />
+      )}
       {songSchema && (
         <script
           type="application/ld+json"

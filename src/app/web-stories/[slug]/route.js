@@ -17,6 +17,7 @@ function getLyricChunks(rawLyrics) {
   const chunks = []
   for (let i = 0; i < lines.length; i += 4) {
     chunks.push(lines.slice(i, i + 4))
+    if (chunks.length >= 28) break
   }
   return chunks
 }
@@ -59,6 +60,7 @@ export async function GET(request, { params }) {
   const coverStoryImg = coverImg.startsWith('/uploads/') && coverImg.endsWith('.webp')
     ? coverImg.replace(/\.webp$/, '-story.webp')
     : coverImg
+  const coverStoryImgAbs = coverStoryImg.startsWith('/') ? `${SITE_URL}${coverStoryImg}` : coverStoryImg
   const songUrl = `${SITE_URL}/song/${song.slug}`
   const storyUrl = `${SITE_URL}/web-stories/${song.slug}`
   const titleEsc = escapeHtml(song.title)
@@ -86,9 +88,9 @@ export async function GET(request, { params }) {
       <amp-story-grid-layer template="fill">
         <div class="lyrics-center-wrap">
           <div class="lyrics-card">
-            <p class="lyric-text">${escapeHtml(chunk.join('\n'))}</p>
+            <p class="lyric-text" animate-in="fly-in-bottom" animate-in-duration="0.5s">${escapeHtml(chunk.join('\n'))}</p>
           </div>
-          <p class="slide-watermark">DJYoungster</p>
+          <p class="slide-watermark" animate-in="fade-in" animate-in-delay="0.4s">DJYoungster</p>
         </div>
       </amp-story-grid-layer>
     </amp-story-page>`
@@ -103,8 +105,18 @@ export async function GET(request, { params }) {
     src="https://cdn.ampproject.org/v0/amp-story-1.0.js"></script>
   <script async custom-element="amp-analytics"
     src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
-  <title>${titleEsc} - Lyric Story | ${PUBLISHER}</title>
+  <title>${titleEsc} ${artistEsc} Lyric Story - ${PUBLISHER}</title>
   <link rel="canonical" href="${storyUrl}">
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="${titleEsc} ${artistEsc} Lyric Story">
+  <meta property="og:description" content="${escapeHtml(`${song.title} lyrics story by ${artistNames} on ${PUBLISHER}`)}">
+  <meta property="og:image" content="${escapeHtml(coverStoryImgAbs)}">
+  <meta property="og:url" content="${storyUrl}">
+  <meta property="og:site_name" content="${PUBLISHER}">
+  <meta name="description" content="${escapeHtml(`${song.title} lyrics story by ${artistNames} on ${PUBLISHER}`)}">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="${titleEsc} ${artistEsc} Lyric Story">
+  <meta name="twitter:image" content="${escapeHtml(coverStoryImgAbs)}">
   <link rel="icon" href="${SITE_URL}/favicon.svg" type="image/svg+xml">
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
   <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style>
@@ -278,7 +290,7 @@ export async function GET(request, { params }) {
   <script type="application/ld+json">${JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": `${song.title} Lyrics Story`,
+    "headline": `${song.title} ${artistNames} Lyric Story`,
     "image": coverImg,
     "url": storyUrl,
     "datePublished": song.createdAt,
@@ -314,7 +326,20 @@ export async function GET(request, { params }) {
         {
           "vars": {
             "gtag_id": "${GA_ID}",
-            "config": { "${GA_ID}": { "groups": "default" } }
+            "config": {
+              "${GA_ID}": {
+                "groups": "default",
+                "linker": { "enabled": true }
+              }
+            }
+          },
+          "triggers": {
+            "storyPageView": {
+              "on": "story-page-visible",
+              "vars": {
+                "event_name": "story_page_view"
+              }
+            }
           }
         }
       </script>
@@ -327,9 +352,9 @@ export async function GET(request, { params }) {
       </amp-story-grid-layer>
       <amp-story-grid-layer template="fill" class="cover-overlay">
         <div class="cover-content">
-          <h1 class="song-title">${titleEsc} Lyrics</h1>
-          <p class="artist-name">${artistEsc}</p>
-          <p class="watermark">Lyrics Story by DJYoungster</p>
+          <h1 class="song-title" animate-in="drop">${titleEsc} Lyrics</h1>
+          <p class="artist-name" animate-in="fade-in" animate-in-delay="0.3s">${artistEsc}</p>
+          <p class="watermark" animate-in="fade-in" animate-in-delay="0.3s">Lyrics Story by DJYoungster</p>
         </div>
       </amp-story-grid-layer>
     </amp-story-page>
@@ -355,6 +380,8 @@ export async function GET(request, { params }) {
         <a href="${songUrl}" class="cta-btn">Create Story / Reel →</a>
       </amp-story-cta-layer>
     </amp-story-page>
+
+    <amp-story-bookend src="${SITE_URL}/api/public/story-bookend/${song.slug}" layout="nodisplay"></amp-story-bookend>
 
   </amp-story>
 </body>
