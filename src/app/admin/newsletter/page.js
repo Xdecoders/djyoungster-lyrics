@@ -43,7 +43,8 @@ export default function NewsletterPage() {
   const [editingNewsletter, setEditingNewsletter] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
   const [subscriberSearch, setSubscriberSearch] = useState('')
-  const [activeSend, setActiveSend] = useState(null) // { id, total, label } for background progress
+  const [activeSend, setActiveSend] = useState(null) // { id, total } for background progress
+  const [sendResult, setSendResult] = useState(null) // { sent, failed, total } shown after batch completes
 
   // Form states
   const [subject, setSubject] = useState('')
@@ -276,13 +277,16 @@ export default function NewsletterPage() {
             const sendData = await sendRes.json()
             setActiveSend(null)
             fetchData()
-            if (!sendRes.ok) {
-              alert(sendData.message || 'Error sending batch')
+            if (sendRes.ok) {
+              setSendResult({ sent: sendData.sent, failed: sendData.failed, total: sendData.totalSubscribers, sentTo: sendData.sentTo, isComplete: sendData.isComplete })
+            } else {
+              setSendResult({ error: sendData.message || 'Error sending batch' })
             }
           })
-          .catch(() => {
+          .catch((err) => {
             setActiveSend(null)
             fetchData()
+            setSendResult({ error: 'Request timed out or failed. Check the newsletter list for actual sent count.' })
           })
       } else {
         fetchData()
@@ -308,18 +312,15 @@ export default function NewsletterPage() {
         setActiveSend(null)
         fetchData()
         if (res.ok) {
-          if (data.isComplete) {
-            alert(`All done! Newsletter fully sent to ${data.sentTo} subscribers.`)
-          } else {
-            alert(`Batch sent! ${data.sent} emails sent. Total: ${data.sentTo} / ${data.totalSubscribers}. Come back tomorrow for the next batch.`)
-          }
+          setSendResult({ sent: data.sent, failed: data.failed, total: data.totalSubscribers, sentTo: data.sentTo, isComplete: data.isComplete })
         } else {
-          alert(data.message || 'Error sending batch')
+          setSendResult({ error: data.message || 'Error sending batch' })
         }
       })
       .catch(() => {
         setActiveSend(null)
         fetchData()
+        setSendResult({ error: 'Request timed out. Check the newsletter list for actual sent count.' })
       })
   }
 
@@ -856,20 +857,68 @@ export default function NewsletterPage() {
 
       {/* Background Send Progress */}
       {activeSend && (
-        <div className="fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-purple-100 p-4 w-72">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+        <div className="fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-purple-100 p-4 w-80">
+          <div className="flex items-start gap-3 mb-3">
+            <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0 mt-0.5">
               <FiSend className="w-4 h-4 text-purple-600" />
             </div>
-            <div>
-              <p className="font-semibold text-slate-800 text-sm">Sending Newsletter</p>
-              <p className="text-xs text-slate-500">Sending to {activeSend.total} subscriber{activeSend.total !== 1 ? 's' : ''}...</p>
+            <div className="flex-1">
+              <p className="font-semibold text-slate-800 text-sm">Sending Batch...</p>
+              <p className="text-xs text-slate-500 mt-0.5">Up to 450 emails → {activeSend.total.toLocaleString()} total subscribers</p>
             </div>
+            <button
+              onClick={() => { setActiveSend(null); fetchData() }}
+              className="p-1 text-slate-400 hover:text-slate-600 rounded transition flex-shrink-0"
+              title="Dismiss (sending continues in server)"
+            >
+              <FiX className="w-4 h-4" />
+            </button>
           </div>
-          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-            <div className="h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-emerald-500 animate-pulse w-full" />
+          <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-emerald-500 animate-pulse" style={{ width: '100%' }} />
           </div>
-          <p className="text-xs text-slate-400 mt-2">This may take up to a minute. You can navigate freely.</p>
+          <p className="text-xs text-slate-400 mt-2">Sending emails... Click × to dismiss and check the list for progress.</p>
+        </div>
+      )}
+
+      {/* Send Result Toast */}
+      {sendResult && (
+        <div className={`fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border p-4 w-80 ${sendResult.error ? 'border-red-100' : 'border-emerald-100'}`}>
+          <div className="flex items-start gap-3">
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${sendResult.error ? 'bg-red-100' : 'bg-emerald-100'}`}>
+              <FiSend className={`w-4 h-4 ${sendResult.error ? 'text-red-600' : 'text-emerald-600'}`} />
+            </div>
+            <div className="flex-1">
+              {sendResult.error ? (
+                <>
+                  <p className="font-semibold text-slate-800 text-sm">Send Error</p>
+                  <p className="text-xs text-red-500 mt-0.5">{sendResult.error}</p>
+                </>
+              ) : (
+                <>
+                  <p className="font-semibold text-slate-800 text-sm">
+                    {sendResult.isComplete ? 'All Done!' : 'Batch Complete'}
+                  </p>
+                  <div className="mt-1.5 space-y-0.5">
+                    <p className="text-xs text-emerald-600 font-medium">✓ Sent: {sendResult.sent}</p>
+                    {sendResult.failed > 0 && (
+                      <p className="text-xs text-red-500">✗ Failed: {sendResult.failed}</p>
+                    )}
+                    <p className="text-xs text-slate-500">Total sent so far: {sendResult.sentTo?.toLocaleString()} / {sendResult.total?.toLocaleString()}</p>
+                    {!sendResult.isComplete && (
+                      <p className="text-xs text-slate-400 mt-1">Come back tomorrow to send the next batch.</p>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              onClick={() => setSendResult(null)}
+              className="p-1 text-slate-400 hover:text-slate-600 rounded transition flex-shrink-0"
+            >
+              <FiX className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       )}
 
