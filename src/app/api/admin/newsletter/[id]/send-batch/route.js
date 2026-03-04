@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { sendNewsletter } from '@/lib/email'
 
-const BATCH_SIZE = 450
+const BATCH_SIZE = 300
 
 export async function POST(request, { params }) {
   try {

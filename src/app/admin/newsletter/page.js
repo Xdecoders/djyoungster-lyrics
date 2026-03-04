@@ -300,7 +300,7 @@ export default function NewsletterPage() {
   }
 
   const handleSendNextBatch = async (newsletter) => {
-    if (!confirm(`Send next 450 emails? (${newsletter.sentTo} sent so far)`)) return
+    if (!confirm(`Send next 300 emails? (${newsletter.sentTo} sent so far)`)) return
     const token = localStorage.getItem('adminToken')
     setActiveSend({ id: newsletter.id, total: stats.activeSubscribers })
     fetch(`/api/admin/newsletter/${newsletter.id}/send-batch`, {
@@ -513,7 +513,7 @@ export default function NewsletterPage() {
                               style={{ width: `${Math.min(100, Math.round((newsletter.sentTo / stats.activeSubscribers) * 100))}%` }}
                             />
                           </div>
-                          <p className="text-xs text-slate-400 mt-1">~{Math.ceil((stats.activeSubscribers - newsletter.sentTo) / 450)} more days remaining</p>
+                          <p className="text-xs text-slate-400 mt-1">~{Math.ceil((stats.activeSubscribers - newsletter.sentTo) / 300)} more days remaining</p>
                         </div>
                       )}
 
@@ -564,7 +564,7 @@ export default function NewsletterPage() {
                           onClick={() => handleSendNextBatch(newsletter)}
                           disabled={!!activeSend}
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition disabled:opacity-50"
-                          title="Send next 450 emails"
+                          title="Send next 300 emails"
                         >
                           <FiSend className="w-3 h-3" />
                           {activeSend?.id === newsletter.id ? 'Sending...' : 'Send Next Batch'}
@@ -726,7 +726,7 @@ export default function NewsletterPage() {
                 className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <FiSend className="w-4 h-4" />
-                {saving ? 'Sending...' : `Send First Batch (450 / ${subscriberStats.active})`}
+                {saving ? 'Sending...' : `Send First Batch (300 / ${subscriberStats.active})`}
               </button>
             </div>
           </div>
@@ -864,7 +864,7 @@ export default function NewsletterPage() {
             </div>
             <div className="flex-1">
               <p className="font-semibold text-slate-800 text-sm">Sending Batch...</p>
-              <p className="text-xs text-slate-500 mt-0.5">Up to 450 emails → {activeSend.total.toLocaleString()} total subscribers</p>
+              <p className="text-xs text-slate-500 mt-0.5">Up to 300 emails → {activeSend.total.toLocaleString()} total subscribers</p>
             </div>
             <button
               onClick={() => { setActiveSend(null); fetchData() }}

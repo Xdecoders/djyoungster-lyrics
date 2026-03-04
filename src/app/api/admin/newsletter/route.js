@@ -49,7 +49,7 @@ export async function POST(request) {
     }
 
     if (sendNow) {
-      const BATCH_SIZE = 450
+      const BATCH_SIZE = 300
       const totalActive = await prisma.newsletterSubscriber.count({ where: { status: 'active' } })
 
       if (totalActive === 0) {

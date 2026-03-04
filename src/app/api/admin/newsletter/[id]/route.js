@@ -55,7 +55,7 @@ export async function PUT(request, { params }) {
         )
       }
 
-      const BATCH_SIZE = 450
+      const BATCH_SIZE = 300
       const emailSubject = subject || existing.subject
       const emailContent = content || existing.content
 
