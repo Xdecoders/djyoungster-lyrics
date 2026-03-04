@@ -708,7 +708,7 @@ export default function NewsletterPage() {
                 className="flex-1 px-4 py-2.5 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <FiSend className="w-4 h-4" />
-                {saving ? 'Sending...' : `Send to ${subscriberStats.active} Subscribers`}
+                {saving ? 'Sending...' : `Send First Batch (450 / ${subscriberStats.active})`}
               </button>
             </div>
           </div>
