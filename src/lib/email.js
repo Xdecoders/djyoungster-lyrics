@@ -1,9 +1,11 @@
 import nodemailer from 'nodemailer'
 
-// Create reusable transporter
+// Create reusable transporter (Brevo SMTP)
+// .env: SMTP_HOST=smtp-relay.brevo.com, SMTP_PORT=587, SMTP_SECURE=false
+//       SMTP_USER=<brevo-account-email>, SMTP_PASS=<brevo-smtp-key>
 const createTransporter = () => {
   return nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    host: process.env.SMTP_HOST,
     port: parseInt(process.env.SMTP_PORT) || 587,
     secure: process.env.SMTP_SECURE === 'true',
     auth: {
