@@ -42,6 +42,7 @@ export default function NewsletterPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [editingNewsletter, setEditingNewsletter] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
+  const [sendingBatch, setSendingBatch] = useState(null) // newsletter id being batch-sent
 
   // Form states
   const [subject, setSubject] = useState('')
@@ -268,6 +269,34 @@ export default function NewsletterPage() {
     }
   }
 
+  const handleSendNextBatch = async (newsletter) => {
+    if (!confirm(`Send next 450 emails? (${newsletter.sentTo} sent so far)`)) return
+    setSendingBatch(newsletter.id)
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch(`/api/admin/newsletter/${newsletter.id}/send-batch`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      const data = await res.json()
+      if (res.ok) {
+        if (data.isComplete) {
+          alert(`All done! Newsletter fully sent to ${data.sentTo} subscribers.`)
+        } else {
+          alert(`Batch sent! ${data.sent} emails sent. Total so far: ${data.sentTo} / ${data.totalSubscribers}. Come back tomorrow to send the next batch.`)
+        }
+        fetchData()
+      } else {
+        alert(data.message || 'Error sending batch')
+      }
+    } catch (error) {
+      console.error('Error sending batch:', error)
+      alert('Error sending batch')
+    } finally {
+      setSendingBatch(null)
+    }
+  }
+
   const handleDelete = async (id) => {
     try {
       const token = localStorage.getItem('adminToken')
@@ -430,21 +459,43 @@ export default function NewsletterPage() {
                         <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
                           newsletter.status === 'sent'
                             ? 'bg-emerald-100 text-emerald-700'
+                            : newsletter.status === 'sending'
+                            ? 'bg-orange-100 text-orange-700'
                             : 'bg-amber-100 text-amber-700'
                         }`}>
-                          {newsletter.status === 'sent' ? 'Sent' : 'Draft'}
+                          {newsletter.status === 'sent' ? 'Sent' : newsletter.status === 'sending' ? 'Sending...' : 'Draft'}
                         </span>
                         {newsletter.sentTo > 0 && (
                           <span className="text-xs text-slate-500">
-                            to {newsletter.sentTo} subscribers
+                            {newsletter.sentTo} sent
                           </span>
                         )}
                       </div>
                       <h3 className="font-semibold text-slate-800 truncate">{newsletter.subject}</h3>
+
+                      {/* Progress bar for sending newsletters */}
+                      {newsletter.status === 'sending' && (
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                            <span>{newsletter.sentTo} / {stats.activeSubscribers} subscribers</span>
+                            <span>{Math.round((newsletter.sentTo / stats.activeSubscribers) * 100)}%</span>
+                          </div>
+                          <div className="w-full bg-slate-100 rounded-full h-1.5">
+                            <div
+                              className="bg-orange-400 h-1.5 rounded-full transition-all"
+                              style={{ width: `${Math.min(100, Math.round((newsletter.sentTo / stats.activeSubscribers) * 100))}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-slate-400 mt-1">~{Math.ceil((stats.activeSubscribers - newsletter.sentTo) / 450)} more days remaining</p>
+                        </div>
+                      )}
+
                       <p className="text-xs text-slate-400 mt-2 flex items-center gap-1">
                         <FiClock className="w-3 h-3" />
                         {newsletter.status === 'sent' && newsletter.sentAt
                           ? `Sent ${formatDate(newsletter.sentAt)}`
+                          : newsletter.status === 'sending' && newsletter.sentAt
+                          ? `Started ${formatDate(newsletter.sentAt)}`
                           : `Created ${formatDate(newsletter.createdAt)}`
                         }
                       </p>
@@ -473,7 +524,7 @@ export default function NewsletterPage() {
                           </button>
                           <button
                             onClick={async () => {
-                              if (confirm('Send this newsletter to all subscribers?')) {
+                              if (confirm('Send first batch of 450 emails now?')) {
                                 const token = localStorage.getItem('adminToken')
                                 const res = await fetch(`/api/admin/newsletter/${newsletter.id}`, {
                                   method: 'PUT',
@@ -484,11 +535,22 @@ export default function NewsletterPage() {
                               }
                             }}
                             className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition"
-                            title="Send Now"
+                            title="Send First Batch"
                           >
                             <FiSend className="w-4 h-4" />
                           </button>
                         </>
+                      )}
+                      {newsletter.status === 'sending' && (
+                        <button
+                          onClick={() => handleSendNextBatch(newsletter)}
+                          disabled={sendingBatch === newsletter.id}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition disabled:opacity-50"
+                          title="Send next 450 emails"
+                        >
+                          <FiSend className="w-3 h-3" />
+                          {sendingBatch === newsletter.id ? 'Sending...' : 'Send Next Batch'}
+                        </button>
                       )}
                       <button
                         onClick={() => setDeleteConfirm(newsletter.id)}

@@ -46,7 +46,7 @@ export async function PUT(request, { params }) {
       )
     }
 
-    // If action is 'send', send the newsletter
+    // If action is 'send', send the first batch (450) and mark as sending/sent
     if (action === 'send') {
       if (existing.status === 'sent') {
         return NextResponse.json(
@@ -55,46 +55,51 @@ export async function PUT(request, { params }) {
         )
       }
 
-      // Get active subscribers
-      const subscribers = await prisma.newsletterSubscriber.findMany({
-        where: { status: 'active' },
-        select: { email: true }
-      })
+      const BATCH_SIZE = 450
+      const emailSubject = subject || existing.subject
+      const emailContent = content || existing.content
 
-      if (subscribers.length === 0) {
+      const totalActive = await prisma.newsletterSubscriber.count({ where: { status: 'active' } })
+
+      if (totalActive === 0) {
         return NextResponse.json(
           { message: 'No active subscribers to send to' },
           { status: 400 }
         )
       }
 
-      const emailSubject = subject || existing.subject
-      const emailContent = content || existing.content
-
-      // Send emails to all subscribers
-      console.log(`Sending newsletter to ${subscribers.length} subscribers...`)
-      const results = await sendNewsletter({
-        subscribers,
-        subject: emailSubject,
-        html: emailContent
+      // Send first batch
+      const subscribers = await prisma.newsletterSubscriber.findMany({
+        where: { status: 'active' },
+        orderBy: { subscribedAt: 'asc' },
+        skip: existing.sentTo,
+        take: BATCH_SIZE,
+        select: { email: true, name: true }
       })
-      console.log(`Newsletter sent: ${results.sent} successful, ${results.failed} failed`)
 
-      // Update newsletter status
+      console.log(`Sending batch to ${subscribers.length} of ${totalActive} subscribers...`)
+      const results = await sendNewsletter({ subscribers, subject: emailSubject, html: emailContent })
+      console.log(`Batch sent: ${results.sent} successful, ${results.failed} failed`)
+
+      const newSentTo = existing.sentTo + results.sent
+      const isComplete = newSentTo >= totalActive
+
       const newsletter = await prisma.newsletter.update({
         where: { id },
         data: {
           subject: emailSubject,
           content: emailContent,
-          status: 'sent',
+          status: isComplete ? 'sent' : 'sending',
           sentAt: new Date(),
-          sentTo: results.sent
+          sentTo: newSentTo
         }
       })
 
       return NextResponse.json({
         ...newsletter,
-        emailResults: results
+        emailResults: results,
+        totalSubscribers: totalActive,
+        isComplete
       })
     }
 

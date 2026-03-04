@@ -49,42 +49,46 @@ export async function POST(request) {
     }
 
     if (sendNow) {
-      // Get active subscribers
-      const subscribers = await prisma.newsletterSubscriber.findMany({
-        where: { status: 'active' },
-        select: { email: true }
-      })
+      const BATCH_SIZE = 450
+      const totalActive = await prisma.newsletterSubscriber.count({ where: { status: 'active' } })
 
-      if (subscribers.length === 0) {
+      if (totalActive === 0) {
         return NextResponse.json(
           { message: 'No active subscribers to send to' },
           { status: 400 }
         )
       }
 
-      // Send emails to all subscribers
-      console.log(`Sending newsletter to ${subscribers.length} subscribers...`)
-      const results = await sendNewsletter({
-        subscribers,
-        subject,
-        html: content
+      // Send first batch of 450
+      const subscribers = await prisma.newsletterSubscriber.findMany({
+        where: { status: 'active' },
+        orderBy: { subscribedAt: 'asc' },
+        take: BATCH_SIZE,
+        select: { email: true, name: true }
       })
-      console.log(`Newsletter sent: ${results.sent} successful, ${results.failed} failed`)
 
-      // Create newsletter record with sent status
+      console.log(`Sending first batch to ${subscribers.length} of ${totalActive} subscribers...`)
+      const results = await sendNewsletter({ subscribers, subject, html: content })
+      console.log(`Batch sent: ${results.sent} successful, ${results.failed} failed`)
+
+      const newSentTo = results.sent
+      const isComplete = newSentTo >= totalActive
+
       const newsletter = await prisma.newsletter.create({
         data: {
           subject,
           content,
-          status: 'sent',
+          status: isComplete ? 'sent' : 'sending',
           sentAt: new Date(),
-          sentTo: results.sent
+          sentTo: newSentTo
         }
       })
 
       return NextResponse.json({
         ...newsletter,
-        emailResults: results
+        emailResults: results,
+        totalSubscribers: totalActive,
+        isComplete
       }, { status: 201 })
     }
 
