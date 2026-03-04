@@ -7,17 +7,15 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url)
     const limit = parseInt(searchParams.get('limit') || '20')
 
+    const sort = searchParams.get('sort') || 'popular'
+
     const tags = await prisma.tag.findMany({
       include: {
         _count: {
           select: { songs: true }
         }
       },
-      orderBy: {
-        songs: {
-          _count: 'desc'
-        }
-      },
+      orderBy: sort === 'recent' ? { createdAt: 'desc' } : { songs: { _count: 'desc' } },
       take: limit
     })
 

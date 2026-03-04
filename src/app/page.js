@@ -168,7 +168,7 @@ async function getHomepageData() {
           lyrics: true,
           artists: { select: { artist: { select: { name: true } } } }
         },
-        orderBy: { updatedAt: 'desc' },
+        orderBy: { createdAt: 'desc' },
         take: 10,
       }),
     ])

@@ -142,7 +142,7 @@ export async function GET() {
           select: { artist: { select: { name: true } } }
         }
       },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
       take: 10,
     })
 

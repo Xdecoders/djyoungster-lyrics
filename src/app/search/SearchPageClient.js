@@ -12,7 +12,8 @@ import {
   FiFilm,
   FiPlay,
   FiEye,
-  FiChevronRight
+  FiChevronRight,
+  FiSend
 } from 'react-icons/fi'
 
 function SongCard({ song }) {
@@ -209,10 +210,30 @@ function SearchContent() {
                 <div className="w-12 h-12 border-4 border-emerald-200 dark:border-emerald-900 border-t-primary rounded-full animate-spin"></div>
               </div>
             ) : results?.counts?.total === 0 ? (
-              <div className="text-center py-20">
+              <div className="text-center py-12">
                 <FiSearch className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" />
                 <h2 className="text-xl font-semibold text-slate-800 dark:text-white mb-2">No results found</h2>
-                <p className="text-slate-500 dark:text-slate-400 mb-4">Try different keywords or check spelling</p>
+                <p className="text-slate-500 dark:text-slate-400 mb-8">Try different keywords or check spelling</p>
+
+                {/* Request Lyrics CTA */}
+                <div className="max-w-lg mx-auto">
+                  <Link
+                    href="/request-song"
+                    className="group block bg-gradient-to-r from-primary to-emerald-600 rounded-2xl p-6 sm:p-8 text-center shadow-lg shadow-emerald-500/20 hover:shadow-xl hover:shadow-emerald-500/30 hover:scale-[1.02] transition-all"
+                  >
+                    <div className="w-14 h-14 mx-auto mb-4 bg-white/20 rounded-full flex items-center justify-center">
+                      <FiSend className="w-6 h-6 text-white" />
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Can&apos;t Find Your Song?</h3>
+                    <p className="text-emerald-100 text-sm mb-4">
+                      Request any song lyrics and we&apos;ll add them for you — it&apos;s free!
+                    </p>
+                    <span className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-primary font-semibold text-sm rounded-xl group-hover:bg-emerald-50 transition-colors">
+                      Request Song Lyrics
+                      <FiSend className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    </span>
+                  </Link>
+                </div>
               </div>
             ) : (
               <div className="space-y-12">

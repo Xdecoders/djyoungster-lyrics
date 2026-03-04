@@ -5,8 +5,7 @@ import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import {
   FiMusic,
-  FiMail,
-  FiHeart
+  FiMail
 } from 'react-icons/fi'
 import { FaWhatsapp, FaXTwitter, FaFacebookF, FaLinkedinIn, FaInstagram, FaYoutube } from 'react-icons/fa6'
 
@@ -14,6 +13,7 @@ export default function Footer() {
   const pathname = usePathname()
   const [categories, setCategories] = useState([])
   const [genres, setGenres] = useState([])
+  const [tags, setTags] = useState([])
   const [email, setEmail] = useState('')
   const [subscribing, setSubscribing] = useState(false)
   const [subscribeMessage, setSubscribeMessage] = useState('')
@@ -27,10 +27,15 @@ export default function Footer() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch('/api/public/homepage')
-        const data = await res.json()
-        if (data.categories) setCategories(data.categories.slice(0, 5))
+        const [homepageRes, tagsRes] = await Promise.all([
+          fetch('/api/public/homepage'),
+          fetch('/api/public/tags?sort=recent&limit=6')
+        ])
+        const data = await homepageRes.json()
+        const tagsData = await tagsRes.json()
+        if (data.categories) setCategories(data.categories.slice(0, 6))
         if (data.genres) setGenres(data.genres.slice(0, 5))
+        if (Array.isArray(tagsData)) setTags(tagsData)
       } catch (error) {
         console.error('Error fetching footer data:', error)
       }
@@ -76,6 +81,7 @@ export default function Footer() {
     { href: '/albums', label: 'Albums' },
     { href: '/genres', label: 'Genres' },
     { href: '/movies', label: 'Movies' },
+    { href: '/web-stories', label: 'Lyric Stories' },
   ]
 
   const legalLinks = [
@@ -93,7 +99,7 @@ export default function Footer() {
       <footer className="bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
         {/* Main Footer Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 lg:gap-12">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-8 lg:gap-10">
             {/* Brand Section */}
             <div className="col-span-2 md:col-span-3 lg:col-span-2">
               <Link href="/" className="flex items-center gap-2 mb-4">
@@ -217,6 +223,27 @@ export default function Footer() {
                 ))}
               </ul>
             </div>
+
+            {/* Tags */}
+            <div>
+              <h4 className="font-semibold text-slate-800 dark:text-white mb-4">Tags</h4>
+              <ul className="space-y-2.5">
+                {tags.length > 0 ? (
+                  tags.map((tag) => (
+                    <li key={tag.id}>
+                      <Link
+                        href={`/tag/${tag.slug}`}
+                        className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition"
+                      >
+                        {tag.name.replace(/\b\w/g, c => c.toUpperCase())} Songs
+                      </Link>
+                    </li>
+                  ))
+                ) : (
+                  <li><Link href="/tags" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Browse Tags</Link></li>
+                )}
+              </ul>
+            </div>
           </div>
         </div>
 
@@ -227,8 +254,8 @@ export default function Footer() {
               <p className="text-sm text-slate-400 dark:text-slate-500 text-center sm:text-left">
                 &copy; {currentYear} DJYoungster Lyrics. All rights reserved.
               </p>
-              <p className="text-sm text-slate-400 dark:text-slate-500 flex items-center gap-1">
-                Made with <FiHeart className="w-4 h-4 text-rose-500" /> for music lovers
+              <p className="text-sm text-slate-400 dark:text-slate-500">
+                Feelings borrowed from songs.
               </p>
             </div>
           </div>

@@ -38,7 +38,7 @@ async function getStories(page) {
         lyrics: true,
         artists: { select: { artist: { select: { name: true } } } }
       },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: { createdAt: 'desc' },
       skip,
       take: PER_PAGE,
     })
@@ -65,7 +65,7 @@ export default async function WebStoriesPage({ searchParams }) {
     .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
 
         {/* Header */}
@@ -75,8 +75,8 @@ export default async function WebStoriesPage({ searchParams }) {
               <FiBookOpen className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-slate-800">Lyric Stories</h1>
-              <p className="text-sm text-slate-500 mt-0.5">
+              <h1 className="text-2xl font-bold text-slate-800 dark:text-white">Lyric Stories</h1>
+              <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 {total > 0 ? `${total} stories · Showing ${startIndex}–${endIndex}` : 'Tap-through lyrics in Google Web Stories format'}
               </p>
             </div>
@@ -84,11 +84,11 @@ export default async function WebStoriesPage({ searchParams }) {
         </div>
 
         {stories.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-16 text-center">
-            <div className="bg-emerald-50 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 p-16 text-center">
+            <div className="bg-emerald-50 dark:bg-emerald-900/30 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FiBookOpen className="w-8 h-8 text-emerald-400" />
             </div>
-            <p className="text-slate-500">No Lyric Stories yet. Enable them from the admin songs list.</p>
+            <p className="text-slate-500 dark:text-slate-400">No Lyric Stories yet. Enable them from the admin songs list.</p>
           </div>
         ) : (
           <>
@@ -143,7 +143,7 @@ export default async function WebStoriesPage({ searchParams }) {
             {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-500 dark:text-slate-400">
                   Page {page} of {totalPages}
                 </p>
                 <div className="flex items-center gap-1.5">
@@ -151,12 +151,12 @@ export default async function WebStoriesPage({ searchParams }) {
                   {page > 1 ? (
                     <Link
                       href={`/web-stories?page=${page - 1}`}
-                      className="p-2 rounded-lg text-slate-600 hover:bg-white hover:shadow-sm transition"
+                      className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm transition"
                     >
                       <FiChevronLeft className="w-5 h-5" />
                     </Link>
                   ) : (
-                    <span className="p-2 rounded-lg text-slate-300 cursor-not-allowed">
+                    <span className="p-2 rounded-lg text-slate-300 dark:text-slate-600 cursor-not-allowed">
                       <FiChevronLeft className="w-5 h-5" />
                     </span>
                   )}
@@ -165,14 +165,14 @@ export default async function WebStoriesPage({ searchParams }) {
                   {pageNumbers.map((p, idx, arr) => (
                     <span key={p} className="flex items-center gap-1.5">
                       {idx > 0 && arr[idx - 1] !== p - 1 && (
-                        <span className="px-1 text-slate-400 text-sm">…</span>
+                        <span className="px-1 text-slate-400 dark:text-slate-500 text-sm">…</span>
                       )}
                       <Link
                         href={`/web-stories?page=${p}`}
                         className={`w-9 h-9 rounded-lg text-sm font-medium transition flex items-center justify-center ${
                           p === page
                             ? 'bg-primary text-white shadow-sm'
-                            : 'text-slate-600 hover:bg-white hover:shadow-sm'
+                            : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm'
                         }`}
                       >
                         {p}
@@ -184,12 +184,12 @@ export default async function WebStoriesPage({ searchParams }) {
                   {page < totalPages ? (
                     <Link
                       href={`/web-stories?page=${page + 1}`}
-                      className="p-2 rounded-lg text-slate-600 hover:bg-white hover:shadow-sm transition"
+                      className="p-2 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm transition"
                     >
                       <FiChevronRight className="w-5 h-5" />
                     </Link>
                   ) : (
-                    <span className="p-2 rounded-lg text-slate-300 cursor-not-allowed">
+                    <span className="p-2 rounded-lg text-slate-300 dark:text-slate-600 cursor-not-allowed">
                       <FiChevronRight className="w-5 h-5" />
                     </span>
                   )}
