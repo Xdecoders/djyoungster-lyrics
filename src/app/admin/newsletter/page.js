@@ -42,8 +42,8 @@ export default function NewsletterPage() {
   const [showPreview, setShowPreview] = useState(false)
   const [editingNewsletter, setEditingNewsletter] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
-  const [sendingBatch, setSendingBatch] = useState(null) // newsletter id being batch-sent
   const [subscriberSearch, setSubscriberSearch] = useState('')
+  const [activeSend, setActiveSend] = useState(null) // { id, total, label } for background progress
 
   // Form states
   const [subject, setSubject] = useState('')
@@ -83,7 +83,7 @@ export default function NewsletterPage() {
         fetch('/api/admin/newsletter', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
-        fetch('/api/admin/newsletter/subscribers', {
+        fetch('/api/admin/newsletter/subscribers?limit=5000', {
           headers: { 'Authorization': `Bearer ${token}` }
         }),
         fetch('/api/admin/songs', {
@@ -236,14 +236,13 @@ export default function NewsletterPage() {
     setSaving(true)
     try {
       const token = localStorage.getItem('adminToken')
+
+      // Step 1: Save as draft first (always fast — no email sending here)
       const url = editingNewsletter
         ? `/api/admin/newsletter/${editingNewsletter.id}`
         : '/api/admin/newsletter'
-
       const method = editingNewsletter ? 'PUT' : 'POST'
-      const body = editingNewsletter
-        ? { subject, content, action: sendNow ? 'send' : undefined }
-        : { subject, content, sendNow }
+      const body = { subject, content, sendNow: false }
 
       const res = await fetch(url, {
         method,
@@ -251,16 +250,42 @@ export default function NewsletterPage() {
         body: JSON.stringify(body)
       })
 
-      if (res.ok) {
-        setShowCompose(false)
-        setEditingNewsletter(null)
-        setSubject('')
-        setContent('')
-        setSelectedSong(null)
-        fetchData()
-      } else {
+      if (!res.ok) {
         const data = await res.json()
         alert(data.message || 'Error saving newsletter')
+        return
+      }
+
+      const newsletter = await res.json()
+
+      // Close modal immediately
+      setShowCompose(false)
+      setEditingNewsletter(null)
+      setSubject('')
+      setContent('')
+      setSelectedSong(null)
+
+      if (sendNow) {
+        // Step 2: Trigger batch send in background, show progress bar
+        setActiveSend({ id: newsletter.id, total: subscriberStats.active })
+        fetch(`/api/admin/newsletter/${newsletter.id}/send-batch`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+          .then(async (sendRes) => {
+            const sendData = await sendRes.json()
+            setActiveSend(null)
+            fetchData()
+            if (!sendRes.ok) {
+              alert(sendData.message || 'Error sending batch')
+            }
+          })
+          .catch(() => {
+            setActiveSend(null)
+            fetchData()
+          })
+      } else {
+        fetchData()
       }
     } catch (error) {
       console.error('Error saving newsletter:', error)
@@ -272,30 +297,30 @@ export default function NewsletterPage() {
 
   const handleSendNextBatch = async (newsletter) => {
     if (!confirm(`Send next 450 emails? (${newsletter.sentTo} sent so far)`)) return
-    setSendingBatch(newsletter.id)
-    try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch(`/api/admin/newsletter/${newsletter.id}/send-batch`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${token}` }
-      })
-      const data = await res.json()
-      if (res.ok) {
-        if (data.isComplete) {
-          alert(`All done! Newsletter fully sent to ${data.sentTo} subscribers.`)
-        } else {
-          alert(`Batch sent! ${data.sent} emails sent. Total so far: ${data.sentTo} / ${data.totalSubscribers}. Come back tomorrow to send the next batch.`)
-        }
+    const token = localStorage.getItem('adminToken')
+    setActiveSend({ id: newsletter.id, total: stats.activeSubscribers })
+    fetch(`/api/admin/newsletter/${newsletter.id}/send-batch`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+      .then(async (res) => {
+        const data = await res.json()
+        setActiveSend(null)
         fetchData()
-      } else {
-        alert(data.message || 'Error sending batch')
-      }
-    } catch (error) {
-      console.error('Error sending batch:', error)
-      alert('Error sending batch')
-    } finally {
-      setSendingBatch(null)
-    }
+        if (res.ok) {
+          if (data.isComplete) {
+            alert(`All done! Newsletter fully sent to ${data.sentTo} subscribers.`)
+          } else {
+            alert(`Batch sent! ${data.sent} emails sent. Total: ${data.sentTo} / ${data.totalSubscribers}. Come back tomorrow for the next batch.`)
+          }
+        } else {
+          alert(data.message || 'Error sending batch')
+        }
+      })
+      .catch(() => {
+        setActiveSend(null)
+        fetchData()
+      })
   }
 
   const handleDelete = async (id) => {
@@ -524,18 +549,9 @@ export default function NewsletterPage() {
                             <FiEdit2 className="w-4 h-4" />
                           </button>
                           <button
-                            onClick={async () => {
-                              if (confirm('Send first batch of 450 emails now?')) {
-                                const token = localStorage.getItem('adminToken')
-                                const res = await fetch(`/api/admin/newsletter/${newsletter.id}`, {
-                                  method: 'PUT',
-                                  headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                                  body: JSON.stringify({ action: 'send' })
-                                })
-                                if (res.ok) fetchData()
-                              }
-                            }}
-                            className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                            onClick={() => handleSendNextBatch(newsletter)}
+                            disabled={!!activeSend}
+                            className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition disabled:opacity-50"
                             title="Send First Batch"
                           >
                             <FiSend className="w-4 h-4" />
@@ -545,12 +561,12 @@ export default function NewsletterPage() {
                       {newsletter.status === 'sending' && (
                         <button
                           onClick={() => handleSendNextBatch(newsletter)}
-                          disabled={sendingBatch === newsletter.id}
+                          disabled={!!activeSend}
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 text-white text-xs font-medium rounded-lg hover:bg-orange-600 transition disabled:opacity-50"
                           title="Send next 450 emails"
                         >
                           <FiSend className="w-3 h-3" />
-                          {sendingBatch === newsletter.id ? 'Sending...' : 'Send Next Batch'}
+                          {activeSend?.id === newsletter.id ? 'Sending...' : 'Send Next Batch'}
                         </button>
                       )}
                       <button
@@ -835,6 +851,25 @@ export default function NewsletterPage() {
               })()}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Background Send Progress */}
+      {activeSend && (
+        <div className="fixed bottom-6 right-6 z-50 bg-white rounded-2xl shadow-xl border border-purple-100 p-4 w-72">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-9 h-9 rounded-xl bg-purple-100 flex items-center justify-center flex-shrink-0">
+              <FiSend className="w-4 h-4 text-purple-600" />
+            </div>
+            <div>
+              <p className="font-semibold text-slate-800 text-sm">Sending Newsletter</p>
+              <p className="text-xs text-slate-500">Sending to {activeSend.total} subscriber{activeSend.total !== 1 ? 's' : ''}...</p>
+            </div>
+          </div>
+          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+            <div className="h-1.5 rounded-full bg-gradient-to-r from-purple-500 to-emerald-500 animate-pulse w-full" />
+          </div>
+          <p className="text-xs text-slate-400 mt-2">This may take up to a minute. You can navigate freely.</p>
         </div>
       )}
 

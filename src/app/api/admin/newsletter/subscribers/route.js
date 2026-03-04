@@ -6,10 +6,13 @@ export async function GET(request) {
   try {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get('status')
+    const search = searchParams.get('search')
     const page = parseInt(searchParams.get('page')) || 1
     const limit = parseInt(searchParams.get('limit')) || 50
 
-    const where = status ? { status } : {}
+    const where = {}
+    if (status) where.status = status
+    if (search) where.email = { contains: search }
 
     const [subscribers, total, activeCount, unsubscribedCount] = await Promise.all([
       prisma.newsletterSubscriber.findMany({

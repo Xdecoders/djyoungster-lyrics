@@ -66,7 +66,7 @@ export async function sendNewsletter({ subscribers, subject, html }) {
 
     // Small delay between batches to avoid rate limiting
     if (i + batchSize < subscribers.length) {
-      await delay(1000)
+      await delay(100)
     }
   }
 
