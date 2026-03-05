@@ -41,7 +41,6 @@ export async function GET(request, { params }) {
       title: true,
       slug: true,
       lyrics: true,
-      coverImage: true,
       hasWebStory: true,
       createdAt: true,
       updatedAt: true,
@@ -57,12 +56,6 @@ export async function GET(request, { params }) {
 
   const artistNames = song.artists.map(sa => sa.artist.name).join(', ') || PUBLISHER
   const chunks = getLyricChunks(song.lyrics || '')
-  const coverImg = song.coverImage || `${SITE_URL}/og-default.jpg`
-  // Use portrait-cropped story variant for AMP images if available (720×1280)
-  const coverStoryImg = coverImg.startsWith('/uploads/') && coverImg.endsWith('.webp')
-    ? coverImg.replace(/\.webp$/, '-story.webp')
-    : coverImg
-  const coverStoryImgAbs = coverStoryImg.startsWith('/') ? `${SITE_URL}${coverStoryImg}` : coverStoryImg
   const songUrl = `${SITE_URL}/song/${song.slug}`
   const storyUrl = `${SITE_URL}/web-stories/${song.slug}`
   const titleEsc = escapeHtml(song.title)
@@ -76,6 +69,12 @@ export async function GET(request, { params }) {
     `${SITE_URL}/templates/story-light-2.png`,
     `${SITE_URL}/templates/story-light-3.png`,
   ]
+
+  // Use template images for cover/end slides (no cover art — avoids AMP image size warnings)
+  const coverTemplateImg = STORY_TEMPLATES[0]
+  const endTemplateImg = STORY_TEMPLATES[(chunks.length) % STORY_TEMPLATES.length]
+  // OG image uses the cover template (1080×1920, well above AMP minimum)
+  const ogImage = coverTemplateImg
 
   const lyricSlides = chunks.map((chunk, i) => {
     const templateSrc = STORY_TEMPLATES[i % STORY_TEMPLATES.length]
@@ -112,24 +111,20 @@ export async function GET(request, { params }) {
   <meta property="og:type" content="article">
   <meta property="og:title" content="${titleEsc} ${artistEsc} Lyric Story">
   <meta property="og:description" content="${escapeHtml(`${song.title} lyrics story by ${artistNames} on ${PUBLISHER}`)}">
-  <meta property="og:image" content="${escapeHtml(coverStoryImgAbs)}">
+  <meta property="og:image" content="${escapeHtml(ogImage)}">
   <meta property="og:url" content="${storyUrl}">
   <meta property="og:site_name" content="${PUBLISHER}">
   <meta name="description" content="${escapeHtml(`${song.title} lyrics story by ${artistNames} on ${PUBLISHER}`)}">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="${titleEsc} ${artistEsc} Lyric Story">
-  <meta name="twitter:image" content="${escapeHtml(coverStoryImgAbs)}">
+  <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="icon" href="${SITE_URL}/favicon.svg" type="image/svg+xml">
   <meta name="viewport" content="width=device-width,minimum-scale=1,initial-scale=1">
   <style amp-boilerplate>body{-webkit-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-moz-animation:-amp-start 8s steps(1,end) 0s 1 normal both;-ms-animation:-amp-start 8s steps(1,end) 0s 1 normal both;animation:-amp-start 8s steps(1,end) 0s 1 normal both}@-webkit-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-moz-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-ms-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@-o-keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}@keyframes -amp-start{from{visibility:hidden}to{visibility:visible}}</style>
   <noscript><style amp-boilerplate>body{-webkit-animation:none;-moz-animation:none;-ms-animation:none;animation:none}</style></noscript>
   <style amp-custom>
     amp-story { font-family: 'Google Sans', sans-serif; }
-    /* Cover slide — blurred bg */
-    .cover-bg {
-      filter: blur(12px);
-      transform: scale(1.15);
-    }
+    /* Cover slide */
     .cover-overlay {
       background: rgba(0,0,0,0.55);
     }
@@ -293,7 +288,7 @@ export async function GET(request, { params }) {
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": `${song.title} ${artistNames} Lyric Story`,
-    "image": coverImg,
+    "image": ogImage,
     "url": storyUrl,
     "datePublished": song.createdAt,
     "dateModified": song.updatedAt,
@@ -321,7 +316,7 @@ export async function GET(request, { params }) {
     title="${titleEsc}"
     publisher="${PUBLISHER}"
     publisher-logo-src="${LOGO_URL}"
-    poster-portrait-src="${escapeHtml(coverStoryImg)}">
+    poster-portrait-src="${escapeHtml(coverTemplateImg)}">
 
     ${GA_ID ? `<amp-analytics type="gtag" data-credentials="include">
       <script type="application/json">
@@ -350,7 +345,7 @@ export async function GET(request, { params }) {
     <!-- Cover slide -->
     <amp-story-page id="cover">
       <amp-story-grid-layer template="fill">
-        <amp-img src="${escapeHtml(coverStoryImg)}" width="720" height="1280" layout="fill" class="cover-bg"></amp-img>
+        <amp-img src="${escapeHtml(coverTemplateImg)}" width="1080" height="1920" layout="fill"></amp-img>
       </amp-story-grid-layer>
       <amp-story-grid-layer template="fill" class="cover-overlay">
         <div class="cover-content">
@@ -366,7 +361,7 @@ export async function GET(request, { params }) {
     <!-- CTA slide -->
     <amp-story-page id="end">
       <amp-story-grid-layer template="fill">
-        <amp-img src="${escapeHtml(coverStoryImg)}" width="720" height="1280" layout="fill" class="cover-bg"></amp-img>
+        <amp-img src="${escapeHtml(endTemplateImg)}" width="1080" height="1920" layout="fill"></amp-img>
       </amp-story-grid-layer>
       <amp-story-grid-layer template="fill" class="end-overlay">
         <div class="end-content">

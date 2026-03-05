@@ -332,9 +332,6 @@ export default async function SongPage({ params }) {
 
   return (
     <>
-      {song.hasWebStory && (
-        <link rel="amphtml" href={`${siteUrl}/web-stories/${song.slug}`} />
-      )}
       {songSchema && (
         <script
           type="application/ld+json"
