@@ -16,6 +16,10 @@ node_modules/
 .vscode/
 .claude/
 
+# Mobile app (commit separately when ready)
+mobile/
+old_emails.csv
+
 # Misc
 nul
 *.log
