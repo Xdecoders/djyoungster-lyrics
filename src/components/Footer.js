@@ -7,7 +7,7 @@ import {
   FiMusic,
   FiMail
 } from 'react-icons/fi'
-import { FaWhatsapp, FaXTwitter, FaFacebookF, FaLinkedinIn, FaInstagram, FaYoutube } from 'react-icons/fa6'
+import { FaWhatsapp, FaXTwitter, FaFacebookF, FaLinkedinIn, FaInstagram, FaYoutube, FaGooglePlay } from 'react-icons/fa6'
 
 export default function Footer() {
   const pathname = usePathname()
@@ -140,6 +140,24 @@ export default function Footer() {
                     {subscribeMessage}
                   </p>
                 )}
+              </div>
+
+              {/* Google Play Badge */}
+              <div className="mb-5">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wide">Get the App</p>
+                <a
+                  href="https://play.google.com/store/apps/details?id=net.djyoungster.twa&hl=en_IN"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-3 px-4 py-2.5 bg-slate-900 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl transition group w-fit"
+                  aria-label="Get it on Google Play"
+                >
+                  <FaGooglePlay className="w-5 h-5 text-white flex-shrink-0" />
+                  <div className="leading-tight">
+                    <div className="text-[10px] text-slate-300 group-hover:text-slate-200">GET IT ON</div>
+                    <div className="text-sm font-semibold">Google Play</div>
+                  </div>
+                </a>
               </div>
 
               {/* Social Media */}

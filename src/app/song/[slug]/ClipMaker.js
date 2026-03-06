@@ -627,7 +627,7 @@ export function TemplatePickerModal({ isOpen, onClose, onSelect, sampleLines }) 
   const selected = CLIP_TEMPLATES.find(t => t.id === selectedId) || CLIP_TEMPLATES[0]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full p-5 animate-slideUp max-h-[90vh] flex flex-col">
         <button
@@ -802,7 +802,7 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-5 animate-slideUp max-h-[90vh] flex flex-col">
         <button
