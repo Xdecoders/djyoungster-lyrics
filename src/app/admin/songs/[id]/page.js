@@ -387,7 +387,7 @@ export default function EditSong() {
         lyricsHindi: song.lyricsHindi || '',
         lyricsPunjabi: song.lyricsPunjabi || '',
         meaning: song.meaning || '',
-        datePublished: song.datePublished ? new Date(song.datePublished).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        datePublished: song.datePublished ? new Date(song.datePublished).toISOString().split('T')[0] : '',
         artistIds: song.artists?.map(sa => sa.artist.id) || [],
         albumId: song.albumId || '',
         genreIds: song.genres?.map(sg => sg.genre.id) || [],
