@@ -11,6 +11,15 @@ const UA = {
   timeout: 30000
 }
 
+// JSON-LD values can be a plain string or a Person/Organization object
+function extractName(val) {
+  if (!val) return ''
+  if (typeof val === 'string') return val
+  if (Array.isArray(val)) return val.map(extractName).filter(Boolean).join(', ')
+  if (typeof val === 'object' && val.name) return val.name
+  return ''
+}
+
 export async function scrapeGenzLyrics(url) {
   const response = await axios.get(url, UA)
   const $ = cheerio.load(response.data)
@@ -29,9 +38,9 @@ export async function scrapeGenzLyrics(url) {
       for (const node of nodes) {
         if (node['@type'] === 'MusicComposition') {
           if (!title) title = node.name || ''
-          if (!lyricist) lyricist = node.lyricist || ''
-          if (!composer) composer = node.composer || ''
-          if (!producer) producer = node.producer || ''
+          if (!lyricist) lyricist = extractName(node.lyricist)
+          if (!composer) composer = extractName(node.composer)
+          if (!producer) producer = extractName(node.producer)
           if (!releaseYear && node.datePublished) {
             const year = parseInt(node.datePublished.slice(0, 4))
             if (year > 2000 && year <= new Date().getFullYear() + 1) {
@@ -61,8 +70,7 @@ export async function scrapeGenzLyrics(url) {
 
   if (!title) throw new Error('Could not extract song title')
 
-  // --- Credits from info table/divs ---
-  // genzlyrics uses WordPress with a details section
+  // --- Credits from .snippet-para (genzlyrics uses "Label: Value" paragraphs) ---
   let singers = ''
   let label = ''
   let starring = ''
@@ -70,42 +78,24 @@ export async function scrapeGenzLyrics(url) {
   let albumName = null
   let movieName = null
 
-  // Try table rows first
-  $('table tr').each((_, row) => {
-    const cells = $(row).find('td, th')
-    if (cells.length < 2) return
-    const key = $(cells[0]).text().trim().toLowerCase().replace(/:$/, '')
-    const val = $(cells[1]).text().trim()
-    if (!val) return
-    if (key.includes('singer') || key.includes('artist') || key.includes('vocals')) singers = singers || val
-    else if (key.includes('writer') || key.includes('lyricist')) lyricist = lyricist || val
-    else if (key.includes('composer') || key.includes('music')) composer = composer || val
-    else if (key.includes('producer')) producer = producer || val
-    else if (key.includes('label')) label = label || val
-    else if (key.includes('cast') || key.includes('starring')) starring = starring || val
-    else if (key.includes('director')) director = director || val
-    else if (key.includes('album')) albumName = albumName || val
-    else if (key.includes('movie') || key.includes('film')) movieName = movieName || val
-  })
+  const creditMap = {
+    'singer': 'singers', 'singers': 'singers', 'artist': 'singers', 'artists': 'singers',
+    'artist(s)': 'singers', 'vocalist': 'singers', 'vocals': 'singers', 'sung by': 'singers',
+    'lyricist': 'lyricist', 'lyricists': 'lyricist', 'written by': 'lyricist',
+    'writer': 'lyricist', 'writer(s)': 'lyricist', 'writers': 'lyricist',
+    'composer': 'composer', 'music': 'composer', 'music director': 'composer',
+    'producer': 'producer', 'produced by': 'producer', 'producer(s)': 'producer', 'producers': 'producer',
+    'label': 'label', 'music label': 'label', 'record label': 'label',
+    'cast': 'starring', 'starring': 'starring',
+    'director': 'director', 'directed by': 'director',
+    'album': 'albumName', 'movie': 'movieName', 'film': 'movieName'
+  }
 
-  // Fallback: parse "Label: Value" lines anywhere in .entry-content
-  if (!singers || !label) {
-    const creditMap = {
-      'singer': 'singers', 'singers': 'singers', 'artist': 'singers', 'artists': 'singers',
-      'vocalist': 'singers', 'vocals': 'singers', 'sung by': 'singers',
-      'lyricist': 'lyricist', 'lyricists': 'lyricist', 'written by': 'lyricist', 'writer': 'lyricist',
-      'composer': 'composer', 'music': 'composer', 'music director': 'composer',
-      'producer': 'producer', 'produced by': 'producer',
-      'label': 'label', 'music label': 'label', 'record label': 'label',
-      'cast': 'starring', 'starring': 'starring',
-      'director': 'director', 'directed by': 'director',
-      'album': 'albumName', 'movie': 'movieName', 'film': 'movieName'
-    }
-
-    $('.entry-content p, .entry-content li, .song-detail p, .song-info p, .post-content p').each((_, el) => {
+  const parseCreditsFromEl = (selector) => {
+    $(selector).each((_, el) => {
       const text = $(el).text().trim()
       const colonIdx = text.indexOf(':')
-      if (colonIdx === -1 || colonIdx > 30) return
+      if (colonIdx === -1 || colonIdx > 35) return
       const rawKey = text.substring(0, colonIdx).trim().toLowerCase()
       const mapped = creditMap[rawKey]
       if (!mapped) return
@@ -121,6 +111,28 @@ export async function scrapeGenzLyrics(url) {
       else if (mapped === 'albumName') albumName = albumName || val
       else if (mapped === 'movieName') movieName = movieName || val
     })
+  }
+
+  // Primary: .snippet-para paragraphs (genzlyrics specific)
+  parseCreditsFromEl('.snippet-para p')
+  // Fallback: table rows
+  $('table tr').each((_, row) => {
+    const cells = $(row).find('td, th')
+    if (cells.length < 2) return
+    const key = $(cells[0]).text().trim().toLowerCase().replace(/:$/, '')
+    const val = $(cells[1]).text().trim()
+    if (!val) return
+    if (key.includes('singer') || key.includes('artist')) singers = singers || val
+    else if (key.includes('writer') || key.includes('lyricist')) lyricist = lyricist || val
+    else if (key.includes('composer') || key.includes('music')) composer = composer || val
+    else if (key.includes('producer')) producer = producer || val
+    else if (key.includes('label')) label = label || val
+    else if (key.includes('album')) albumName = albumName || val
+    else if (key.includes('movie') || key.includes('film')) movieName = movieName || val
+  })
+  // Fallback: any entry-content paragraph
+  if (!singers && !label) {
+    parseCreditsFromEl('.entry-content p, .post-content p')
   }
 
   // Fallback singer from og:title or page title artist part
