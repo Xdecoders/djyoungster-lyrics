@@ -58,24 +58,23 @@ export default function HomeContent({ data, siteSettings }) {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
 
-        {/* Instagram Viral */}
-        {data?.instagramViralSongs?.length > 0 && (
+        {/* Fresh Drops */}
+        {data?.latestSongs?.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 shadow-lg">
-                  <FiInstagram className="w-5 h-5 text-white" />
+                <div className="p-2.5 rounded-xl bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/80 dark:border-white/10">
+                  <FiClock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Instagram Viral</h2>
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Fresh Drops</h2>
               </div>
-              <Link href="/category/instagram-viral" className="text-sm text-primary hover:text-primary-hover font-medium">
+              <Link href="/songs?sort=latest" className="text-sm text-primary hover:text-primary-hover font-medium">
                 View All
               </Link>
             </div>
-
             <Carousel>
               <div className="flex gap-3 w-max">
-                {data.instagramViralSongs.map((song, index) => {
+                {data.latestSongs.map((song, index) => {
                   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
                   return (
                     <Link
@@ -86,16 +85,17 @@ export default function HomeContent({ data, siteSettings }) {
                       {song.coverImage ? (
                         <Image src={song.coverImage} alt={song.title} fill sizes="192px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={index < 4} />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-pink-200 to-purple-300 dark:from-pink-900 dark:to-purple-900 flex items-center justify-center">
-                          <FiMusic className="w-12 h-12 text-purple-400/50" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
+                          <FiMusic className="w-12 h-12 text-slate-400/50" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-                      {/* Viral badge */}
-                      <div className="absolute top-3 left-3">
-                        <span className="px-2 py-0.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">Viral</span>
-                      </div>
+                      {index < 3 && (
+                        <div className="absolute top-3 right-3">
+                          <span className="px-2 py-0.5 bg-white/20 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">New</span>
+                        </div>
+                      )}
 
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <div className="w-12 h-12 bg-white/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300">
@@ -178,23 +178,24 @@ export default function HomeContent({ data, siteSettings }) {
           </section>
         )}
 
-        {/* Fresh Drops */}
-        {data?.latestSongs?.length > 0 && (
+        {/* Instagram Viral */}
+        {data?.instagramViralSongs?.length > 0 && (
           <section className="mb-12">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-white/60 dark:bg-white/5 backdrop-blur-md border border-white/80 dark:border-white/10">
-                  <FiClock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                <div className="p-2.5 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 shadow-lg">
+                  <FiInstagram className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Fresh Drops</h2>
+                <h2 className="text-xl font-semibold text-slate-800 dark:text-white">Instagram Viral</h2>
               </div>
-              <Link href="/songs?sort=latest" className="text-sm text-primary hover:text-primary-hover font-medium">
+              <Link href="/category/instagram-viral" className="text-sm text-primary hover:text-primary-hover font-medium">
                 View All
               </Link>
             </div>
+
             <Carousel>
               <div className="flex gap-3 w-max">
-                {data.latestSongs.map((song, index) => {
+                {data.instagramViralSongs.map((song, index) => {
                   const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || 'Unknown Artist'
                   return (
                     <Link
@@ -205,17 +206,16 @@ export default function HomeContent({ data, siteSettings }) {
                       {song.coverImage ? (
                         <Image src={song.coverImage} alt={song.title} fill sizes="192px" className="object-cover group-hover:scale-105 transition-transform duration-500" priority={index < 4} />
                       ) : (
-                        <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800 flex items-center justify-center">
-                          <FiMusic className="w-12 h-12 text-slate-400/50" />
+                        <div className="absolute inset-0 bg-gradient-to-br from-pink-200 to-purple-300 dark:from-pink-900 dark:to-purple-900 flex items-center justify-center">
+                          <FiMusic className="w-12 h-12 text-purple-400/50" />
                         </div>
                       )}
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
-                      {index < 3 && (
-                        <div className="absolute top-3 right-3">
-                          <span className="px-2 py-0.5 bg-white/20 backdrop-blur-md border border-white/20 text-white text-[10px] font-bold uppercase tracking-wider rounded-full">New</span>
-                        </div>
-                      )}
+                      {/* Viral badge */}
+                      <div className="absolute top-3 left-3">
+                        <span className="px-2 py-0.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[10px] font-bold uppercase tracking-wider rounded-full shadow-lg">Viral</span>
+                      </div>
 
                       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                         <div className="w-12 h-12 bg-white/20 backdrop-blur-md border border-white/20 rounded-full flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300">

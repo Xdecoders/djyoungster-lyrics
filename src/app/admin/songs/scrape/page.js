@@ -914,6 +914,7 @@ export default function ScrapeSong() {
                     <span className="px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium">lyricsraag.com</span>
                     <span className="px-3 py-1.5 bg-orange-50 text-orange-700 rounded-full text-sm font-medium">gaana.com</span>
                     <span className="px-3 py-1.5 bg-teal-50 text-teal-700 rounded-full text-sm font-medium">vergelyrics.com</span>
+                    <span className="px-3 py-1.5 bg-pink-50 text-pink-700 rounded-full text-sm font-medium">genzlyrics.com</span>
                   </div>
                 </div>
               </div>
@@ -1024,7 +1025,8 @@ export default function ScrapeSong() {
                 'lyricsmint.com': 'bg-green-100 text-green-700',
                 'lyricsraag.com': 'bg-purple-100 text-purple-700',
                 'gaana.com': 'bg-orange-100 text-orange-700',
-                'vergelyrics.com': 'bg-teal-100 text-teal-700'
+                'vergelyrics.com': 'bg-teal-100 text-teal-700',
+                'genzlyrics.com': 'bg-pink-100 text-pink-700'
               }[scrapeResult.scraped.sourceSite] || 'bg-gray-100 text-gray-700'
             }`}>
               {scrapeResult.scraped.sourceSite}
