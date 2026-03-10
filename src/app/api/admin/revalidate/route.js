@@ -15,13 +15,19 @@ export async function POST(request) {
       revalidatePath('/albums')
       revalidatePath('/movies')
       revalidatePath('/genres')
+      // Revalidate public API responses
+      revalidatePath('/api/public/homepage')
+      revalidatePath('/api/public/categories')
+      revalidatePath('/api/public/genres')
+      revalidatePath('/api/public/songs')
+      revalidatePath('/api/public/artists')
 
       console.log('[Revalidate] All pages cache cleared')
 
       return NextResponse.json({
         success: true,
         message: 'All pages cache cleared successfully',
-        revalidated: ['/', '/songs', '/artists', '/albums', '/movies', '/genres']
+        revalidated: ['/', '/songs', '/artists', '/albums', '/movies', '/genres', '/api/public/*']
       })
     }
 
@@ -71,7 +77,9 @@ export async function POST(request) {
           break
         case 'categories':
           revalidatePath('/category', 'page')
-          paths.push('/category/*')
+          revalidatePath('/api/public/categories')
+          revalidatePath('/api/public/homepage')
+          paths.push('/category/*', '/api/public/categories', '/api/public/homepage')
           break
         case 'tags':
           revalidatePath('/tag', 'page')
@@ -79,7 +87,8 @@ export async function POST(request) {
           break
         case 'homepage':
           revalidatePath('/')
-          paths.push('/')
+          revalidatePath('/api/public/homepage')
+          paths.push('/', '/api/public/homepage')
           break
         default:
           return NextResponse.json(
