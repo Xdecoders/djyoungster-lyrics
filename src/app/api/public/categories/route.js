@@ -18,7 +18,7 @@ export async function GET() {
     const categoriesWithSongs = categories.filter(cat => cat._count.songs > 0)
 
     return NextResponse.json(categoriesWithSongs, {
-      headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=600' }
+      headers: { 'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60' }
     })
   } catch (error) {
     console.error('Error fetching categories:', error)
