@@ -726,11 +726,6 @@ export function ClipPreviewModal({ isOpen, onClose, clipVideoBlob, clipPreviewIm
     setPreviewUrl(null)
   }, [clipPreviewImage])
 
-  useEffect(() => {
-    if (!isOpen) {
-      setShowGate(false)
-    }
-  }, [isOpen])
 
   if (!isOpen) return null
 

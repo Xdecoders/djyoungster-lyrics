@@ -465,11 +465,6 @@ export function StoryPreviewModal({ isOpen, onClose, storyImageBlob, isGeneratin
     setBlobUrl(null)
   }, [storyImageBlob])
 
-  useEffect(() => {
-    if (!isOpen) {
-      setShowGate(false)
-    }
-  }, [isOpen])
 
   if (!isOpen) return null
 
