@@ -37,12 +37,19 @@ export default function SpotifyReleasesPage() {
   const [importingId, setImportingId] = useState(null)
   const [importedIds, setImportedIds] = useState(new Set())
   const [search, setSearch] = useState('')
+  const [hideImported, setHideImported] = useState(true)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
     if (!token) {
       router.push('/admin/login')
+      return
     }
+    // Restore previously imported IDs
+    try {
+      const saved = localStorage.getItem('spotifyImportedIds')
+      if (saved) setImportedIds(new Set(JSON.parse(saved)))
+    } catch {}
   }, [])
 
   const fetchTracks = useCallback(async (lang, off = 0, append = false) => {
@@ -113,7 +120,11 @@ export default function SpotifyReleasesPage() {
         lyrics,
       }))
 
-      setImportedIds(prev => new Set([...prev, track.id]))
+      setImportedIds(prev => {
+        const next = new Set([...prev, track.id])
+        try { localStorage.setItem('spotifyImportedIds', JSON.stringify([...next])) } catch {}
+        return next
+      })
       router.push('/admin/songs/add')
     } catch (err) {
       alert('Import failed: ' + err.message)
@@ -122,12 +133,12 @@ export default function SpotifyReleasesPage() {
     }
   }
 
-  const filtered = search.trim()
-    ? tracks.filter(t =>
-        t.title.toLowerCase().includes(search.toLowerCase()) ||
-        t.artists.some(a => a.name.toLowerCase().includes(search.toLowerCase()))
-      )
-    : tracks
+  const filtered = tracks
+    .filter(t => !hideImported || !importedIds.has(t.id))
+    .filter(t => !search.trim() ||
+      t.title.toLowerCase().includes(search.toLowerCase()) ||
+      t.artists.some(a => a.name.toLowerCase().includes(search.toLowerCase()))
+    )
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -170,16 +181,31 @@ export default function SpotifyReleasesPage() {
         ))}
       </div>
 
-      {/* Search */}
-      <div className="relative mb-5">
-        <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input
-          type="text"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          placeholder="Filter by song or artist name..."
-          className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
-        />
+      {/* Search + Hide imported toggle */}
+      <div className="flex gap-3 mb-5">
+        <div className="relative flex-1">
+          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Filter by song or artist name..."
+            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+          />
+        </div>
+        {importedIds.size > 0 && (
+          <button
+            onClick={() => setHideImported(p => !p)}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium whitespace-nowrap transition-all ${
+              hideImported
+                ? 'bg-slate-800 text-white border-slate-800'
+                : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <FiCheck className="w-3.5 h-3.5" />
+            {hideImported ? `Hiding ${importedIds.size} imported` : 'Show all'}
+          </button>
+        )}
       </div>
 
       {/* Error */}
