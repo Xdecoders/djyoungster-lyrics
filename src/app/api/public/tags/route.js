@@ -16,12 +16,13 @@ export async function GET(request) {
         }
       },
       orderBy: sort === 'recent' ? { createdAt: 'desc' } : { songs: { _count: 'desc' } },
-      take: limit
+      take: limit * 3
     })
 
     // Filter out tags with no songs and format response
     const popularTags = tags
       .filter(tag => tag._count.songs > 0)
+      .slice(0, limit)
       .map(tag => ({
         id: tag.id,
         name: tag.name,
