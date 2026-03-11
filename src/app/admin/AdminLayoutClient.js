@@ -111,6 +111,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/song-requests', label: 'Song Requests', icon: FiInbox, badgeType: 'songRequests' },
     { href: '/admin/seo-settings', label: 'SEO Settings', icon: FiSearch },
     { href: '/admin/pages', label: 'Pages', icon: FiFileText },
+    { href: '/admin/homepage', label: 'Homepage', icon: FiHome },
     { href: '/admin/cache', label: 'Cache', icon: FiDatabase },
     { href: '/admin/settings', label: 'Settings', icon: FiSettings },
   ]

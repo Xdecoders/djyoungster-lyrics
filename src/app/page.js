@@ -61,8 +61,8 @@ export async function generateMetadata() {
   }
 }
 
-// Homepage FAQs for structured data
-const homepageFAQs = [
+// Homepage FAQs fallback (used when no DB record exists)
+const FALLBACK_FAQS = [
   {
     question: 'What is DJYoungster?',
     answer: 'DJYoungster is a comprehensive lyrics platform where you can find song lyrics in multiple languages including Hindi, Punjabi, English, Tamil, Telugu, and more. We provide accurate lyrics, artist information, album details, music streaming links, and an innovative Instagram Story creator all in one place.'
@@ -121,7 +121,7 @@ async function getHomepageData() {
     }
 
     // Run all queries in parallel
-    const [latestSongs, instagramViralSongs, categories, artists, tags, siteSettings, lyricStoriesRaw] = await Promise.all([
+    const [latestSongs, instagramViralSongs, categories, artists, tags, siteSettings, lyricStoriesRaw, aboutPage, faqPage] = await Promise.all([
       prisma.song.findMany({
         where: { status: 'published' },
         orderBy: { createdAt: 'desc' },
@@ -171,6 +171,8 @@ async function getHomepageData() {
         orderBy: { createdAt: 'desc' },
         take: 10,
       }),
+      prisma.page.findUnique({ where: { slug: 'homepage-about' } }),
+      prisma.page.findUnique({ where: { slug: 'homepage-faq' } }),
     ])
 
     const lyricStories = lyricStoriesRaw.map(({ lyrics, ...rest }) => ({
@@ -185,6 +187,15 @@ async function getHomepageData() {
         .join('\n')
     }))
 
+    let parsedFaqs = FALLBACK_FAQS
+    if (faqPage?.content) {
+      try {
+        parsedFaqs = JSON.parse(faqPage.content)
+      } catch {
+        parsedFaqs = FALLBACK_FAQS
+      }
+    }
+
     return {
       latestSongs,
       instagramViralSongs,
@@ -192,6 +203,8 @@ async function getHomepageData() {
       artists,
       tags,
       lyricStories,
+      aboutHtml: aboutPage?.content || null,
+      faqs: parsedFaqs,
       siteSettings: {
         heroHeading: siteSettings.heroHeading || 'Discover Your Favorite *Song Lyrics*',
         heroDescription: siteSettings.heroDescription || 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
@@ -206,6 +219,8 @@ async function getHomepageData() {
       artists: [],
       tags: [],
       lyricStories: [],
+      aboutHtml: null,
+      faqs: FALLBACK_FAQS,
       siteSettings: {
         heroHeading: 'Discover Your Favorite *Song Lyrics*',
         heroDescription: 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
@@ -217,10 +232,11 @@ async function getHomepageData() {
 export default async function Home() {
   const websiteSchema = generateWebSiteSchema()
   const organizationSchema = generateOrganizationSchema()
-  const faqSchema = generateFAQSchema(homepageFAQs)
 
   // Fetch data on server - Pure SSR
   const data = await getHomepageData()
+
+  const faqSchema = generateFAQSchema(data.faqs)
 
   return (
     <>
@@ -241,7 +257,7 @@ export default async function Home() {
       <HomeContent data={data} siteSettings={data.siteSettings} />
 
       {/* About & FAQs - Server Rendered */}
-      <AboutSection faqs={homepageFAQs} />
+      <AboutSection faqs={data.faqs} aboutHtml={data.aboutHtml} />
     </>
   )
 }
