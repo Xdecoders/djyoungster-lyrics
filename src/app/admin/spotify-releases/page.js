@@ -33,6 +33,7 @@ export default function SpotifyReleasesPage() {
   const [importingId, setImportingId] = useState(null)
   const [importedIds, setImportedIds] = useState(new Set())
   const [hideImported, setHideImported] = useState(true)
+  const [sortOrder, setSortOrder] = useState('desc') // 'desc' = newest first
 
   // Search — separate from filter: debounced, hits Spotify directly
   const [searchInput, setSearchInput] = useState('')
@@ -145,7 +146,12 @@ export default function SpotifyReleasesPage() {
     }
   }
 
-  const displayed = tracks.filter(t => !hideImported || !importedIds.has(t.id))
+  const displayed = tracks
+    .filter(t => !hideImported || !importedIds.has(t.id))
+    .sort((a, b) => {
+      const diff = new Date(b.album.releaseDate) - new Date(a.album.releaseDate)
+      return sortOrder === 'desc' ? diff : -diff
+    })
   const hasMore = tracks.length < total && tracks.length > 0
 
   return (
@@ -217,6 +223,15 @@ export default function SpotifyReleasesPage() {
             </button>
           )}
         </div>
+        {/* Sort order */}
+        <button
+          onClick={() => setSortOrder(p => p === 'desc' ? 'asc' : 'desc')}
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 text-sm font-medium whitespace-nowrap transition-all"
+          title={sortOrder === 'desc' ? 'Newest first — click for oldest first' : 'Oldest first — click for newest first'}
+        >
+          {sortOrder === 'desc' ? '↓ Newest First' : '↑ Oldest First'}
+        </button>
+
         {importedIds.size > 0 && (
           <button
             onClick={() => setHideImported(p => !p)}
