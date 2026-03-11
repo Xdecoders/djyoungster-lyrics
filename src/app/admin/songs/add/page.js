@@ -210,6 +210,7 @@ export default function AddSong() {
   }
 
   const [spotifyBanner, setSpotifyBanner] = useState(null)
+  const [pendingArtistNames, setPendingArtistNames] = useState(null)
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
@@ -217,53 +218,78 @@ export default function AddSong() {
       router.push('/admin/login')
       return
     }
-    fetchData().then(() => {
-      // Pre-fill from Spotify import if available
-      const raw = localStorage.getItem('spotifyImport')
-      if (!raw) return
+
+    // Read Spotify import before fetchData so we have it ready
+    const raw = localStorage.getItem('spotifyImport')
+    let imp = null
+    if (raw) {
       try {
-        const imp = JSON.parse(raw)
+        imp = JSON.parse(raw)
         localStorage.removeItem('spotifyImport')
-
-        // Pre-fill title, slug, dates, streaming links, lyrics
-        setFormData(prev => ({
-          ...prev,
-          title: imp.title || prev.title,
-          slug: imp.title ? imp.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : prev.slug,
-          metaTitle: imp.title || prev.metaTitle,
-          datePublished: imp.releaseDate || prev.datePublished,
-          spotifyUrl: imp.spotifyUrl || prev.spotifyUrl,
-          lyrics: imp.lyrics || prev.lyrics,
-          coverImage: imp.coverImageUrl || prev.coverImage,
-        }))
-
-        if (imp.coverImageUrl) {
-          setImagePreview(imp.coverImageUrl)
-          // Auto-download cover image
-          ;(async () => {
-            try {
-              const res = await fetch('/api/admin/upload-from-url', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-                body: JSON.stringify({ url: imp.coverImageUrl }),
-              })
-              const data = await res.json()
-              if (res.ok && data.url) {
-                setFormData(prev => ({ ...prev, coverImage: data.url }))
-                setImagePreview(data.url)
-              }
-            } catch {}
-          })()
-        }
-
-        setSpotifyBanner({
-          title: imp.title,
-          artists: imp.artistNames || [],
-          hasLyrics: !!imp.lyrics,
-        })
       } catch {}
+    }
+
+    fetchData()
+
+    if (!imp) return
+
+    // Pre-fill title, slug, dates, streaming links, lyrics
+    setFormData(prev => ({
+      ...prev,
+      title: imp.title || prev.title,
+      slug: imp.title ? imp.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : prev.slug,
+      metaTitle: imp.title || prev.metaTitle,
+      datePublished: imp.releaseDate || prev.datePublished,
+      spotifyUrl: imp.spotifyUrl || prev.spotifyUrl,
+      lyrics: imp.lyrics || prev.lyrics,
+      coverImage: imp.coverImageUrl || prev.coverImage,
+    }))
+
+    if (imp.coverImageUrl) {
+      setImagePreview(imp.coverImageUrl)
+      ;(async () => {
+        try {
+          const res = await fetch('/api/admin/upload-from-url', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+            body: JSON.stringify({ url: imp.coverImageUrl }),
+          })
+          const data = await res.json()
+          if (res.ok && data.url) {
+            setFormData(prev => ({ ...prev, coverImage: data.url }))
+            setImagePreview(data.url)
+          }
+        } catch {}
+      })()
+    }
+
+    // Store artist names — matched after artists list loads (see useEffect below)
+    if (imp.artistNames?.length) {
+      setPendingArtistNames(imp.artistNames)
+    }
+
+    setSpotifyBanner({
+      title: imp.title,
+      artists: imp.artistNames || [],
+      hasLyrics: !!imp.lyrics,
     })
   }, [])
+
+  // Match pending Spotify artist names once the artists list is loaded from DB
+  useEffect(() => {
+    if (!pendingArtistNames || artists.length === 0) return
+    const matched = []
+    const unmatched = []
+    pendingArtistNames.forEach(name => {
+      const found = artists.find(a => a.name.toLowerCase() === name.toLowerCase())
+      if (found) matched.push(found)
+      else unmatched.push(name)
+    })
+    if (matched.length > 0) setSelectedArtists(matched)
+    // Pre-fill search box with first unmatched artist so user can easily add them
+    if (matched.length === 0 && unmatched.length > 0) setArtistSearch(unmatched[0])
+    setPendingArtistNames(null)
+  }, [artists, pendingArtistNames])
 
   // Close dropdown when clicking outside
   useEffect(() => {

@@ -40,12 +40,12 @@ async function getSpotifyToken() {
 }
 
 const LANGUAGE_CONFIG = {
-  all:     { q: 'tag:new',               market: 'IN' },
-  hindi:   { q: 'genre:bollywood',        market: 'IN' },
-  punjabi: { q: 'genre:bhangra',          market: 'IN' },
-  tamil:   { q: 'genre:kollywood',        market: 'IN' },
-  telugu:  { q: 'genre:tollywood',        market: 'IN' },
-  english: { q: 'tag:new',               market: 'US' },
+  all:     { q: 'year:2025-2026',                     market: 'IN' },
+  hindi:   { q: 'genre:bollywood year:2025-2026',      market: 'IN' },
+  punjabi: { q: 'genre:bhangra year:2025-2026',        market: 'IN' },
+  tamil:   { q: 'genre:kollywood year:2025-2026',      market: 'IN' },
+  telugu:  { q: 'genre:tollywood year:2025-2026',      market: 'IN' },
+  english: { q: 'tag:new year:2025-2026',              market: 'US' },
 }
 
 export async function GET(request) {
@@ -78,22 +78,25 @@ export async function GET(request) {
 
     const data = await res.json()
 
-    const tracks = (data.tracks?.items || []).map(track => ({
-      id: track.id,
-      title: track.name,
-      artists: track.artists.map(a => ({ id: a.id, name: a.name })),
-      album: {
-        id: track.album.id,
-        name: track.album.name,
-        coverImage: track.album.images[0]?.url || null,
-        releaseDate: track.album.release_date,
-      },
-      durationMs: track.duration_ms,
-      previewUrl: track.preview_url,
-      spotifyUrl: track.external_urls?.spotify || null,
-      isExplicit: track.explicit,
-      popularity: track.popularity,
-    }))
+    const tracks = (data.tracks?.items || [])
+      .map(track => ({
+        id: track.id,
+        title: track.name,
+        artists: track.artists.map(a => ({ id: a.id, name: a.name })),
+        album: {
+          id: track.album.id,
+          name: track.album.name,
+          coverImage: track.album.images[0]?.url || null,
+          releaseDate: track.album.release_date,
+        },
+        durationMs: track.duration_ms,
+        previewUrl: track.preview_url,
+        spotifyUrl: track.external_urls?.spotify || null,
+        isExplicit: track.explicit,
+        popularity: track.popularity,
+      }))
+      // Sort newest first
+      .sort((a, b) => new Date(b.album.releaseDate) - new Date(a.album.releaseDate))
 
     return NextResponse.json({
       tracks,

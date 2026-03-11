@@ -85,14 +85,12 @@ export default function SpotifyReleasesPage() {
     setImportingId(track.id)
     try {
       const token = localStorage.getItem('adminToken')
-      const artistName = track.artists.map(a => a.name).join(', ')
-      const query = `${track.artists[0]?.name} ${track.title}`
 
       // Try to fetch lyrics from Genius
       let lyrics = ''
       try {
         const lyricsRes = await fetch(
-          `/api/admin/genius-search?q=${encodeURIComponent(query)}&scrape=true`,
+          `/api/admin/genius-search?title=${encodeURIComponent(track.title)}&artist=${encodeURIComponent(track.artists[0]?.name || '')}&scrape=true`,
           { headers: { Authorization: `Bearer ${token}` } }
         )
         const lyricsData = await lyricsRes.json()
