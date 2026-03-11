@@ -82,12 +82,12 @@ export default function Footer() {
     { href: '/genres', label: 'Genres' },
     { href: '/movies', label: 'Movies' },
     { href: '/web-stories', label: 'Lyric Stories' },
+    { href: '/request-song', label: 'Request Song Lyrics' },
   ]
 
   const legalLinks = [
     { href: '/about-us', label: 'About Us' },
     { href: '/contact-us', label: 'Contact Us' },
-    { href: '/request-song', label: 'Request Song Lyrics' },
     { href: '/lyrics-instagram-story-maker', label: 'Lyrics Story Maker' },
     { href: '/privacy-policy', label: 'Privacy Policy' },
     { href: '/terms-and-conditions', label: 'Terms & Conditions' },
