@@ -243,6 +243,7 @@ export default function AddSong() {
       spotifyUrl: imp.spotifyUrl || prev.spotifyUrl,
       lyrics: imp.lyrics || prev.lyrics,
       coverImage: imp.coverImageUrl || prev.coverImage,
+      status: 'draft',
     }))
 
     if (imp.coverImageUrl) {
@@ -868,10 +869,14 @@ export default function AddSong() {
 
   const validateForm = () => {
     const newErrors = {}
+    const isDraft = formData.status === 'draft'
 
     if (!formData.title.trim()) newErrors.title = 'Title is required'
-    if (!stripHtmlTags(formData.lyrics).trim()) newErrors.lyrics = 'Lyrics are required'
-    if (selectedArtists.length === 0) newErrors.artists = 'Select at least one artist'
+    // Drafts only need a title — allow saving without lyrics or artists
+    if (!isDraft) {
+      if (!stripHtmlTags(formData.lyrics).trim()) newErrors.lyrics = 'Lyrics are required'
+      if (selectedArtists.length === 0) newErrors.artists = 'Select at least one artist'
+    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
