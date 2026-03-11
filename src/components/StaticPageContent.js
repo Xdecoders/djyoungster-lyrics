@@ -8,7 +8,8 @@ const getPageIcon = (slug) => {
     'terms-and-conditions': FiFileText,
     'disclaimer': FiAlertCircle,
     'about-us': FiInfo,
-    'contact-us': FiMail
+    'contact-us': FiMail,
+    'dmca': FiShield,
   }
   return icons[slug] || FiFileText
 }

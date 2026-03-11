@@ -92,6 +92,7 @@ export default function Footer() {
     { href: '/privacy-policy', label: 'Privacy Policy' },
     { href: '/terms-and-conditions', label: 'Terms & Conditions' },
     { href: '/disclaimer', label: 'Disclaimer' },
+    { href: '/dmca', label: 'DMCA Takedown' },
   ]
 
   return (

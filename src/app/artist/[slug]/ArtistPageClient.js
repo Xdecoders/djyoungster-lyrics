@@ -236,7 +236,7 @@ function HeroSection({ artist, featuredSongs, songs, socialLinks }) {
 
           {/* Bio */}
           {artist?.bio && (
-            <p className="mt-4 text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">{artist.bio}</p>
+            <p className="mt-4 text-slate-600 dark:text-slate-300 leading-relaxed">{artist.bio}</p>
           )}
 
           {/* Social Links & Share */}

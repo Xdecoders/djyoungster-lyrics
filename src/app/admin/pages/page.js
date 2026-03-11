@@ -113,7 +113,8 @@ export default function AdminPagesPage() {
     { slug: 'privacy-policy', title: 'Privacy Policy' },
     { slug: 'terms-and-conditions', title: 'Terms and Conditions' },
     { slug: 'disclaimer', title: 'Disclaimer' },
-    { slug: 'contact-us', title: 'Contact Us' }
+    { slug: 'contact-us', title: 'Contact Us' },
+    { slug: 'dmca', title: 'DMCA Takedown Policy' },
   ]
 
   const createDefaultPage = async (pageInfo) => {
