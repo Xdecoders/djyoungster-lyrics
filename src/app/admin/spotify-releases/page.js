@@ -1,29 +1,24 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { SiSpotify } from 'react-icons/si'
-import { FiMusic, FiDownload, FiSearch, FiRefreshCw, FiChevronDown, FiExternalLink, FiCheck, FiLoader } from 'react-icons/fi'
+import { FiMusic, FiDownload, FiSearch, FiRefreshCw, FiChevronDown, FiExternalLink, FiCheck, FiLoader, FiX } from 'react-icons/fi'
 
 const LANGUAGES = [
-  { key: 'all',     label: 'All',     flag: '🌐' },
-  { key: 'hindi',   label: 'Hindi',   flag: '🇮🇳' },
-  { key: 'punjabi', label: 'Punjabi', flag: '🎵' },
-  { key: 'tamil',   label: 'Tamil',   flag: '🎶' },
-  { key: 'telugu',  label: 'Telugu',  flag: '🎸' },
-  { key: 'english', label: 'English', flag: '🇺🇸' },
+  { key: 'all',     label: 'All New',  flag: '🌐' },
+  { key: 'hindi',   label: 'Hindi',    flag: '🇮🇳' },
+  { key: 'punjabi', label: 'Punjabi',  flag: '🎵' },
+  { key: 'tamil',   label: 'Tamil',    flag: '🎶' },
+  { key: 'telugu',  label: 'Telugu',   flag: '🎸' },
+  { key: 'english', label: 'English',  flag: '🇺🇸' },
 ]
 
-function formatDuration(ms) {
-  const m = Math.floor(ms / 60000)
-  const s = Math.floor((ms % 60000) / 1000)
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
+const LIMIT = 50
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
-  const d = new Date(dateStr)
-  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  return new Date(dateStr).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
 export default function SpotifyReleasesPage() {
@@ -31,33 +26,46 @@ export default function SpotifyReleasesPage() {
   const [language, setLanguage] = useState('all')
   const [tracks, setTracks] = useState([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState(null)
   const [offset, setOffset] = useState(0)
   const [total, setTotal] = useState(0)
   const [importingId, setImportingId] = useState(null)
   const [importedIds, setImportedIds] = useState(new Set())
-  const [search, setSearch] = useState('')
   const [hideImported, setHideImported] = useState(true)
+
+  // Search — separate from filter: debounced, hits Spotify directly
+  const [searchInput, setSearchInput] = useState('')
+  const [activeSearch, setActiveSearch] = useState('') // debounced
+  const searchTimer = useRef(null)
+
+  const isSearchMode = activeSearch.trim().length > 0
 
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
-    if (!token) {
-      router.push('/admin/login')
-      return
-    }
-    // Restore previously imported IDs
+    if (!token) { router.push('/admin/login'); return }
     try {
       const saved = localStorage.getItem('spotifyImportedIds')
       if (saved) setImportedIds(new Set(JSON.parse(saved)))
     } catch {}
   }, [])
 
-  const fetchTracks = useCallback(async (lang, off = 0, append = false) => {
-    setLoading(true)
+  // Debounce: update activeSearch 600ms after user stops typing
+  useEffect(() => {
+    clearTimeout(searchTimer.current)
+    searchTimer.current = setTimeout(() => setActiveSearch(searchInput), 600)
+    return () => clearTimeout(searchTimer.current)
+  }, [searchInput])
+
+  const fetchTracks = useCallback(async ({ lang, off = 0, search = '', append = false }) => {
+    append ? setLoadingMore(true) : setLoading(true)
     setError(null)
     try {
       const token = localStorage.getItem('adminToken')
-      const res = await fetch(`/api/admin/spotify-releases?language=${lang}&offset=${off}`, {
+      const params = new URLSearchParams({ language: lang, offset: String(off) })
+      if (search) params.set('search', search)
+
+      const res = await fetch(`/api/admin/spotify-releases?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       const data = await res.json()
@@ -69,31 +77,31 @@ export default function SpotifyReleasesPage() {
       setError(err.message)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }, [])
 
+  // Fetch when language or search changes
   useEffect(() => {
-    fetchTracks(language, 0, false)
-    setImportedIds(new Set())
-  }, [language])
-
-  const handleLanguageChange = (lang) => {
-    if (lang === language) return
-    setLanguage(lang)
     setTracks([])
     setOffset(0)
-  }
+    fetchTracks({ lang: language, off: 0, search: activeSearch })
+  }, [language, activeSearch])
 
   const handleLoadMore = () => {
-    fetchTracks(language, offset + 30, true)
+    const nextOffset = offset + LIMIT
+    fetchTracks({ lang: language, off: nextOffset, search: activeSearch, append: true })
+  }
+
+  const handleClearSearch = () => {
+    setSearchInput('')
+    setActiveSearch('')
   }
 
   const handleImport = async (track) => {
     setImportingId(track.id)
     try {
       const token = localStorage.getItem('adminToken')
-
-      // Try to fetch lyrics from Genius
       let lyrics = ''
       try {
         const lyricsRes = await fetch(
@@ -101,14 +109,9 @@ export default function SpotifyReleasesPage() {
           { headers: { Authorization: `Bearer ${token}` } }
         )
         const lyricsData = await lyricsRes.json()
-        if (lyricsData.found && lyricsData.lyrics) {
-          lyrics = lyricsData.lyrics
-        }
-      } catch {
-        // Lyrics fetch failed silently — user can add manually
-      }
+        if (lyricsData.found && lyricsData.lyrics) lyrics = lyricsData.lyrics
+      } catch {}
 
-      // Store import data in localStorage for songs/add to pick up
       localStorage.setItem('spotifyImport', JSON.stringify({
         title: track.title,
         artistNames: track.artists.map(a => a.name),
@@ -133,12 +136,8 @@ export default function SpotifyReleasesPage() {
     }
   }
 
-  const filtered = tracks
-    .filter(t => !hideImported || !importedIds.has(t.id))
-    .filter(t => !search.trim() ||
-      t.title.toLowerCase().includes(search.toLowerCase()) ||
-      t.artists.some(a => a.name.toLowerCase().includes(search.toLowerCase()))
-    )
+  const displayed = tracks.filter(t => !hideImported || !importedIds.has(t.id))
+  const hasMore = tracks.length < total && tracks.length > 0
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -150,11 +149,15 @@ export default function SpotifyReleasesPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold text-slate-800">Spotify New Releases</h1>
-            <p className="text-slate-500 text-sm mt-0.5">Browse latest tracks and import to your database</p>
+            <p className="text-slate-500 text-sm mt-0.5">
+              {isSearchMode
+                ? `Search results for "${activeSearch}" — ${total.toLocaleString()} tracks found`
+                : `Browse latest tracks and import to your database`}
+            </p>
           </div>
         </div>
         <button
-          onClick={() => fetchTracks(language, 0, false)}
+          onClick={() => fetchTracks({ lang: language, off: 0, search: activeSearch })}
           disabled={loading}
           className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium"
         >
@@ -168,7 +171,7 @@ export default function SpotifyReleasesPage() {
         {LANGUAGES.map(lang => (
           <button
             key={lang.key}
-            onClick={() => handleLanguageChange(lang.key)}
+            onClick={() => setLanguage(lang.key)}
             className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
               language === lang.key
                 ? 'bg-green-600 text-white shadow-sm'
@@ -181,17 +184,29 @@ export default function SpotifyReleasesPage() {
         ))}
       </div>
 
-      {/* Search + Hide imported toggle */}
+      {/* Search + Hide toggle */}
       <div className="flex gap-3 mb-5">
         <div className="relative flex-1">
-          <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          {loading && searchInput ? (
+            <FiLoader className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-green-500 animate-spin" />
+          ) : (
+            <FiSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          )}
           <input
             type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Filter by song or artist name..."
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+            value={searchInput}
+            onChange={e => setSearchInput(e.target.value)}
+            placeholder="Search Spotify — song name, artist, album…"
+            className="w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
           />
+          {searchInput && (
+            <button
+              onClick={handleClearSearch}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+            >
+              <FiX className="w-4 h-4" />
+            </button>
+          )}
         </div>
         {importedIds.size > 0 && (
           <button
@@ -208,6 +223,15 @@ export default function SpotifyReleasesPage() {
         )}
       </div>
 
+      {/* Search mode label */}
+      {isSearchMode && !loading && (
+        <div className="flex items-center gap-2 mb-4 text-sm text-slate-500">
+          <FiSearch className="w-4 h-4" />
+          <span>Showing Spotify search results for <strong className="text-slate-700">"{activeSearch}"</strong></span>
+          <button onClick={handleClearSearch} className="ml-1 text-green-600 hover:underline font-medium">Clear</button>
+        </div>
+      )}
+
       {/* Error */}
       {error && (
         <div className="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl px-4 py-3 mb-4 text-sm">
@@ -218,9 +242,9 @@ export default function SpotifyReleasesPage() {
       )}
 
       {/* Grid */}
-      {loading && tracks.length === 0 ? (
+      {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-          {Array.from({ length: 15 }).map((_, i) => (
+          {Array.from({ length: 20 }).map((_, i) => (
             <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden animate-pulse">
               <div className="aspect-square bg-slate-200" />
               <div className="p-3 space-y-2">
@@ -231,50 +255,52 @@ export default function SpotifyReleasesPage() {
             </div>
           ))}
         </div>
-      ) : filtered.length === 0 && !loading ? (
+      ) : displayed.length === 0 ? (
         <div className="text-center py-16 text-slate-400">
           <FiMusic className="w-10 h-10 mx-auto mb-3 opacity-40" />
-          <p className="text-base font-medium">No tracks found</p>
-          <p className="text-sm mt-1">Try a different language or refresh</p>
+          <p className="text-base font-medium">
+            {isSearchMode ? `No results for "${activeSearch}"` : 'No tracks found'}
+          </p>
+          <p className="text-sm mt-1">
+            {isSearchMode ? 'Try a different search term' : 'Try a different language or refresh'}
+          </p>
         </div>
       ) : (
         <>
+          {/* Track count */}
+          <p className="text-xs text-slate-400 mb-3">
+            Showing {displayed.length} of {total.toLocaleString()} tracks
+          </p>
+
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filtered.map(track => {
+            {displayed.map(track => {
               const isImporting = importingId === track.id
               const isImported = importedIds.has(track.id)
               return (
                 <div
                   key={track.id}
-                  className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group"
+                  className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  {/* Cover */}
                   <div className="relative aspect-square bg-slate-100">
                     {track.album.coverImage ? (
-                      <img
-                        src={track.album.coverImage}
-                        alt={track.title}
-                        className="w-full h-full object-cover"
-                      />
+                      <img src={track.album.coverImage} alt={track.title} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center">
                         <FiMusic className="w-10 h-10 text-slate-300" />
                       </div>
                     )}
-                    {/* Preview badge */}
-                    {track.previewUrl && (
-                      <span className="absolute top-1.5 right-1.5 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                        Preview
-                      </span>
-                    )}
                     {track.isExplicit && (
-                      <span className="absolute top-1.5 left-1.5 bg-slate-700 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold">
-                        E
-                      </span>
+                      <span className="absolute top-1.5 left-1.5 bg-slate-700 text-white text-[10px] px-1.5 py-0.5 rounded font-bold">E</span>
+                    )}
+                    {isImported && (
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                        <div className="bg-emerald-500 rounded-full p-2">
+                          <FiCheck className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
                     )}
                   </div>
 
-                  {/* Info */}
                   <div className="p-3">
                     <p className="text-sm font-semibold text-slate-800 leading-snug line-clamp-2" title={track.title}>
                       {track.title}
@@ -282,30 +308,23 @@ export default function SpotifyReleasesPage() {
                     <p className="text-xs text-slate-500 mt-0.5 truncate">
                       {track.artists.map(a => a.name).join(', ')}
                     </p>
-                    <p className="text-xs text-slate-400 mt-0.5 truncate">{track.album.name}</p>
                     <div className="flex items-center justify-between mt-1">
                       <span className="text-[11px] text-slate-400">{formatDate(track.album.releaseDate)}</span>
                       {track.spotifyUrl && (
-                        <a
-                          href={track.spotifyUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-green-500 hover:text-green-600"
-                          title="Open in Spotify"
-                          onClick={e => e.stopPropagation()}
-                        >
+                        <a href={track.spotifyUrl} target="_blank" rel="noopener noreferrer"
+                          className="text-green-500 hover:text-green-600" title="Open in Spotify"
+                          onClick={e => e.stopPropagation()}>
                           <FiExternalLink className="w-3.5 h-3.5" />
                         </a>
                       )}
                     </div>
 
-                    {/* Import button */}
                     <button
                       onClick={() => handleImport(track)}
                       disabled={isImporting || isImported}
                       className={`mt-3 w-full flex items-center justify-center gap-1.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
                         isImported
-                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-200'
+                          ? 'bg-emerald-50 text-emerald-600 border border-emerald-200 cursor-default'
                           : isImporting
                           ? 'bg-green-50 text-green-600 border border-green-200'
                           : 'bg-green-600 text-white hover:bg-green-700 active:scale-95'
@@ -325,16 +344,18 @@ export default function SpotifyReleasesPage() {
             })}
           </div>
 
-          {/* Load more */}
-          {!search && tracks.length < total && (
+          {/* Load More */}
+          {hasMore && (
             <div className="mt-6 text-center">
               <button
                 onClick={handleLoadMore}
-                disabled={loading}
-                className="px-6 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium flex items-center gap-2 mx-auto"
+                disabled={loadingMore}
+                className="px-8 py-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition-colors text-sm font-medium flex items-center gap-2 mx-auto"
               >
-                {loading ? <FiRefreshCw className="w-4 h-4 animate-spin" /> : <FiChevronDown className="w-4 h-4" />}
-                Load More ({tracks.length} of {total})
+                {loadingMore
+                  ? <><FiRefreshCw className="w-4 h-4 animate-spin" /> Loading…</>
+                  : <><FiChevronDown className="w-4 h-4" /> Load More ({tracks.length} of {total.toLocaleString()})</>
+                }
               </button>
             </div>
           )}
