@@ -28,13 +28,20 @@ export default function HomepageContentPage() {
 
   const fetchContent = async () => {
     try {
-      const res = await fetch('/api/admin/homepage-content')
-      if (!res.ok) throw new Error('Failed to fetch')
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/homepage-content', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(`${res.status}: ${body.message || 'Failed to fetch'}`)
+      }
       const data = await res.json()
       setAbout(data.about || '')
       setFaqs(data.faqs || [])
     } catch (error) {
-      showToast('Failed to load homepage content', 'error')
+      console.error('fetchContent error:', error)
+      showToast(`Failed to load homepage content: ${error.message}`, 'error')
     } finally {
       setLoading(false)
     }

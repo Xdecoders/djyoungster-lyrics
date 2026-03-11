@@ -52,9 +52,14 @@ export default function AdminLayoutClient({ children }) {
     }
   }, [pathname, isLoginPage])
 
+  const authHeaders = () => {
+    const token = localStorage.getItem('adminToken')
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   const fetchPendingReports = async () => {
     try {
-      const res = await fetch('/api/admin/reports?status=pending')
+      const res = await fetch('/api/admin/reports?status=pending', { headers: authHeaders() })
       if (res.ok) {
         const data = await res.json()
         setPendingReports(data.counts?.pending || 0)
@@ -66,7 +71,7 @@ export default function AdminLayoutClient({ children }) {
 
   const fetchPendingSongRequests = async () => {
     try {
-      const res = await fetch('/api/admin/song-requests?status=pending&limit=1')
+      const res = await fetch('/api/admin/song-requests?status=pending&limit=1', { headers: authHeaders() })
       if (res.ok) {
         const data = await res.json()
         setPendingSongRequests(data.counts?.pending || 0)
@@ -78,7 +83,7 @@ export default function AdminLayoutClient({ children }) {
 
   const fetchSubscriberCount = async () => {
     try {
-      const res = await fetch('/api/admin/newsletter/subscribers?limit=1')
+      const res = await fetch('/api/admin/newsletter/subscribers?limit=1', { headers: authHeaders() })
       if (res.ok) {
         const data = await res.json()
         setActiveSubscribers(data.stats?.active || 0)
