@@ -25,113 +25,94 @@ async function getSpotifyToken() {
   return tokenCache.token
 }
 
-function mapTrack(track, album) {
+function mapTrack(track) {
+  const album = track.album || {}
   return {
     id: track.id,
     title: track.name,
-    artists: track.artists.map(a => ({ id: a.id, name: a.name })),
+    artists: (track.artists || []).map(a => ({ id: a.id, name: a.name })),
     album: {
       id: album.id,
       name: album.name,
       coverImage: (album.images || [])[0]?.url || null,
-      releaseDate: album.release_date,
+      releaseDate: album.release_date || '',
     },
     durationMs: track.duration_ms,
     previewUrl: track.preview_url,
     spotifyUrl: track.external_urls?.spotify || null,
     isExplicit: track.explicit,
-    popularity: track.popularity || album.popularity || 0,
+    popularity: track.popularity || 0,
   }
 }
 
-// Fetch 50 new releases via Browse API + batch album detail
-async function fetchNewReleases(token, country, offset) {
-  const limit = 50
-  const albumsRes = await fetch(
-    `https://api.spotify.com/v1/browse/new-releases?country=${country}&limit=${limit}&offset=${offset}`,
-    { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' }
-  )
-  if (!albumsRes.ok) throw new Error(`Spotify new-releases error: ${await albumsRes.text()}`)
-  const albumsData = await albumsRes.json()
-  const albumItems = albumsData.albums?.items || []
-  if (albumItems.length === 0) return { tracks: [], total: 0 }
-
-  // Batch fetch full album data (Spotify allows 20 IDs per call)
-  const ids = albumItems.map(a => a.id)
-  const chunks = []
-  for (let i = 0; i < ids.length; i += 20) chunks.push(ids.slice(i, i + 20))
-
-  const batchResults = await Promise.all(
-    chunks.map(chunk =>
-      fetch(`https://api.spotify.com/v1/albums?ids=${chunk.join(',')}&market=${country}`, {
-        headers: { Authorization: `Bearer ${token}` },
-        cache: 'no-store',
-      }).then(r => r.json())
-    )
-  )
-
-  const fullAlbums = batchResults.flatMap(r => r.albums || [])
-
-  const tracks = fullAlbums
-    .flatMap(album => {
-      const track = album.tracks?.items?.[0]
-      if (!track) return []
-      return [mapTrack(track, album)]
+// Core search helper — tries each query in order, returns first with results
+async function searchWithFallback(token, queries, market, offset, limit) {
+  for (const q of queries) {
+    const params = new URLSearchParams({ q, type: 'track', market, limit: String(limit), offset: String(offset) })
+    const res = await fetch(`https://api.spotify.com/v1/search?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-store',
     })
+    if (!res.ok) continue
+    const data = await res.json()
+    const items = data.tracks?.items || []
+    if (items.length > 0) {
+      return {
+        tracks: items.map(mapTrack).sort((a, b) => new Date(b.album.releaseDate) - new Date(a.album.releaseDate)),
+        total: data.tracks?.total || items.length,
+      }
+    }
+  }
+  return { tracks: [], total: 0 }
+}
+
+// "All" tab — combine multiple Indian genres in parallel, deduplicate, sort newest first
+async function fetchAllIndian(token, offset) {
+  const perGenre = 15
+  const genreQueries = [
+    { queries: ['genre:bollywood', 'bollywood hindi new'],          market: 'IN' },
+    { queries: ['genre:bhangra', 'punjabi bhangra new'],            market: 'IN' },
+    { queries: ['genre:kollywood', 'tamil kollywood new'],          market: 'IN' },
+    { queries: ['genre:tollywood', 'telugu tollywood new'],         market: 'IN' },
+  ]
+
+  const results = await Promise.all(
+    genreQueries.map(({ queries, market }) => searchWithFallback(token, queries, market, 0, perGenre))
+  )
+
+  const seen = new Set()
+  const combined = results
+    .flatMap(r => r.tracks)
+    .filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true })
     .sort((a, b) => new Date(b.album.releaseDate) - new Date(a.album.releaseDate))
 
-  return { tracks, total: albumsData.albums?.total || 0 }
+  // Apply offset for pagination
+  const page = combined.slice(offset, offset + 50)
+  return { tracks: page, total: combined.length }
 }
 
-const GENRE_CONFIGS = {
-  hindi:   { q: 'genre:bollywood OR genre:filmi',  market: 'IN' },
-  punjabi: { q: 'genre:bhangra OR genre:desi',     market: 'IN' },
-  tamil:   { q: 'genre:tamil OR genre:kollywood',  market: 'IN' },
-  telugu:  { q: 'genre:telugu OR genre:tollywood', market: 'IN' },
+// Language-specific fallback query chains
+const LANG_QUERIES = {
+  hindi:   { queries: ['genre:bollywood', 'hindi bollywood',     'bollywood'],                    market: 'IN' },
+  punjabi: { queries: ['genre:bhangra',   'punjabi bhangra',     'punjabi pop'],                  market: 'IN' },
+  tamil:   { queries: ['genre:kollywood', 'genre:tamil',         'kollywood tamil', 'tamil'],      market: 'IN' },
+  telugu:  { queries: ['genre:tollywood', 'genre:telugu',        'tollywood telugu', 'telugu'],    market: 'IN' },
+  english: { queries: ['genre:pop',       'new releases english', 'english pop new'],              market: 'US' },
 }
 
-// Genre search — 50 results, sorted by release date
-async function fetchByGenre(token, language, offset) {
-  const config = GENRE_CONFIGS[language]
-  const params = new URLSearchParams({
-    q: config.q,
-    type: 'track',
-    market: config.market,
-    limit: '50',
-    offset: String(offset),
-  })
-  const res = await fetch(`https://api.spotify.com/v1/search?${params}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: 'no-store',
-  })
-  if (!res.ok) throw new Error(`Spotify search error: ${await res.text()}`)
-  const data = await res.json()
-
-  const tracks = (data.tracks?.items || [])
-    .map(track => mapTrack(track, track.album))
-    .sort((a, b) => new Date(b.album.releaseDate) - new Date(a.album.releaseDate))
-
-  return { tracks, total: data.tracks?.total || 0 }
-}
-
-// Direct Spotify search — used when user types in search box
+// Direct search — used when user types in search box
 async function fetchBySearch(token, query, market, offset) {
-  const params = new URLSearchParams({
-    q: query,
-    type: 'track',
-    market,
-    limit: '50',
-    offset: String(offset),
-  })
+  const params = new URLSearchParams({ q: query, type: 'track', market, limit: '50', offset: String(offset) })
   const res = await fetch(`https://api.spotify.com/v1/search?${params}`, {
     headers: { Authorization: `Bearer ${token}` },
     cache: 'no-store',
   })
   if (!res.ok) throw new Error(`Spotify search error: ${await res.text()}`)
   const data = await res.json()
-
-  const tracks = (data.tracks?.items || []).map(track => mapTrack(track, track.album))
-  return { tracks, total: data.tracks?.total || 0 }
+  return {
+    tracks: (data.tracks?.items || []).map(mapTrack),
+    total: data.tracks?.total || 0,
+  }
 }
 
 export async function GET(request) {
@@ -142,25 +123,21 @@ export async function GET(request) {
     const search = searchParams.get('search') || ''
 
     const token = await getSpotifyToken()
-    const market = language === 'english' ? 'US' : 'IN'
 
     let result
     if (search) {
+      const market = language === 'english' ? 'US' : 'IN'
       result = await fetchBySearch(token, search, market, offset)
     } else if (language === 'all') {
-      result = await fetchNewReleases(token, 'IN', offset)
-    } else if (language === 'english') {
-      result = await fetchNewReleases(token, 'US', offset)
+      result = await fetchAllIndian(token, offset)
     } else {
-      result = await fetchByGenre(token, language, offset)
+      const config = LANG_QUERIES[language] || LANG_QUERIES.hindi
+      result = await searchWithFallback(token, config.queries, config.market, offset, 50)
     }
 
     return NextResponse.json({ ...result, offset, limit: 50 })
   } catch (error) {
     console.error('Spotify releases error:', error)
-    return NextResponse.json(
-      { message: error.message || 'Failed to fetch Spotify releases' },
-      { status: 500 }
-    )
+    return NextResponse.json({ message: error.message || 'Failed to fetch' }, { status: 500 })
   }
 }

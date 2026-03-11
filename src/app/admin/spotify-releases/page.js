@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { SiSpotify } from 'react-icons/si'
 import { FiMusic, FiDownload, FiSearch, FiRefreshCw, FiChevronDown, FiExternalLink, FiCheck, FiLoader, FiX } from 'react-icons/fi'
@@ -57,7 +57,14 @@ export default function SpotifyReleasesPage() {
     return () => clearTimeout(searchTimer.current)
   }, [searchInput])
 
+  const abortRef = useRef(null)
+
   const fetchTracks = useCallback(async ({ lang, off = 0, search = '', append = false }) => {
+    // Cancel any in-flight request
+    if (!append && abortRef.current) abortRef.current.abort()
+    const controller = new AbortController()
+    if (!append) abortRef.current = controller
+
     append ? setLoadingMore(true) : setLoading(true)
     setError(null)
     try {
@@ -67,6 +74,7 @@ export default function SpotifyReleasesPage() {
 
       const res = await fetch(`/api/admin/spotify-releases?${params}`, {
         headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.message || 'Failed to fetch')
@@ -74,6 +82,7 @@ export default function SpotifyReleasesPage() {
       setTotal(data.total)
       setOffset(off)
     } catch (err) {
+      if (err.name === 'AbortError') return // ignore cancelled requests
       setError(err.message)
     } finally {
       setLoading(false)
