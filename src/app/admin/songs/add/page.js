@@ -209,13 +209,60 @@ export default function AddSong() {
     }
   }
 
+  const [spotifyBanner, setSpotifyBanner] = useState(null)
+
   useEffect(() => {
     const token = localStorage.getItem('adminToken')
     if (!token) {
       router.push('/admin/login')
       return
     }
-    fetchData()
+    fetchData().then(() => {
+      // Pre-fill from Spotify import if available
+      const raw = localStorage.getItem('spotifyImport')
+      if (!raw) return
+      try {
+        const imp = JSON.parse(raw)
+        localStorage.removeItem('spotifyImport')
+
+        // Pre-fill title, slug, dates, streaming links, lyrics
+        setFormData(prev => ({
+          ...prev,
+          title: imp.title || prev.title,
+          slug: imp.title ? imp.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') : prev.slug,
+          metaTitle: imp.title || prev.metaTitle,
+          datePublished: imp.releaseDate || prev.datePublished,
+          spotifyUrl: imp.spotifyUrl || prev.spotifyUrl,
+          lyrics: imp.lyrics || prev.lyrics,
+          coverImage: imp.coverImageUrl || prev.coverImage,
+        }))
+
+        if (imp.coverImageUrl) {
+          setImagePreview(imp.coverImageUrl)
+          // Auto-download cover image
+          ;(async () => {
+            try {
+              const res = await fetch('/api/admin/upload-from-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ url: imp.coverImageUrl }),
+              })
+              const data = await res.json()
+              if (res.ok && data.url) {
+                setFormData(prev => ({ ...prev, coverImage: data.url }))
+                setImagePreview(data.url)
+              }
+            } catch {}
+          })()
+        }
+
+        setSpotifyBanner({
+          title: imp.title,
+          artists: imp.artistNames || [],
+          hasLyrics: !!imp.lyrics,
+        })
+      } catch {}
+    })
   }, [])
 
   // Close dropdown when clicking outside
@@ -949,6 +996,26 @@ export default function AddSong() {
       {/* Main Form */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <DraftRestorationBanner show={hasDraft} timestamp={draftTimestamp} onRestore={handleRestoreDraft} onDiscard={discardDraft} />
+
+        {/* Spotify Import Banner */}
+        {spotifyBanner && (
+          <div className="flex items-start gap-3 bg-green-50 border border-green-200 rounded-xl px-4 py-3 mb-2">
+            <span className="text-green-600 mt-0.5">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5"><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4.586 14.424a.623.623 0 01-.857.207c-2.348-1.435-5.304-1.76-8.785-.964a.623.623 0 11-.277-1.215c3.809-.87 7.076-.496 9.712 1.115a.623.623 0 01.207.857zm1.223-2.723a.78.78 0 01-1.072.257c-2.687-1.652-6.785-2.131-9.965-1.166a.78.78 0 01-.973-.519.781.781 0 01.518-.973c3.632-1.102 8.147-.568 11.234 1.328a.78.78 0 01.258 1.073zm.105-2.835c-3.223-1.914-8.54-2.09-11.618-1.156a.935.935 0 11-.543-1.79c3.532-1.072 9.404-.865 13.115 1.338a.936.936 0 01-1.011 1.579.935.935 0 01-.943.029z"/></svg>
+            </span>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-green-800">
+                Imported from Spotify: <span className="font-bold">{spotifyBanner.title}</span>
+              </p>
+              <p className="text-xs text-green-700 mt-0.5">
+                Artist{spotifyBanner.artists.length > 1 ? 's' : ''}: {spotifyBanner.artists.join(', ')} &nbsp;·&nbsp;
+                {spotifyBanner.hasLyrics ? '✓ Lyrics fetched from Genius' : 'Lyrics not found — add manually'}
+              </p>
+            </div>
+            <button onClick={() => setSpotifyBanner(null)} className="text-green-500 hover:text-green-700 flex-shrink-0">✕</button>
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-6 mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Main Content - Left Side */}

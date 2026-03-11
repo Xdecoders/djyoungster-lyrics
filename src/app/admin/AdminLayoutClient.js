@@ -26,6 +26,7 @@ import {
   FiCornerUpRight,
   FiBarChart2
 } from 'react-icons/fi'
+import { SiSpotify } from 'react-icons/si'
 import { useState, useEffect } from 'react'
 
 export default function AdminLayoutClient({ children }) {
@@ -102,6 +103,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/dashboard', label: 'Dashboard', icon: FiHome },
     { href: '/admin/songs', label: 'Songs', icon: FiMusic },
     { href: '/admin/songs/scrape', label: 'Scrape Song', icon: FiDownload },
+    { href: '/admin/spotify-releases', label: 'Spotify Releases', icon: SiSpotify },
     { href: '/admin/bulk-import', label: 'Bulk Import', icon: FiDownloadCloud },
     { href: '/admin/artists', label: 'Artists', icon: FiUsers },
     { href: '/admin/albums', label: 'Albums', icon: FiDisc },
