@@ -1,9 +1,21 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
+import { existsSync } from 'fs'
+import path from 'path'
 import { getAbsoluteUrl } from '@/lib/seo'
 import { generateSongSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import { toTitleCase } from '@/lib/utils'
 import SongPageClient from './SongPageClient'
+
+function getOgImageUrl(slug, siteUrl) {
+  const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'public', 'uploads')
+  const uploadUrl = process.env.UPLOAD_URL || '/uploads'
+  const webpPath = path.join(uploadDir, 'og', `${slug}-og.webp`)
+  const pngPath = path.join(uploadDir, 'og', `${slug}-og.png`)
+  if (existsSync(webpPath)) return `${siteUrl}${uploadUrl}/og/${slug}-og.webp`
+  if (existsSync(pngPath)) return `${siteUrl}${uploadUrl}/og/${slug}-og.png`
+  return `${siteUrl}/api/og/song/${slug}`
+}
 
 // ISR - Cache pages and revalidate every 60 seconds for fresh data
 export const revalidate = 60
@@ -83,10 +95,8 @@ export async function generateMetadata({ params }) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/song/${slug}`
-    // Use pre-generated stored OG card if available, else fall back to dynamic route
-    const imageUrl = song.ogImage
-      ? (song.ogImage.startsWith('http') ? song.ogImage : `${siteUrl}${song.ogImage}`)
-      : `${siteUrl}/api/og/song/${slug}`
+    // Check disk for pre-generated OG image; fall back to dynamic route
+    const imageUrl = getOgImageUrl(slug, siteUrl)
 
     // Build hreflang alternates — all variants live on the same URL via tabs,
     // so self-referencing hreflang tells Google this page serves multiple languages.
