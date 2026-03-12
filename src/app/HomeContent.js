@@ -21,8 +21,8 @@ export default function HomeContent({ data, siteSettings }) {
               <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-white/5 rounded-full translate-y-1/2" />
             </div>
 
-            <div className="relative z-10 flex flex-col items-center text-center px-6 py-12 sm:py-16 max-w-3xl mx-auto">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 leading-[1.15] tracking-tight">
+            <div className="relative z-10 flex flex-col items-center text-center px-6 py-12 sm:py-16 w-full">
+              <h1 className="w-full text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white mb-3 leading-[1.15] tracking-tight">
                 {siteSettings.heroHeading.split(/(\*[^*]+\*)/).map((part, i) =>
                   part.startsWith('*') && part.endsWith('*')
                     ? <span key={i} className="text-white/80">{part.slice(1, -1)}</span>
@@ -30,7 +30,7 @@ export default function HomeContent({ data, siteSettings }) {
                 )}
               </h1>
 
-              <p className="text-white/75 text-sm sm:text-base mb-8 max-w-lg leading-relaxed">
+              <p className="text-white/75 text-sm sm:text-base mb-8 w-full leading-relaxed">
                 {siteSettings.heroDescription}
               </p>
 
