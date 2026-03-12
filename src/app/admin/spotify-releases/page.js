@@ -5,6 +5,15 @@ import { useRouter } from 'next/navigation'
 import { SiSpotify } from 'react-icons/si'
 import { FiMusic, FiDownload, FiSearch, FiRefreshCw, FiChevronDown, FiExternalLink, FiCheck, FiLoader, FiX } from 'react-icons/fi'
 
+const LANGUAGES = [
+  { key: 'all',     label: 'All',     flag: '🌐' },
+  { key: 'hindi',   label: 'Hindi',   flag: '🇮🇳' },
+  { key: 'punjabi', label: 'Punjabi', flag: '🎵' },
+  { key: 'tamil',   label: 'Tamil',   flag: '🎶' },
+  { key: 'telugu',  label: 'Telugu',  flag: '🎸' },
+  { key: 'english', label: 'English', flag: '🇺🇸' },
+]
+
 const LIMIT = 50
 
 // Date filter: current month + last month
@@ -26,7 +35,7 @@ function formatDate(dateStr) {
 
 export default function SpotifyReleasesPage() {
   const router = useRouter()
-  const language = 'all'
+  const [language, setLanguage] = useState('all')
   const [tracks, setTracks] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -183,6 +192,24 @@ export default function SpotifyReleasesPage() {
           <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>
+      </div>
+
+      {/* Language Tabs */}
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-1.5 mb-4 flex gap-1 overflow-x-auto">
+        {LANGUAGES.map(lang => (
+          <button
+            key={lang.key}
+            onClick={() => setLanguage(lang.key)}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+              language === lang.key
+                ? 'bg-green-600 text-white shadow-sm'
+                : 'text-slate-600 hover:bg-slate-100'
+            }`}
+          >
+            <span>{lang.flag}</span>
+            {lang.label}
+          </button>
+        ))}
       </div>
 
       {/* Search + Hide toggle */}

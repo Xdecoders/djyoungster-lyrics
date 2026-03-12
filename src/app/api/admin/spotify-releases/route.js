@@ -95,13 +95,15 @@ async function fetchAllIndian(token, offset) {
   return { tracks: page, total: combined.length }
 }
 
-// Language-specific fallback query chains
-const LANG_QUERIES = {
-  hindi:   { queries: ['genre:bollywood', 'hindi bollywood',     'bollywood'],                    market: 'IN' },
-  punjabi: { queries: ['genre:bhangra',   'punjabi bhangra',     'punjabi pop'],                  market: 'IN' },
-  tamil:   { queries: ['genre:kollywood', 'genre:tamil',         'kollywood tamil', 'tamil'],      market: 'IN' },
-  telugu:  { queries: ['genre:tollywood', 'genre:telugu',        'tollywood telugu', 'telugu'],    market: 'IN' },
-  english: { queries: ['genre:pop',       'new releases english', 'english pop new'],              market: 'US' },
+// Language-specific fallback query chains (year injected at runtime)
+function getLangQueries(year) {
+  return {
+    hindi:   { queries: [`genre:bollywood year:${year}`, `hindi bollywood year:${year}`, 'genre:bollywood'],  market: 'IN' },
+    punjabi: { queries: [`genre:bhangra year:${year}`,   `punjabi year:${year}`,          'genre:bhangra'],   market: 'IN' },
+    tamil:   { queries: [`genre:kollywood year:${year}`, `tamil year:${year}`,            'genre:kollywood'], market: 'IN' },
+    telugu:  { queries: [`genre:tollywood year:${year}`, `telugu year:${year}`,           'genre:tollywood'], market: 'IN' },
+    english: { queries: [`genre:pop year:${year}`,       `english pop year:${year}`,      'genre:pop'],       market: 'US' },
+  }
 }
 
 // Direct search — used when user types in search box
@@ -127,6 +129,8 @@ export async function GET(request) {
     const search = searchParams.get('search') || ''
 
     const token = await getSpotifyToken()
+    const curYear = new Date().getFullYear()
+    const LANG_QUERIES = getLangQueries(curYear)
 
     let result
     if (search) {
