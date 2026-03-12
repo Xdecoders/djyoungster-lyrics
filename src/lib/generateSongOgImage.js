@@ -21,7 +21,8 @@ async function toBase64(buffer) {
 async function blurredBackground(buffer) {
   const out = await sharp(buffer)
     .resize(1200, 630, { fit: 'cover', position: 'centre' })
-    .blur(36)
+    .blur(40)
+    .modulate({ brightness: 0.3 })
     .jpeg({ quality: 70 })
     .toBuffer()
   return toBase64(out)
@@ -106,7 +107,7 @@ export async function generateSongOgImage(songId) {
           )}
 
           {/* Dark overlay */}
-          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.82)', display: 'flex' }} />
+          <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.65)', display: 'flex' }} />
 
           {/* DJYoungster — top right */}
           <div style={{
@@ -117,22 +118,22 @@ export async function generateSongOgImage(songId) {
             DJYoungster
           </div>
 
-          {/* Centered content */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: '0 80px', gap: '60px' }}>
+          {/* Centered content — explicit top/left/right/bottom so alignItems works in Satori */}
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '0 80px', gap: '60px' }}>
             {coverBase64 ? (
-              <img src={coverBase64} width={280} height={280}
-                style={{ borderRadius: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.8)', flexShrink: 0 }} />
+              <img src={coverBase64} width={260} height={260}
+                style={{ borderRadius: '20px', boxShadow: '0 24px 64px rgba(0,0,0,0.9)', flexShrink: 0 }} />
             ) : (
-              <div style={{ width: '280px', height: '280px', borderRadius: '20px', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: '260px', height: '260px', borderRadius: '20px', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '80px' }}>♪</span>
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <div style={{ color: '#ffffff', fontSize: `${titleSize}px`, fontWeight: 800, lineHeight: 1.15, marginBottom: '16px', letterSpacing: '-0.02em', fontFamily: '"Inter Tight", sans-serif' }}>
                 {song.title}
               </div>
-              <div style={{ color: 'rgba(255,255,255,0.60)', fontSize: '28px', fontWeight: 500, fontFamily: '"Inter Tight", sans-serif' }}>
+              <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: '28px', fontWeight: 500, fontFamily: '"Inter Tight", sans-serif' }}>
                 {artistNames}
               </div>
             </div>
