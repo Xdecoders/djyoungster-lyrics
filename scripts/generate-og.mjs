@@ -46,8 +46,8 @@ async function generateForSong(song) {
 }
 
 async function main() {
+  // Fetch all songs (ogImage may not exist on older schema — filter in JS)
   const songs = await prisma.song.findMany({
-    where: force ? {} : { ogImage: null },
     select: { id: true, slug: true, title: true },
     orderBy: { createdAt: 'desc' }
   })
