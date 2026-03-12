@@ -151,7 +151,6 @@ export default function JioSaavnReleasesPage() {
 
   const displayed = tracks
     .filter(t => !hideImported || !importedIds.has(t.id))
-    .filter(t => isSearchMode || isRecentRelease(t.album.releaseDate))
     .sort((a, b) => {
       const diff = new Date(b.album.releaseDate) - new Date(a.album.releaseDate)
       return sortOrder === 'desc' ? diff : -diff
@@ -172,7 +171,7 @@ export default function JioSaavnReleasesPage() {
             <p className="text-slate-500 text-sm mt-0.5">
               {isSearchMode
                 ? `Search results for "${activeSearch}" — ${total.toLocaleString()} tracks found`
-                : `Showing this month & last month releases`}
+                : `Browse new releases from JioSaavn`}
             </p>
           </div>
         </div>
