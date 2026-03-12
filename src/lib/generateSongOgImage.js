@@ -146,17 +146,20 @@ export async function generateSongOgImage(songId) {
       { width: 1200, height: 630, fonts: fonts.length > 0 ? fonts : undefined }
     )
 
-    // Capture PNG buffer from ImageResponse
+    // Capture PNG buffer from ImageResponse, then convert to WebP for smaller size
     const pngBuffer = Buffer.from(await imgResponse.arrayBuffer())
+    const webpBuffer = await sharp(pngBuffer)
+      .webp({ quality: 85, effort: 4 })
+      .toBuffer()
 
     // Save to uploads/og/ directory
     const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'public', 'uploads')
     const ogDir = path.join(uploadDir, 'og')
     await mkdir(ogDir, { recursive: true })
 
-    const filename = `${song.slug}-og.png`
+    const filename = `${song.slug}-og.webp`
     const filepath = path.join(ogDir, filename)
-    await writeFile(filepath, pngBuffer)
+    await writeFile(filepath, webpBuffer)
 
     // Determine the public URL
     const baseUploadUrl = process.env.UPLOAD_DIR
