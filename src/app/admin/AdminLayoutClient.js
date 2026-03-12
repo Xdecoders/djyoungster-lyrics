@@ -104,6 +104,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/songs', label: 'Songs', icon: FiMusic },
     { href: '/admin/songs/scrape', label: 'Scrape Song', icon: FiDownload },
     { href: '/admin/spotify-releases', label: 'Spotify Releases', icon: SiSpotify },
+    { href: '/admin/jiosaavn-releases', label: 'JioSaavn Releases', icon: FiMusic },
     { href: '/admin/bulk-import', label: 'Bulk Import', icon: FiDownloadCloud },
     { href: '/admin/artists', label: 'Artists', icon: FiUsers },
     { href: '/admin/albums', label: 'Albums', icon: FiDisc },
