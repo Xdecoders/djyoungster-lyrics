@@ -74,8 +74,8 @@ const songSelectFields = {
 const getHomepageData = unstable_cache(
   async () => {
     try {
-      const langQuery = (lang) => prisma.song.findMany({
-        where: { status: 'published', language: lang },
+      const catQuery = (slug) => prisma.song.findMany({
+        where: { status: 'published', categories: { some: { category: { slug } } } },
         orderBy: { createdAt: 'desc' },
         take: 12,
         select: songSelectFields
@@ -99,10 +99,10 @@ const getHomepageData = unstable_cache(
           take: 12,
           select: songSelectFields
         }),
-        langQuery('hindi'),
-        langQuery('punjabi'),
-        langQuery('english'),
-        langQuery('telugu'),
+        catQuery('hindi'),
+        catQuery('punjabi'),
+        catQuery('english'),
+        catQuery('telgu'),
         prisma.song.findMany({
           where: { status: 'published' },
           orderBy: { views: 'desc' },
