@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 
 // GET single song
@@ -159,6 +159,7 @@ export async function PUT(request, { params }) {
       }
       revalidatePath('/songs')
       revalidatePath('/')
+      revalidateTag('homepage')
       console.log('[Song Update] Cache revalidated for song and artists')
     } catch (revalidateError) {
       console.log('[Song Update] Revalidation note:', revalidateError.message)
@@ -209,6 +210,7 @@ export async function DELETE(request, { params }) {
       }
       revalidatePath('/songs')
       revalidatePath('/')
+      revalidateTag('homepage')
       console.log('[Song Delete] Cache revalidated for song and artists')
     } catch (revalidateError) {
       console.log('[Song Delete] Revalidation note:', revalidateError.message)

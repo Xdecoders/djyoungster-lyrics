@@ -47,6 +47,7 @@ export default function SeoSettingsPage() {
   const [heroHeading, setHeroHeading] = useState('')
   const [heroDescription, setHeroDescription] = useState('')
 
+
   useEffect(() => {
     fetchSettings()
     fetchGlobalSettings()
@@ -183,7 +184,7 @@ export default function SeoSettingsPage() {
           favicon: faviconUrl,
           ogImage: ogImageUrl,
           heroHeading: heroHeading,
-          heroDescription: heroDescription
+          heroDescription: heroDescription,
         })
       })
 
@@ -337,7 +338,7 @@ export default function SeoSettingsPage() {
       </div>
 
       {/* Global Site Settings - Favicon & Hero */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600">
@@ -572,6 +573,7 @@ export default function SeoSettingsPage() {
               <p className="text-xs text-slate-400 mt-1">Subtitle text below the heading</p>
             </div>
           </div>
+
         </div>
       </div>
 

@@ -1,67 +1,25 @@
+import { unstable_cache } from 'next/cache'
+import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import HomeContent from './HomeContent'
 import AboutSection from './AboutSection'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema } from '@/lib/schema'
 
-// Dynamic SSR - always fetch fresh data on each request
-// ISR - Cache pages and revalidate every 60 seconds
-export const revalidate = 60
+// ISR — rebuild page at most every 5 minutes
+// Between rebuilds every visitor gets the pre-built HTML instantly (CDN/edge cache)
+export const revalidate = 300
 
-export async function generateMetadata() {
-  const seo = await getSeoSettings('homepage')
-  const siteSettings = await getSiteSettings()
+// ─── Deduplicate SEO calls within a single render ───────────────────────────
+// React cache() memoises per request — generateMetadata + getHomepageData
+// can both call these without hitting the DB twice in the same render cycle.
+const getHomepageSeo      = cache(() => getSeoSettings('homepage'))
+const getGlobalSettings   = cache(() => getSiteSettings())
 
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
-  // Use page-specific OG image, fall back to global, then default
-  const ogImageUrl = getAbsoluteUrl(seo.ogImage) || getAbsoluteUrl(siteSettings.ogImage) || 'https://djyoungster.com/uploads/1769674444129-djyoungster.webp'
-
-  return {
-    title: seo.metaTitle,
-    description: seo.metaDescription,
-    openGraph: {
-      title: seo.ogTitle,
-      description: seo.ogDescription,
-      url: siteUrl,
-      siteName: 'DJYoungster',
-      type: 'website',
-      locale: 'en_IN',
-      alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: 'DJYoungster - Song Lyrics',
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: seo.ogTitle,
-      description: seo.ogDescription,
-      images: [ogImageUrl],
-      creator: '@djyoungstercom',
-      site: '@djyoungstercom',
-    },
-    alternates: {
-      canonical: siteUrl,
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        'max-video-preview': -1,
-        'max-image-preview': 'large',
-        'max-snippet': -1,
-      },
-    },
-  }
-}
-
-// Homepage FAQs fallback (used when no DB record exists)
+// ─── Data-layer cache with unstable_cache ────────────────────────────────────
+// Caches the Prisma query results in Next.js Data Cache independently of the
+// page HTML cache. Even when the page ISR window expires, the data may still
+// be served from this cache — no cold DB hit needed.
 const FALLBACK_FAQS = [
   {
     question: 'What is DJYoungster?',
@@ -97,166 +55,166 @@ const FALLBACK_FAQS = [
   }
 ]
 
-// Fetch homepage data on server
-async function getHomepageData() {
-  try {
-    // Select only fields needed for homepage display (exclude lyrics)
-    const songSelectFields = {
-      id: true,
-      title: true,
-      slug: true,
-      coverImage: true,
-      views: true,
-      createdAt: true,
-      artists: {
-        select: {
-          artist: {
-            select: { id: true, name: true, slug: true, imageUrl: true }
-          }
-        }
-      },
-      album: {
-        select: { id: true, title: true, slug: true, coverImage: true }
-      }
-    }
-
-    // Run all queries in parallel
-    const [latestSongs, instagramViralSongs, categories, artists, tags, siteSettings, lyricStoriesRaw, aboutPage, faqPage] = await Promise.all([
-      prisma.song.findMany({
-        where: { status: 'published' },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-        select: songSelectFields
-      }),
-      // Fetch Instagram Viral category songs
-      prisma.song.findMany({
-        where: {
-          status: 'published',
-          categories: { some: { category: { slug: 'instagram-viral' } } }
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-        select: songSelectFields
-      }),
-      prisma.category.findMany({
-        include: {
-          songs: {
-            select: { song: { select: songSelectFields } },
-            take: 10
-          },
-          _count: { select: { songs: true } }
-        }
-      }),
-      prisma.artist.findMany({
-        take: 10,
-        include: { _count: { select: { songs: true } } },
-        orderBy: { songs: { _count: 'desc' } }
-      }),
-      prisma.tag.findMany({
-        take: 14,
-        include: { _count: { select: { songs: true } } },
-        orderBy: { songs: { _count: 'desc' } }
-      }),
-      getSiteSettings(),
-      prisma.song.findMany({
-        where: { hasWebStory: true, status: 'published' },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          coverImage: true,
-          lyrics: true,
-          artists: { select: { artist: { select: { name: true } } } }
-        },
-        orderBy: { createdAt: 'desc' },
-        take: 10,
-      }),
-      prisma.page.findUnique({ where: { slug: 'homepage-about' } }),
-      prisma.page.findUnique({ where: { slug: 'homepage-faq' } }),
-    ])
-
-    const lyricStories = lyricStoriesRaw.map(({ lyrics, ...rest }) => ({
-      ...rest,
-      lyricsSnippet: (lyrics || '')
-        .replace(/<[^>]*>/g, '')
-        .replace(/&nbsp;/g, ' ')
-        .split('\n')
-        .map(l => l.trim())
-        .filter(Boolean)
-        .slice(0, 4)
-        .join('\n')
-    }))
-
-    let parsedFaqs = FALLBACK_FAQS
-    if (faqPage?.content) {
-      try {
-        parsedFaqs = JSON.parse(faqPage.content)
-      } catch {
-        parsedFaqs = FALLBACK_FAQS
-      }
-    }
-
-    return {
-      latestSongs,
-      instagramViralSongs,
-      categories,
-      artists,
-      tags,
-      lyricStories,
-      aboutHtml: aboutPage?.content || null,
-      faqs: parsedFaqs,
-      siteSettings: {
-        heroHeading: siteSettings.heroHeading || 'Discover Your Favorite *Song Lyrics*',
-        heroDescription: siteSettings.heroDescription || 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching homepage data:', error)
-    return {
-      latestSongs: [],
-      instagramViralSongs: [],
-      categories: [],
-      artists: [],
-      tags: [],
-      lyricStories: [],
-      aboutHtml: null,
-      faqs: FALLBACK_FAQS,
-      siteSettings: {
-        heroHeading: 'Discover Your Favorite *Song Lyrics*',
-        heroDescription: 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
-      }
-    }
+const songSelectFields = {
+  id: true,
+  title: true,
+  slug: true,
+  coverImage: true,
+  views: true,
+  createdAt: true,
+  artists: {
+    select: { artist: { select: { id: true, name: true, slug: true, imageUrl: true } } }
+  },
+  album: {
+    select: { id: true, title: true, slug: true, coverImage: true }
   }
 }
 
+// Cached at data layer — revalidated by tag 'homepage' or after 5 min
+const getHomepageData = unstable_cache(
+  async () => {
+    try {
+      const langQuery = (lang) => prisma.song.findMany({
+        where: { status: 'published', language: lang },
+        orderBy: { createdAt: 'desc' },
+        take: 12,
+        select: songSelectFields
+      })
+
+      const [
+        latestSongs, instagramViralSongs,
+        hindiSongs, punjabiSongs, englishSongs, teluguSongs,
+        chartSongs,
+        siteSettings, aboutPage, faqPage
+      ] = await Promise.all([
+        prisma.song.findMany({
+          where: { status: 'published' },
+          orderBy: { createdAt: 'desc' },
+          take: 12,
+          select: songSelectFields
+        }),
+        prisma.song.findMany({
+          where: { status: 'published', categories: { some: { category: { slug: 'instagram-viral' } } } },
+          orderBy: { createdAt: 'desc' },
+          take: 12,
+          select: songSelectFields
+        }),
+        langQuery('hindi'),
+        langQuery('punjabi'),
+        langQuery('english'),
+        langQuery('telugu'),
+        prisma.song.findMany({
+          where: { status: 'published' },
+          orderBy: { views: 'desc' },
+          take: 10,
+          select: songSelectFields
+        }),
+        getSiteSettings(),
+        prisma.page.findUnique({ where: { slug: 'homepage-about' } }),
+        prisma.page.findUnique({ where: { slug: 'homepage-faq' } }),
+      ])
+
+      let parsedFaqs = FALLBACK_FAQS
+      if (faqPage?.content) {
+        try { parsedFaqs = JSON.parse(faqPage.content) } catch { parsedFaqs = FALLBACK_FAQS }
+      }
+
+      return {
+        latestSongs,
+        instagramViralSongs,
+        hindiSongs,
+        punjabiSongs,
+        englishSongs,
+        teluguSongs,
+        chartSongs,
+        aboutHtml: aboutPage?.content || null,
+        faqs: parsedFaqs,
+        siteSettings: {
+          heroHeading:    siteSettings.heroHeading    || 'Discover Your Favorite *Song Lyrics*',
+          heroDescription: siteSettings.heroDescription || 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching homepage data:', error)
+      return {
+        latestSongs: [], instagramViralSongs: [],
+        hindiSongs: [], punjabiSongs: [], englishSongs: [], teluguSongs: [],
+        chartSongs: [],
+        aboutHtml: null, faqs: FALLBACK_FAQS,
+        siteSettings: {
+          heroHeading:     'Discover Your Favorite *Song Lyrics*',
+          heroDescription: 'Your trusted source for verified song lyrics in Hindi, Punjabi, English, Tamil & Telugu. Get accurate lyrics with translations and create beautiful Instagram stories for free!'
+        }
+      }
+    }
+  },
+  ['homepage-data'],                          // cache key
+  { revalidate: 300, tags: ['homepage'] }     // 5 min TTL + tag for on-demand revalidation
+)
+
+// ─── Metadata ────────────────────────────────────────────────────────────────
+export async function generateMetadata() {
+  // Reuses the same request-scoped memoised calls — no extra DB round-trips
+  const [seo, siteSettings] = await Promise.all([
+    getHomepageSeo(),
+    getGlobalSettings(),
+  ])
+
+  const siteUrl    = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
+  const ogImageUrl = getAbsoluteUrl(seo.ogImage) || getAbsoluteUrl(siteSettings.ogImage) || 'https://djyoungster.com/uploads/1769674444129-djyoungster.webp'
+
+  return {
+    title: seo.metaTitle,
+    description: seo.metaDescription,
+    openGraph: {
+      title: seo.ogTitle,
+      description: seo.ogDescription,
+      url: siteUrl,
+      siteName: 'DJYoungster',
+      type: 'website',
+      locale: 'en_IN',
+      alternateLocale: ['hi_IN', 'pa_IN', 'ta_IN', 'te_IN'],
+      images: [{ url: ogImageUrl, width: 1200, height: 630, alt: 'DJYoungster - Song Lyrics' }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: seo.ogTitle,
+      description: seo.ogDescription,
+      images: [ogImageUrl],
+      creator: '@djyoungstercom',
+      site: '@djyoungstercom',
+    },
+    alternates: { canonical: siteUrl },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-video-preview': -1,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+      },
+    },
+  }
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 export default async function Home() {
-  const websiteSchema = generateWebSiteSchema()
+  const websiteSchema      = generateWebSiteSchema()
   const organizationSchema = generateOrganizationSchema()
 
-  // Fetch data on server - Pure SSR
-  const data = await getHomepageData()
-
-  const faqSchema = generateFAQSchema(data.faqs)
+  // Served from data cache — no DB hit unless cache is stale
+  const data       = await getHomepageData()
+  const faqSchema  = generateFAQSchema(data.faqs)
 
   return (
     <>
-      {/* Schema Markup - Server Rendered */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
-      />
-      {/* Main Content - Server Rendered */}
-      <HomeContent data={data} siteSettings={data.siteSettings} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
 
-      {/* About & FAQs - Server Rendered */}
+      <HomeContent data={data} siteSettings={data.siteSettings} />
       <AboutSection faqs={data.faqs} aboutHtml={data.aboutHtml} />
     </>
   )

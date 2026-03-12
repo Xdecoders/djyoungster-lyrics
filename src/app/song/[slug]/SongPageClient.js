@@ -922,6 +922,7 @@ function ReportModal({ isOpen, onClose, songTitle, songId }) {
 }
 
 // YouTube Player Component - Click-to-load for performance
+
 function YouTubePlayer({ url, title }) {
   const [isPlaying, setIsPlaying] = useState(false)
 
@@ -2171,6 +2172,8 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
           </div>
         </div>
       )}
+
+
     </div>
   )
 }

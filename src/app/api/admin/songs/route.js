@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { revalidatePath } from 'next/cache'
+import { revalidatePath, revalidateTag } from 'next/cache'
 
 // GET all songs
 export async function GET() {
@@ -160,6 +160,7 @@ export async function POST(request) {
       // Revalidate homepage and songs list
       revalidatePath('/')
       revalidatePath('/songs')
+      revalidateTag('homepage')
       console.log('[Song Create] Cache revalidated for song and artists')
     } catch (revalidateError) {
       console.log('[Song Create] Revalidation note:', revalidateError.message)
