@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { prisma } from '@/lib/prisma'
+import { generateSongOgImage } from '@/lib/generateSongOgImage'
 
 // GET single song
 export async function GET(request, { params }) {
@@ -164,6 +165,9 @@ export async function PUT(request, { params }) {
     } catch (revalidateError) {
       console.log('[Song Update] Revalidation note:', revalidateError.message)
     }
+
+    // Regenerate OG image in background (non-blocking)
+    generateSongOgImage(song.id).catch(e => console.error('[OG] Update failed:', e))
 
     return NextResponse.json(song)
   } catch (error) {
