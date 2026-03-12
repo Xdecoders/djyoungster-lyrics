@@ -1,6 +1,8 @@
 import { ImageResponse } from 'next/og'
 import { prisma } from '@/lib/prisma'
 import sharp from 'sharp'
+import { existsSync } from 'fs'
+import path from 'path'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -53,6 +55,15 @@ async function loadInterTight(weight) {
 
 export async function GET(request, { params }) {
   const { slug } = await params
+
+  // Serve static pre-generated file if it exists (faster + CDN-cacheable)
+  const uploadDir = process.env.UPLOAD_DIR || path.join(process.cwd(), 'public', 'uploads')
+  const uploadUrl = process.env.UPLOAD_URL || '/uploads'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+  const webpPath = path.join(uploadDir, 'og', `${slug}-og.webp`)
+  if (existsSync(webpPath)) {
+    return Response.redirect(`${siteUrl}${uploadUrl}/og/${slug}-og.webp`, 301)
+  }
 
   try {
     const song = await prisma.song.findUnique({
