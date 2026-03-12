@@ -39,9 +39,9 @@ async function generateForSong(song) {
   const filename = `${song.slug}-og.webp`
   await writeFile(path.join(ogDir, filename), webpBuffer)
 
-  // Update DB
+  // Update DB using raw SQL (Prisma client may not have ogImage if not regenerated)
   const publicUrl = `${UPLOAD_URL}/og/${filename}`
-  await prisma.song.update({ where: { id: song.id }, data: { ogImage: publicUrl } })
+  await prisma.$executeRaw`UPDATE Song SET ogImage = ${publicUrl} WHERE id = ${song.id}`
   return publicUrl
 }
 
