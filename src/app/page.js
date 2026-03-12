@@ -102,7 +102,7 @@ const getHomepageData = unstable_cache(
         catQuery('hindi'),
         catQuery('punjabi'),
         catQuery('english'),
-        catQuery('telgu'),
+        catQuery('telugu'),
         prisma.song.findMany({
           where: { status: 'published' },
           orderBy: { views: 'desc' },

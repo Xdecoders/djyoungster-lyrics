@@ -92,7 +92,7 @@ export default function AboutSection({ faqs, aboutHtml }) {
             </h2>
             {aboutHtml ? (
               <div
-                className="prose prose-slate dark:prose-invert max-w-none prose-p:text-slate-600 dark:prose-p:text-slate-300 prose-p:leading-relaxed prose-strong:text-slate-800 dark:prose-strong:text-slate-100"
+                className="w-full"
                 dangerouslySetInnerHTML={{ __html: aboutHtml }}
               />
             ) : (
