@@ -64,6 +64,8 @@ export async function GET(request, { params }) {
   if (existsSync(webpPath)) {
     return Response.redirect(`${siteUrl}${uploadUrl}/og/${slug}-og.webp`, 301)
   }
+  // noindex header so Google ignores this dynamic fallback route
+  const noindex = { 'X-Robots-Tag': 'noindex, nofollow' }
 
   try {
     const song = await prisma.song.findUnique({
@@ -174,7 +176,7 @@ export async function GET(request, { params }) {
         width: 1200,
         height: 630,
         fonts: fonts.length > 0 ? fonts : undefined,
-        headers: { 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800' },
+        headers: { 'Cache-Control': 'public, max-age=86400, stale-while-revalidate=604800', ...noindex },
       }
     )
   } catch (error) {
