@@ -66,18 +66,23 @@ async function searchWithFallback(token, queries, market, offset, limit) {
   return { tracks: [], total: 0 }
 }
 
-// "All" tab — combine multiple Indian genres in parallel, deduplicate, sort newest first
+// "All" tab — fetch recent Indian releases using year-tagged queries, deduplicate, sort newest first
 async function fetchAllIndian(token, offset) {
-  const perGenre = 15
-  const genreQueries = [
-    { queries: ['genre:bollywood', 'bollywood hindi new'],          market: 'IN' },
-    { queries: ['genre:bhangra', 'punjabi bhangra new'],            market: 'IN' },
-    { queries: ['genre:kollywood', 'tamil kollywood new'],          market: 'IN' },
-    { queries: ['genre:tollywood', 'telugu tollywood new'],         market: 'IN' },
+  const now = new Date()
+  const curYear = now.getFullYear()
+  const prevYear = curYear - 1
+
+  const perQuery = 20
+  const queryGroups = [
+    { queries: [`genre:bollywood year:${curYear}`, `bollywood hindi year:${curYear}`, `genre:bollywood year:${prevYear}`], market: 'IN' },
+    { queries: [`genre:bhangra year:${curYear}`, `punjabi year:${curYear}`, `genre:bhangra year:${prevYear}`],             market: 'IN' },
+    { queries: [`genre:kollywood year:${curYear}`, `tamil year:${curYear}`, `genre:kollywood year:${prevYear}`],           market: 'IN' },
+    { queries: [`genre:tollywood year:${curYear}`, `telugu year:${curYear}`, `genre:tollywood year:${prevYear}`],          market: 'IN' },
+    { queries: [`tag:new genre:indian year:${curYear}`, `indian pop year:${curYear}`],                                     market: 'IN' },
   ]
 
   const results = await Promise.all(
-    genreQueries.map(({ queries, market }) => searchWithFallback(token, queries, market, 0, perGenre))
+    queryGroups.map(({ queries, market }) => searchWithFallback(token, queries, market, 0, perQuery))
   )
 
   const seen = new Set()
@@ -86,7 +91,6 @@ async function fetchAllIndian(token, offset) {
     .filter(t => { if (seen.has(t.id)) return false; seen.add(t.id); return true })
     .sort((a, b) => new Date(b.album.releaseDate) - new Date(a.album.releaseDate))
 
-  // Apply offset for pagination
   const page = combined.slice(offset, offset + 50)
   return { tracks: page, total: combined.length }
 }
