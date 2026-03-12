@@ -766,7 +766,7 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
         {!selectedText && (
           <div className="mb-4 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700">
             <img
-              src={`/api/og/song/${song.slug}`}
+              src={`/uploads/og/${song.slug}-og.webp`}
               alt={`${song.title} share card`}
               className="w-full"
               style={{ aspectRatio: '1200/630' }}
