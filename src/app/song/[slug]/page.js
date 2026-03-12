@@ -83,8 +83,8 @@ export async function generateMetadata({ params }) {
 
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/song/${slug}`
-    // Convert relative image URL to absolute URL
-    const imageUrl = getAbsoluteUrl(song.coverImage) || 'https://djyoungster.com/uploads/1769674444129-djyoungster.webp'
+    // Dynamic OG card image — falls back to cover image if song not found
+    const imageUrl = `${siteUrl}/api/og/song/${slug}`
 
     // Build hreflang alternates — all variants live on the same URL via tabs,
     // so self-referencing hreflang tells Google this page serves multiple languages.

@@ -750,7 +750,7 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm w-full p-6 animate-slideUp">
+      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-lg w-full p-6 animate-slideUp">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition"
@@ -758,9 +758,21 @@ function ShareModal({ isOpen, onClose, song, url, selectedText }) {
           <FiX className="w-5 h-5" />
         </button>
 
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
+        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
           {selectedText ? 'Share Selected Lyrics' : 'Share this song'}
         </h3>
+
+        {/* OG Card Preview */}
+        {!selectedText && (
+          <div className="mb-4 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-700">
+            <img
+              src={`/api/og/song/${song.slug}`}
+              alt={`${song.title} share card`}
+              className="w-full"
+              style={{ aspectRatio: '1200/630' }}
+            />
+          </div>
+        )}
 
         {selectedText && (
           <div className="bg-slate-50 dark:bg-slate-700 rounded-xl p-3 mb-4 text-sm text-slate-600 dark:text-slate-300 italic">
