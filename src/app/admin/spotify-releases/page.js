@@ -5,16 +5,19 @@ import { useRouter } from 'next/navigation'
 import { SiSpotify } from 'react-icons/si'
 import { FiMusic, FiDownload, FiSearch, FiRefreshCw, FiChevronDown, FiExternalLink, FiCheck, FiLoader, FiX } from 'react-icons/fi'
 
-const LANGUAGES = [
-  { key: 'all',     label: 'All New',  flag: '🌐' },
-  { key: 'hindi',   label: 'Hindi',    flag: '🇮🇳' },
-  { key: 'punjabi', label: 'Punjabi',  flag: '🎵' },
-  { key: 'tamil',   label: 'Tamil',    flag: '🎶' },
-  { key: 'telugu',  label: 'Telugu',   flag: '🎸' },
-  { key: 'english', label: 'English',  flag: '🇺🇸' },
-]
-
 const LIMIT = 50
+
+// Date filter: current month + last month
+function isRecentRelease(dateStr) {
+  if (!dateStr) return false
+  const d = new Date(dateStr)
+  const now = new Date()
+  const curY = now.getFullYear(), curM = now.getMonth()
+  const prevM = curM === 0 ? 11 : curM - 1
+  const prevY = curM === 0 ? curY - 1 : curY
+  const y = d.getFullYear(), m = d.getMonth()
+  return (y === curY && m === curM) || (y === prevY && m === prevM)
+}
 
 function formatDate(dateStr) {
   if (!dateStr) return ''
@@ -23,7 +26,7 @@ function formatDate(dateStr) {
 
 export default function SpotifyReleasesPage() {
   const router = useRouter()
-  const [language, setLanguage] = useState('all')
+  const language = 'all'
   const [tracks, setTracks] = useState([])
   const [loading, setLoading] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -148,6 +151,7 @@ export default function SpotifyReleasesPage() {
 
   const displayed = tracks
     .filter(t => !hideImported || !importedIds.has(t.id))
+    .filter(t => isSearchMode || isRecentRelease(t.album.releaseDate))
     .sort((a, b) => {
       const diff = new Date(b.album.releaseDate) - new Date(a.album.releaseDate)
       return sortOrder === 'desc' ? diff : -diff
@@ -167,7 +171,7 @@ export default function SpotifyReleasesPage() {
             <p className="text-slate-500 text-sm mt-0.5">
               {isSearchMode
                 ? `Search results for "${activeSearch}" — ${total.toLocaleString()} tracks found`
-                : `Browse latest tracks and import to your database`}
+                : `Showing this month & last month releases`}
             </p>
           </div>
         </div>
@@ -179,24 +183,6 @@ export default function SpotifyReleasesPage() {
           <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </button>
-      </div>
-
-      {/* Language Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-1.5 mb-4 flex gap-1 overflow-x-auto">
-        {LANGUAGES.map(lang => (
-          <button
-            key={lang.key}
-            onClick={() => setLanguage(lang.key)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-              language === lang.key
-                ? 'bg-green-600 text-white shadow-sm'
-                : 'text-slate-600 hover:bg-slate-100'
-            }`}
-          >
-            <span>{lang.flag}</span>
-            {lang.label}
-          </button>
-        ))}
       </div>
 
       {/* Search + Hide toggle */}
@@ -286,7 +272,7 @@ export default function SpotifyReleasesPage() {
             {isSearchMode ? `No results for "${activeSearch}"` : 'No tracks found'}
           </p>
           <p className="text-sm mt-1">
-            {isSearchMode ? 'Try a different search term' : 'Try a different language or refresh'}
+            {isSearchMode ? 'Try a different search term' : 'No recent releases found — try refreshing'}
           </p>
         </div>
       ) : (
