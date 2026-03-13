@@ -83,7 +83,7 @@ const getHomepageData = unstable_cache(
 
       const [
         latestSongs, instagramViralSongs,
-        hindiSongs, punjabiSongs, englishSongs, teluguSongs,
+        hindiSongs, punjabiSongs, englishSongs, teluguSongs, tamilSongs,
         chartSongs,
         siteSettings, aboutPage, faqPage
       ] = await Promise.all([
@@ -103,6 +103,7 @@ const getHomepageData = unstable_cache(
         catQuery('punjabi'),
         catQuery('english'),
         catQuery('telugu'),
+        catQuery('tamil'),
         prisma.song.findMany({
           where: { status: 'published' },
           orderBy: { views: 'desc' },
@@ -126,6 +127,7 @@ const getHomepageData = unstable_cache(
         punjabiSongs,
         englishSongs,
         teluguSongs,
+        tamilSongs,
         chartSongs,
         aboutHtml: aboutPage?.content || null,
         faqs: parsedFaqs,
@@ -138,7 +140,7 @@ const getHomepageData = unstable_cache(
       console.error('Error fetching homepage data:', error)
       return {
         latestSongs: [], instagramViralSongs: [],
-        hindiSongs: [], punjabiSongs: [], englishSongs: [], teluguSongs: [],
+        hindiSongs: [], punjabiSongs: [], englishSongs: [], teluguSongs: [], tamilSongs: [],
         chartSongs: [],
         aboutHtml: null, faqs: FALLBACK_FAQS,
         siteSettings: {

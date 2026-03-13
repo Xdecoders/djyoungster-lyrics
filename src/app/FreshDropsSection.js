@@ -12,6 +12,7 @@ const TABS = [
   { key: 'english',        label: 'English' },
   { key: 'instagram-viral', label: 'Instagram Viral' },
   { key: 'telugu',         label: 'Telugu' },
+  { key: 'tamil',          label: 'Tamil' },
 ]
 
 export default function FreshDropsSection({ data }) {
@@ -24,6 +25,7 @@ export default function FreshDropsSection({ data }) {
     'english':         data.englishSongs,
     'instagram-viral': data.instagramViralSongs,
     'telugu':          data.teluguSongs,
+    'tamil':           data.tamilSongs,
   }
 
   const songs = songMap[active] || []
