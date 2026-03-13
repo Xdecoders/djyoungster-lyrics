@@ -76,6 +76,26 @@ const DEFAULT_SETTINGS = {
   },
 }
 
+// Get AdSense settings (publisherId, enabled, webStoryAdsEnabled, webStoryAdSlot)
+export async function getAdsenseSettings() {
+  try {
+    const settings = await prisma.siteSeoSettings.findUnique({
+      where: { pageKey: 'adsense' }
+    })
+
+    if (settings?.metaKeywords) {
+      try {
+        return JSON.parse(settings.metaKeywords)
+      } catch (e) {}
+    }
+
+    return { enabled: false, publisherId: '', webStoryAdsEnabled: false, webStoryAdSlot: '' }
+  } catch (error) {
+    console.error('Error fetching AdSense settings:', error)
+    return { enabled: false, publisherId: '', webStoryAdsEnabled: false, webStoryAdSlot: '' }
+  }
+}
+
 export async function getSeoSettings(pageKey) {
 
   const defaults = {

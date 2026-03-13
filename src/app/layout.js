@@ -5,7 +5,7 @@ import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import VisitorTracker from '@/components/VisitorTracker'
 import { ThemeProvider } from '@/context/ThemeContext'
-import { getSiteSettings } from '@/lib/seo'
+import { getSiteSettings, getAdsenseSettings } from '@/lib/seo'
 
 const interTight = Inter_Tight({
   subsets: ['latin'],
@@ -54,8 +54,12 @@ export async function generateMetadata() {
 }
 
 export default async function RootLayout({ children }) {
-  const siteSettings = await getSiteSettings()
+  const [siteSettings, adsenseSettings] = await Promise.all([
+    getSiteSettings(),
+    getAdsenseSettings(),
+  ])
   const faviconUrl = siteSettings.favicon || '/favicon.svg'
+  const adsenseEnabled = adsenseSettings.enabled && adsenseSettings.publisherId
 
   return (
     <html lang="en" className={interTight.variable} suppressHydrationWarning>
@@ -65,6 +69,13 @@ export default async function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="icon" href={faviconUrl} />
         <link rel="apple-touch-icon" href={faviconUrl} />
+        {adsenseEnabled && (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseSettings.publisherId}`}
+            crossOrigin="anonymous"
+          />
+        )}
       </head>
       <body className={`${interTight.className} min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors`}>
         <GoogleAnalytics />
