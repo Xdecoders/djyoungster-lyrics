@@ -137,8 +137,6 @@ export default function AboutSection({ faqs, aboutHtml }) {
       {/* ── FAQ ───────────────────────────────────────────────── */}
       <section
         aria-labelledby="faq-heading"
-        itemScope
-        itemType="https://schema.org/FAQPage"
         className="bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">

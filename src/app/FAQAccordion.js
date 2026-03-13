@@ -8,9 +8,6 @@ function FAQItem({ question, answer, index }) {
 
   return (
     <div
-      itemScope
-      itemProp="mainEntity"
-      itemType="https://schema.org/Question"
       className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 overflow-hidden"
     >
       <button
@@ -20,7 +17,6 @@ function FAQItem({ question, answer, index }) {
       >
         {/* Question is visible text — correct for Google */}
         <h3
-          itemProp="name"
           className="font-semibold text-slate-800 dark:text-white text-sm sm:text-base leading-snug"
         >
           {question}
@@ -34,13 +30,9 @@ function FAQItem({ question, answer, index }) {
 
       {/* Answer — always in DOM for crawlers, CSS-animated for users */}
       <div
-        itemScope
-        itemProp="acceptedAnswer"
-        itemType="https://schema.org/Answer"
         className={`overflow-hidden transition-all duration-300 ${open ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
       >
         <p
-          itemProp="text"
           className="px-6 pb-5 pt-1 text-slate-600 dark:text-slate-300 text-sm leading-relaxed border-t border-slate-100 dark:border-slate-700"
         >
           {answer}
