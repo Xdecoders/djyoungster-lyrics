@@ -194,9 +194,9 @@ const TYPE_LABELS = {
 
 // No purple — using slate, emerald, amber
 const TYPE_ACCENT = {
-  complete_lyric: { bar: 'bg-slate-800 dark:bg-slate-700',    dot: 'bg-slate-700',  Icon: FiEdit2 },
-  which_song:     { bar: 'bg-emerald-500',                    dot: 'bg-emerald-500', Icon: FiMusic },
-  which_artist:   { bar: 'bg-amber-500',                      dot: 'bg-amber-500',   Icon: FiMic   },
+  complete_lyric: { bar: 'bg-slate-800 dark:bg-slate-700', border: 'border-slate-400 dark:border-slate-500', lyricBg: 'bg-slate-50 dark:bg-slate-800/50',   dot: 'bg-slate-700',  Icon: FiEdit2 },
+  which_song:     { bar: 'bg-emerald-500',                 border: 'border-emerald-400',                      lyricBg: 'bg-emerald-50 dark:bg-emerald-900/20', dot: 'bg-emerald-500', Icon: FiMusic },
+  which_artist:   { bar: 'bg-amber-500',                   border: 'border-amber-400',                        lyricBg: 'bg-amber-50 dark:bg-amber-900/20',     dot: 'bg-amber-500',   Icon: FiMic   },
 }
 
 function QuestionScreen({ question, questionNum, total, onAnswer, timeLeft, answers }) {
@@ -286,7 +286,7 @@ function QuestionScreen({ question, questionNum, total, onAnswer, timeLeft, answ
       {/* Content */}
       <div className="px-5 py-5">
         {/* Lyric */}
-        <div className={`mb-5 pl-4 border-l-2 ${accent.bar}`}>
+        <div className={`mb-5 pl-4 border-l-2 rounded-r-xl py-3 pr-3 ${accent.border} ${accent.lyricBg}`}>
           <p className="text-slate-700 dark:text-slate-200 text-base sm:text-lg font-semibold italic leading-relaxed whitespace-pre-line">
             {question.lyricSnippet}
           </p>
