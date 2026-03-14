@@ -28,6 +28,7 @@ model Song {
   metaTitle       String?
   metaDescription String?  @db.Text
   coverImage      String?
+  ogImage         String?
   youtubeUrl      String?
   spotifyUrl      String?
   appleMusicUrl   String?
