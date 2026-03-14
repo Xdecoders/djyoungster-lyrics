@@ -1919,6 +1919,36 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 }}
               />
 
+              {/* Daily Lyrics Quiz — teaser card */}
+              {(() => {
+                const LANG_CATS = new Set(['hindi', 'punjabi', 'english', 'tamil', 'telugu'])
+                const quizLang = categories.find(c => LANG_CATS.has(c.slug))?.slug
+                if (!quizLang) return null
+                const label = quizLang.charAt(0).toUpperCase() + quizLang.slice(1)
+                return (
+                  <div className="mb-6">
+                    <Link
+                      href={`/quiz?language=${quizLang}`}
+                      className="w-full text-left group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:border-primary dark:hover:border-primary hover:shadow-md transition-all duration-200 flex"
+                    >
+                      <div className="flex items-center gap-4 w-full">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                          <FiZap className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-primary uppercase tracking-widest mb-0.5">Daily Challenge</p>
+                          <p className="font-bold text-slate-800 dark:text-white text-base leading-tight">{label} Lyrics Quiz</p>
+                          <p className="text-sm text-slate-400 mt-0.5">5 questions · Can you score 5/5?</p>
+                        </div>
+                        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center group-hover:bg-primary dark:group-hover:bg-primary transition-colors">
+                          <FiPlay className="w-4 h-4 text-white dark:text-slate-900 group-hover:text-white" />
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                )
+              })()}
+
               {/* Song Meaning - After Ratings */}
               {song.meaning && (
                 <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
@@ -1956,36 +1986,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   })}
                 </div>
               )}
-
-              {/* Daily Lyrics Quiz — teaser card */}
-              {(() => {
-                const LANG_CATS = new Set(['hindi', 'punjabi', 'english', 'tamil', 'telugu'])
-                const quizLang = categories.find(c => LANG_CATS.has(c.slug))?.slug
-                if (!quizLang) return null
-                const label = quizLang.charAt(0).toUpperCase() + quizLang.slice(1)
-                return (
-                  <div className="mb-6">
-                    <Link
-                      href={`/quiz?language=${quizLang}`}
-                      className="w-full text-left group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:border-primary dark:hover:border-primary hover:shadow-md transition-all duration-200 flex"
-                    >
-                      <div className="flex items-center gap-4 w-full">
-                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
-                          <FiZap className="w-6 h-6 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs font-bold text-primary uppercase tracking-widest mb-0.5">Daily Challenge</p>
-                          <p className="font-bold text-slate-800 dark:text-white text-base leading-tight">{label} Lyrics Quiz</p>
-                          <p className="text-sm text-slate-400 mt-0.5">5 questions · Can you score 5/5?</p>
-                        </div>
-                        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center group-hover:bg-primary dark:group-hover:bg-primary transition-colors">
-                          <FiPlay className="w-4 h-4 text-white dark:text-slate-900 group-hover:text-white" />
-                        </div>
-                      </div>
-                    </Link>
-                  </div>
-                )
-              })()}
 
               {/* Report Button - Always visible after lyrics */}
               <div className="mb-6">
