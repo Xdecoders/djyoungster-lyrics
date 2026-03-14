@@ -18,7 +18,8 @@ import {
   FiGlobe,
   FiList,
   FiTrendingUp,
-  FiBookOpen
+  FiBookOpen,
+  FiZap
 } from 'react-icons/fi'
 import { useTheme } from '@/context/ThemeContext'
 
@@ -100,6 +101,7 @@ export default function Header() {
     { href: '/artists', label: 'Artists', icon: FiMic },
     { href: '/albums', label: 'Albums', icon: FiDisc },
     { href: '/movies', label: 'Movies', icon: FiFilm },
+    { href: '/quiz', label: 'Quiz', icon: FiZap, highlight: true },
   ]
 
   const browseLinks = [
@@ -138,17 +140,32 @@ export default function Header() {
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center gap-1">
               {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive(link.href)
-                      ? 'text-primary bg-emerald-50 dark:bg-emerald-900/30'
-                      : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  {link.label}
-                </Link>
+                link.highlight ? (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                      isActive(link.href)
+                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-200 dark:shadow-emerald-900'
+                        : 'bg-emerald-50 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 ring-1 ring-emerald-200 dark:ring-emerald-800'
+                    }`}
+                  >
+                    <link.icon className="w-3.5 h-3.5" />
+                    {link.label}
+                  </Link>
+                ) : (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                      isActive(link.href)
+                        ? 'text-primary bg-emerald-50 dark:bg-emerald-900/30'
+                        : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    {link.label}
+                  </Link>
+                )
               ))}
 
               {/* Browse Dropdown */}
@@ -302,13 +319,18 @@ export default function Header() {
               key={link.href}
               href={link.href}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
-                isActive(link.href)
-                  ? 'text-primary bg-emerald-50 dark:bg-emerald-900/30'
-                  : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800'
+                link.highlight
+                  ? isActive(link.href)
+                    ? 'text-white bg-emerald-500'
+                    : 'text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/40 ring-1 ring-emerald-200 dark:ring-emerald-800'
+                  : isActive(link.href)
+                    ? 'text-primary bg-emerald-50 dark:bg-emerald-900/30'
+                    : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800'
               }`}
             >
-              <link.icon className="w-5 h-5" />
+              <link.icon className={`w-5 h-5 ${link.highlight && !isActive(link.href) ? 'text-emerald-500' : ''}`} />
               <span className="font-medium">{link.label}</span>
+              {link.highlight && <span className="ml-auto text-xs font-semibold bg-emerald-500 text-white rounded-full px-2 py-0.5">Daily</span>}
             </Link>
           ))}
 
