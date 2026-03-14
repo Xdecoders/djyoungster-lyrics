@@ -512,3 +512,50 @@ model SearchEvent {
   @@index([createdAt])
   @@index([query])
 }
+
+model DailyQuiz {
+  id          String                @id @default(uuid())
+  language    String                // "hindi", "punjabi", "english", etc.
+  date        String                // "2026-03-14"
+  playCount   Int                   @default(0)
+  songIds     String                @db.Text // JSON array of song IDs used
+  questions   DailyQuizQuestion[]
+  submissions DailyQuizSubmission[]
+  createdAt   DateTime              @default(now())
+
+  @@unique([language, date])
+  @@index([language, date])
+}
+
+model DailyQuizQuestion {
+  id           String    @id @default(uuid())
+  quizId       String
+  quiz         DailyQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  order        Int
+  type         String    // "complete_lyric" | "which_song" | "which_artist"
+  lyricSnippet String    @db.Text
+  question     String    @db.Text
+  options      String    @db.Text  // JSON string[]
+  correctIndex Int
+  explanation  String?   @db.Text
+  songId       String?
+  songSlug     String?
+  songTitle    String?
+
+  @@index([quizId])
+}
+
+model DailyQuizSubmission {
+  id          String    @id @default(uuid())
+  quizId      String
+  quiz        DailyQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  sessionId   String
+  displayName String?
+  score       Int
+  timeTaken   Int       // seconds
+  streak      Int       @default(1)
+  submittedAt DateTime  @default(now())
+
+  @@index([quizId, score, timeTaken])
+  @@index([sessionId])
+}

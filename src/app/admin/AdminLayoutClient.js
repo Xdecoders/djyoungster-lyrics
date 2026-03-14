@@ -25,7 +25,8 @@ import {
   FiList,
   FiCornerUpRight,
   FiBarChart2,
-  FiDollarSign
+  FiDollarSign,
+  FiZap
 } from 'react-icons/fi'
 import { SiSpotify } from 'react-icons/si'
 import { useState, useEffect } from 'react'
@@ -114,6 +115,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/movies', label: 'Movies', icon: FiFilm },
     { href: '/admin/top-lists', label: 'Top Lists', icon: FiList },
     { href: '/admin/analytics', label: 'Analytics', icon: FiBarChart2 },
+    { href: '/admin/quiz', label: 'Daily Quiz', icon: FiZap },
     { href: '/admin/redirects', label: 'Redirects', icon: FiCornerUpRight },
 { href: '/admin/newsletter', label: 'Newsletter', icon: FiMail, badgeType: 'subscriber' },
     { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badgeType: 'reports' },

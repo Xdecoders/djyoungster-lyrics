@@ -43,7 +43,8 @@ import {
   FiGrid,
   FiDownload,
   FiCamera,
-  FiStar
+  FiStar,
+  FiZap
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
 import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest, FaInstagram, FaTumblr } from 'react-icons/fa'
@@ -1422,6 +1423,98 @@ function RatingsAndReactions({ slug, songTitle, ratingsRef, onRatingChange }) {
   )
 }
 
+// Song Recommendation Toast Component
+function SongRecommendationToast({ relatedSongs, categories, visible, onDismiss, ctaVisible }) {
+  const [song, setSong] = useState(null)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    if (relatedSongs && relatedSongs.length > 0) {
+      const randomSong = relatedSongs[Math.floor(Math.random() * relatedSongs.length)]
+      setSong(randomSong)
+    }
+  }, [relatedSongs])
+
+  // Trigger enter animation after paint
+  useEffect(() => {
+    if (visible && song) {
+      const t = requestAnimationFrame(() => setMounted(true))
+      return () => cancelAnimationFrame(t)
+    } else {
+      setMounted(false)
+    }
+  }, [visible, song])
+
+  if (!visible || !song) return null
+
+  const artistNames = song.artists?.map(sa => sa.artist.name).join(', ') || ''
+  const categoryName = categories?.[0]?.name || ''
+  return (
+    /* Outer: handles positioning only (no animation transform here) */
+    <div
+      style={{ transition: 'bottom 0.3s cubic-bezier(0.16,1,0.3,1)', bottom: ctaVisible ? '4.5rem' : '1.5rem' }}
+      className="fixed z-50 left-5 w-[calc(100%-2.5rem)] sm:w-80"
+    >
+    {/* Inner: slides in from left */}
+    <div
+      style={{
+        transition: 'opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1)',
+        opacity: mounted ? 1 : 0,
+        transform: mounted ? 'translateX(0)' : 'translateX(-24px)',
+      }}
+      className="relative bg-slate-900 dark:bg-white border border-slate-700 dark:border-slate-200 rounded-2xl shadow-xl"
+      role="status"
+      aria-live="polite"
+    >
+      <Link
+        href={`/song/${song.slug}`}
+        className="flex items-center gap-3 p-3 hover:bg-slate-800 dark:hover:bg-slate-100/60 rounded-2xl transition group"
+      >
+        {/* Cover */}
+        {song.coverImage ? (
+          <div className="w-12 h-12 flex-shrink-0 rounded-xl overflow-hidden bg-slate-700 dark:bg-slate-200">
+            <img
+              src={song.coverImage}
+              alt={song.title}
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+          </div>
+        ) : (
+          <div className="w-12 h-12 flex-shrink-0 rounded-xl bg-gradient-to-br from-primary/30 to-emerald-500/30 flex items-center justify-center">
+            <FiMusic className="w-5 h-5 text-primary" />
+          </div>
+        )}
+
+        {/* Text */}
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] font-medium text-primary uppercase tracking-wide mb-0.5">
+            {categoryName ? `More ${categoryName}` : 'You might like'}
+          </p>
+          <p className="text-sm font-semibold text-white dark:text-slate-900 truncate group-hover:text-primary transition leading-tight">
+            {song.title}
+          </p>
+          {artistNames && (
+            <p className="text-xs text-slate-400 dark:text-slate-500 truncate">{artistNames}</p>
+          )}
+        </div>
+
+        <FiChevronRight className="w-4 h-4 text-slate-500 dark:text-slate-400 flex-shrink-0 group-hover:text-primary transition" />
+      </Link>
+
+      {/* Dismiss */}
+      <button
+        onClick={(e) => { e.preventDefault(); onDismiss() }}
+        className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-slate-500 dark:bg-slate-400 flex items-center justify-center hover:bg-slate-400 dark:hover:bg-slate-500 transition"
+        aria-label="Dismiss"
+      >
+        <FiX className="w-3 h-3 text-white dark:text-slate-900" />
+      </button>
+    </div>
+    </div>
+  )
+}
+
 export default function SongPageClient({ initialSong, initialRelatedSongs = [] }) {
   const params = useParams()
   // Use initial data from server - no loading state needed
@@ -1440,6 +1533,8 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
   const ratingsRef = useRef(null)
   const [showFloatingCta, setShowFloatingCta] = useState(false)
   const [ctaDismissed, setCtaDismissed] = useState(false)
+  const [showSongToast, setShowSongToast] = useState(false)
+  const [songToastDismissed, setSongToastDismissed] = useState(false)
 
   // Show floating CTA after scrolling 400px, hide if dismissed or in select mode
   useEffect(() => {
@@ -1450,6 +1545,24 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
   }, [ctaDismissed])
+
+  // Show song recommendation toast after user scrolls 40% of the page
+  useEffect(() => {
+    if (songToastDismissed || relatedSongs.length === 0) return
+    let shown = false
+    const onToastScroll = () => {
+      if (shown || songToastDismissed) return
+      const scrolled = window.scrollY + window.innerHeight
+      const total = document.documentElement.scrollHeight
+      if (scrolled / total >= 0.3) {
+        shown = true
+        setTimeout(() => setShowSongToast(true), 800)
+        window.removeEventListener('scroll', onToastScroll)
+      }
+    }
+    window.addEventListener('scroll', onToastScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onToastScroll)
+  }, [songToastDismissed, relatedSongs])
 
   // Story mode (dynamically imported)
   const {
@@ -1731,6 +1844,20 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                       <span className="hidden sm:inline">Create Reel</span>
                       <span className="sm:hidden">IG Reel</span>
                     </button>
+                    {(() => {
+                      const LANG_CATS = new Set(['hindi', 'punjabi', 'english', 'tamil', 'telugu'])
+                      const quizLang = categories.find(c => LANG_CATS.has(c.slug))?.slug
+                      return quizLang ? (
+                        <Link
+                          href={`/quiz?language=${quizLang}`}
+                          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl font-medium hover:from-emerald-700 hover:to-teal-700 transition"
+                        >
+                          <FiZap className="w-4 h-4" />
+                          <span className="hidden sm:inline">Play Quiz</span>
+                          <span className="sm:hidden">Quiz</span>
+                        </Link>
+                      ) : null
+                    })()}
                   </div>
                 )}
 
@@ -1830,6 +1957,36 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 </div>
               )}
 
+              {/* Daily Lyrics Quiz — teaser card */}
+              {(() => {
+                const LANG_CATS = new Set(['hindi', 'punjabi', 'english', 'tamil', 'telugu'])
+                const quizLang = categories.find(c => LANG_CATS.has(c.slug))?.slug
+                if (!quizLang) return null
+                const label = quizLang.charAt(0).toUpperCase() + quizLang.slice(1)
+                return (
+                  <div className="mb-6">
+                    <Link
+                      href={`/quiz?language=${quizLang}`}
+                      className="w-full text-left group bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl p-5 hover:border-primary dark:hover:border-primary hover:shadow-md transition-all duration-200 flex"
+                    >
+                      <div className="flex items-center gap-4 w-full">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/20 transition-colors">
+                          <FiZap className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-primary uppercase tracking-widest mb-0.5">Daily Challenge</p>
+                          <p className="font-bold text-slate-800 dark:text-white text-base leading-tight">{label} Lyrics Quiz</p>
+                          <p className="text-sm text-slate-400 mt-0.5">5 questions · Can you score 5/5?</p>
+                        </div>
+                        <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-slate-900 dark:bg-white flex items-center justify-center group-hover:bg-primary dark:group-hover:bg-primary transition-colors">
+                          <FiPlay className="w-4 h-4 text-white dark:text-slate-900 group-hover:text-white" />
+                        </div>
+                      </div>
+                    </Link>
+                  </div>
+                )
+              })()}
+
               {/* Report Button - Always visible after lyrics */}
               <div className="mb-6">
                 <button
@@ -1882,6 +2039,7 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
 
               {/* FAQ Section */}
               <FAQSection song={song} />
+
             </div>
 
             {/* Sidebar */}
@@ -2185,6 +2343,16 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
         </div>
       )}
 
+      {/* Song Recommendation Toast — hide during story/clip selection modes */}
+      {!isAnySelectMode && (
+        <SongRecommendationToast
+          relatedSongs={relatedSongs}
+          categories={categories}
+          visible={showSongToast && !songToastDismissed}
+          onDismiss={() => { setShowSongToast(false); setSongToastDismissed(true) }}
+          ctaVisible={showFloatingCta && !ctaDismissed}
+        />
+      )}
 
     </div>
   )
