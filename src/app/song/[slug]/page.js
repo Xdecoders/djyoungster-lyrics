@@ -39,7 +39,9 @@ export async function generateMetadata({ params }) {
             genre: { select: { name: true } }
           }
         }
-      }
+      },
+      // Also fetch fields needed for og:image and dates
+      // (already included via findUnique — ogImage, datePublished, dateModified are on Song model)
     })
 
     if (!song) {
@@ -84,7 +86,10 @@ export async function generateMetadata({ params }) {
     const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || 'https://djyoungster.com'
     const pageUrl = `${siteUrl}/song/${slug}`
     const uploadUrl = process.env.UPLOAD_URL || '/uploads'
-    const imageUrl = `${siteUrl}${uploadUrl}/og/${slug}-og.webp`
+    // Prefer DB ogImage field (actual generated path), fallback to guessed path
+    const imageUrl = song.ogImage
+      ? `${siteUrl}${song.ogImage}`
+      : `${siteUrl}${uploadUrl}/og/${slug}-og.webp`
 
     // Build hreflang alternates — all variants live on the same URL via tabs,
     // so self-referencing hreflang tells Google this page serves multiple languages.
@@ -160,6 +165,10 @@ export async function generateMetadata({ params }) {
         'music:duration': song.duration || undefined,
         'music:album': song.album?.title || undefined,
         'music:release_date': song.datePublished ? new Date(song.datePublished).toISOString().split('T')[0] : undefined,
+        'article:published_time': song.datePublished ? new Date(song.datePublished).toISOString() : undefined,
+        'article:modified_time': song.dateModified ? new Date(song.dateModified).toISOString() : (song.updatedAt ? new Date(song.updatedAt).toISOString() : undefined),
+        'article:author': artistNames,
+        'article:section': 'Lyrics',
       },
     }
   } catch (error) {

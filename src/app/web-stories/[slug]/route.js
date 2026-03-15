@@ -1,5 +1,4 @@
 import { prisma } from '@/lib/prisma'
-import { getAdsenseSettings } from '@/lib/seo'
 
 export const revalidate = 3600 // Cache for 1 hour at Next.js level
 
@@ -55,10 +54,7 @@ export async function GET(request, { params }) {
     return new Response('Not Found', { status: 404 })
   }
 
-  const adsense = await getAdsenseSettings()
-  const storyAdsEnabled = adsense.enabled && adsense.publisherId && adsense.webStoryAdsEnabled && adsense.webStoryAdSlot
-
-  const artistNames = song.artists.map(sa => sa.artist.name).join(', ') || PUBLISHER
+const artistNames = song.artists.map(sa => sa.artist.name).join(', ') || PUBLISHER
   const chunks = getLyricChunks(song.lyrics || '')
   const songUrl = `${SITE_URL}/song/${song.slug}`
   const storyUrl = `${SITE_URL}/web-stories/${song.slug}`
@@ -324,19 +320,7 @@ export async function GET(request, { params }) {
     publisher-logo-src="${LOGO_URL}"
     poster-portrait-src="${escapeHtml(coverTemplateImg)}">
 
-    ${storyAdsEnabled ? `<amp-story-auto-ads>
-      <script type="application/json">
-        {
-          "ad-attributes": {
-            "type": "adsense",
-            "data-ad-client": "${adsense.publisherId}",
-            "data-ad-slot": "${adsense.webStoryAdSlot}"
-          }
-        }
-      </script>
-    </amp-story-auto-ads>` : ''}
-
-    ${GA_ID ? `<amp-analytics type="gtag" data-credentials="include">
+${GA_ID ? `<amp-analytics type="gtag" data-credentials="include">
       <script type="application/json">
         {
           "vars": {

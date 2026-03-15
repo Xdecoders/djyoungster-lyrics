@@ -179,9 +179,9 @@ export function generateSongSchema(song, artistNames) {
     recording.duration = song.duration
   }
 
-  // Add image if available
-  if (song.coverImage) {
-    schema.image = getAbsoluteUrl(song.coverImage)
+  // Prefer 1200×630 ogImage for structured data (Google Discover), fallback to coverImage
+  if (song.ogImage || song.coverImage) {
+    schema.image = getAbsoluteUrl(song.ogImage || song.coverImage)
   }
 
   // Add multilingual lyrics versions

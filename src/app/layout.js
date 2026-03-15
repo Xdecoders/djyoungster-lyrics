@@ -6,7 +6,7 @@ import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import VisitorTracker from '@/components/VisitorTracker'
 import { ThemeProvider } from '@/context/ThemeContext'
-import { getSiteSettings, getAdsenseSettings, getCodeSnippets } from '@/lib/seo'
+import { getSiteSettings, getCodeSnippets } from '@/lib/seo'
 import CodeSnippetInjector from '@/components/CodeSnippetInjector'
 
 const interTight = Inter_Tight({
@@ -72,13 +72,11 @@ function isAll(pages) {
 }
 
 export default async function RootLayout({ children }) {
-  const [siteSettings, adsenseSettings, codeSnippets] = await Promise.all([
+  const [siteSettings, codeSnippets] = await Promise.all([
     getSiteSettings(),
-    getAdsenseSettings(),
     getCodeSnippets(),
   ])
   const faviconUrl = siteSettings.favicon || '/favicon.svg'
-  const adsenseEnabled = adsenseSettings.enabled && adsenseSettings.publisherId
 
   // "Entire site" snippets are injected SSR. Specific-page snippets go to CodeSnippetInjector.
   const headerAll = isAll(codeSnippets.headerPages)
