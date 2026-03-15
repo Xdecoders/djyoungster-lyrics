@@ -6,7 +6,8 @@ import Footer from '@/components/Footer'
 import GoogleAnalytics from '@/components/GoogleAnalytics'
 import VisitorTracker from '@/components/VisitorTracker'
 import { ThemeProvider } from '@/context/ThemeContext'
-import { getSiteSettings, getAdsenseSettings } from '@/lib/seo'
+import { getSiteSettings, getAdsenseSettings, getCodeSnippets } from '@/lib/seo'
+import CodeSnippetInjector from '@/components/CodeSnippetInjector'
 
 const interTight = Inter_Tight({
   subsets: ['latin'],
@@ -46,18 +47,25 @@ export async function generateMetadata() {
     robots: {
       index: true,
       follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
       googleBot: {
         index: true,
         follow: true,
+        'max-image-preview': 'large',
+        'max-snippet': -1,
+        'max-video-preview': -1,
       },
     },
   }
 }
 
 export default async function RootLayout({ children }) {
-  const [siteSettings, adsenseSettings] = await Promise.all([
+  const [siteSettings, adsenseSettings, codeSnippets] = await Promise.all([
     getSiteSettings(),
     getAdsenseSettings(),
+    getCodeSnippets(),
   ])
   const faviconUrl = siteSettings.favicon || '/favicon.svg'
   const adsenseEnabled = adsenseSettings.enabled && adsenseSettings.publisherId
@@ -65,21 +73,22 @@ export default async function RootLayout({ children }) {
   return (
     <html lang="en" className={interTight.variable} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="icon" href={faviconUrl} />
         <link rel="apple-touch-icon" href={faviconUrl} />
-        {adsenseEnabled && (
-          <script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseSettings.publisherId}`}
-            crossOrigin="anonymous"
-          />
-        )}
       </head>
       <body className={`${interTight.className} min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors`}>
         <GoogleAnalytics />
+        {adsenseEnabled && (
+          <Script
+            id="google-adsense"
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseSettings.publisherId}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
         <Script
           id="microsoft-clarity"
           strategy="afterInteractive"
@@ -93,6 +102,12 @@ export default async function RootLayout({ children }) {
           <Footer />
           <VisitorTracker />
         </ThemeProvider>
+        <CodeSnippetInjector
+          headerCode={codeSnippets.headerCode}
+          headerPages={codeSnippets.headerPages}
+          footerCode={codeSnippets.footerCode}
+          footerPages={codeSnippets.footerPages}
+        />
       </body>
     </html>
   )

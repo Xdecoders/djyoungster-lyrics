@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiLock, FiUser, FiMail, FiSave, FiEye, FiEyeOff, FiShield, FiImage, FiRefreshCw, FiCheck } from 'react-icons/fi'
+import { FiLock, FiUser, FiMail, FiSave, FiEye, FiEyeOff, FiShield, FiImage, FiRefreshCw, FiCheck, FiCode } from 'react-icons/fi'
 
 export default function AdminSettings() {
   const router = useRouter()
@@ -12,6 +12,14 @@ export default function AdminSettings() {
   const [ogStats, setOgStats] = useState(null)
   const [ogGenerating, setOgGenerating] = useState(false)
   const [ogResult, setOgResult] = useState(null)
+
+  // Code snippets state
+  const [snippets, setSnippets] = useState({
+    headerCode: '', headerPages: ['all'],
+    footerCode: '', footerPages: ['all'],
+  })
+  const [snippetSaving, setSnippetSaving] = useState(false)
+  const [snippetMessage, setSnippetMessage] = useState({ type: '', text: '' })
 
   // Profile state
   const [profile, setProfile] = useState({
@@ -41,7 +49,46 @@ export default function AdminSettings() {
     }
     fetchProfile()
     fetchOgStats()
+    fetchSnippets()
   }, [])
+
+  const togglePage = (field, value) => {
+    setSnippets(prev => {
+      const current = prev[field] || []
+      if (value === 'all') return { ...prev, [field]: ['all'] }
+      const without = current.filter(p => p !== 'all' && p !== value)
+      const next = current.includes(value) ? without : [...without, value]
+      return { ...prev, [field]: next.length === 0 ? ['all'] : next }
+    })
+  }
+
+  const fetchSnippets = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/code-snippets', { headers: { Authorization: `Bearer ${token}` } })
+      if (res.ok) setSnippets(await res.json())
+    } catch {}
+  }
+
+  const handleSaveSnippets = async (e) => {
+    e.preventDefault()
+    setSnippetSaving(true)
+    setSnippetMessage({ type: '', text: '' })
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/code-snippets', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify(snippets)
+      })
+      const data = await res.json()
+      setSnippetMessage({ type: res.ok ? 'success' : 'error', text: data.message })
+    } catch {
+      setSnippetMessage({ type: 'error', text: 'An error occurred' })
+    } finally {
+      setSnippetSaving(false)
+    }
+  }
 
   const fetchOgStats = async () => {
     try {
@@ -413,6 +460,124 @@ export default function AdminSettings() {
           </div>
         </div>
 
+        {/* Code Snippets */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="bg-violet-100 w-10 h-10 rounded-xl flex items-center justify-center">
+              <FiCode className="w-5 h-5 text-violet-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-800">Code Snippets</h2>
+              <p className="text-sm text-slate-500">Inject scripts into the header or footer — choose which pages to apply them on</p>
+            </div>
+          </div>
+
+          {snippetMessage.text && (
+            <div className={`mb-4 p-3 rounded-xl text-sm ${
+              snippetMessage.type === 'success'
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {snippetMessage.text}
+            </div>
+          )}
+
+          <form onSubmit={handleSaveSnippets} className="space-y-6">
+
+            {/* Header Code */}
+            <div className="border border-slate-100 rounded-xl p-4 space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Header Code <span className="font-normal text-slate-400 text-xs">— injected inside &lt;head&gt;</span></p>
+                <p className="text-xs text-slate-400 mt-0.5">Good for analytics, tag managers, verification scripts. Paste with or without &lt;script&gt; tags.</p>
+              </div>
+              <textarea
+                value={snippets.headerCode}
+                onChange={(e) => setSnippets({ ...snippets, headerCode: e.target.value })}
+                rows={5}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none transition font-mono text-sm resize-y"
+                placeholder={'<script>\n  // Your code here\n</script>'}
+              />
+              <PageSelector
+                label="Show on"
+                selected={snippets.headerPages || ['all']}
+                onToggle={(val) => togglePage('headerPages', val)}
+              />
+            </div>
+
+            {/* Footer Code */}
+            <div className="border border-slate-100 rounded-xl p-4 space-y-3">
+              <div>
+                <p className="text-sm font-semibold text-slate-700">Footer Code <span className="font-normal text-slate-400 text-xs">— injected before &lt;/body&gt;</span></p>
+                <p className="text-xs text-slate-400 mt-0.5">Runs after the page loads. Good for chat widgets, pixels, or deferred scripts.</p>
+              </div>
+              <textarea
+                value={snippets.footerCode}
+                onChange={(e) => setSnippets({ ...snippets, footerCode: e.target.value })}
+                rows={5}
+                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-violet-300 focus:border-violet-400 outline-none transition font-mono text-sm resize-y"
+                placeholder={'<script>\n  // Your code here\n</script>'}
+              />
+              <PageSelector
+                label="Show on"
+                selected={snippets.footerPages || ['all']}
+                onToggle={(val) => togglePage('footerPages', val)}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={snippetSaving}
+              className="flex items-center gap-2 px-6 py-3 bg-violet-600 text-white rounded-xl hover:bg-violet-700 transition disabled:opacity-50 font-medium"
+            >
+              <FiSave className="w-5 h-5" />
+              {snippetSaving ? 'Saving...' : 'Save Snippets'}
+            </button>
+          </form>
+        </div>
+
+      </div>
+    </div>
+  )
+}
+
+const PAGE_OPTIONS = [
+  { value: 'all',      label: 'Entire site' },
+  { value: 'homepage', label: 'Homepage' },
+  { value: 'song',     label: 'Song lyrics pages' },
+  { value: 'artist',   label: 'Artist pages' },
+  { value: 'album',    label: 'Album pages' },
+  { value: 'movie',    label: 'Movie pages' },
+  { value: 'category', label: 'Category pages' },
+  { value: 'genre',    label: 'Genre pages' },
+  { value: 'tag',      label: 'Tag pages' },
+  { value: 'search',   label: 'Search page' },
+  { value: 'songs',    label: 'All songs listing' },
+  { value: 'artists',  label: 'All artists listing' },
+]
+
+function PageSelector({ label, selected, onToggle }) {
+  const isAll = selected.includes('all')
+  return (
+    <div>
+      <p className="text-xs font-medium text-slate-600 mb-2">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {PAGE_OPTIONS.map(({ value, label: optLabel }) => {
+          const active = value === 'all' ? isAll : (!isAll && selected.includes(value))
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onToggle(value)}
+              className={`px-3 py-1 rounded-lg text-xs font-medium border transition ${
+                active
+                  ? 'bg-violet-600 border-violet-600 text-white'
+                  : 'bg-white border-slate-200 text-slate-600 hover:border-violet-400 hover:text-violet-600'
+              }`}
+            >
+              {optLabel}
+            </button>
+          )
+        })}
       </div>
     </div>
   )

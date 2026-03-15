@@ -96,6 +96,24 @@ export async function getAdsenseSettings() {
   }
 }
 
+// Get header/footer code snippets
+export async function getCodeSnippets() {
+  try {
+    const settings = await prisma.siteSeoSettings.findUnique({
+      where: { pageKey: 'code-snippets' }
+    })
+    if (settings?.metaKeywords) {
+      try {
+        return JSON.parse(settings.metaKeywords)
+      } catch {}
+    }
+    return { headerCode: '', footerCode: '' }
+  } catch (error) {
+    console.error('Error fetching code snippets:', error)
+    return { headerCode: '', footerCode: '' }
+  }
+}
+
 export async function getSeoSettings(pageKey) {
 
   const defaults = {
