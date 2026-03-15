@@ -25,7 +25,6 @@ import {
   FiList,
   FiCornerUpRight,
   FiBarChart2,
-  FiDollarSign,
   FiZap
 } from 'react-icons/fi'
 import { SiSpotify } from 'react-icons/si'
@@ -121,7 +120,6 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/reports', label: 'Reports', icon: FiAlertCircle, badgeType: 'reports' },
     { href: '/admin/song-requests', label: 'Song Requests', icon: FiInbox, badgeType: 'songRequests' },
     { href: '/admin/seo-settings', label: 'SEO Settings', icon: FiSearch },
-    { href: '/admin/adsense-settings', label: 'AdSense', icon: FiDollarSign },
     { href: '/admin/pages', label: 'Pages', icon: FiFileText },
     { href: '/admin/homepage', label: 'Homepage', icon: FiHome },
     { href: '/admin/cache', label: 'Cache', icon: FiDatabase },
