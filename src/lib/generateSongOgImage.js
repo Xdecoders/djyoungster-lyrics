@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { writeFile, mkdir } from 'fs/promises'
+import { writeFile, mkdir, readFile } from 'fs/promises'
 import path from 'path'
 import sharp from 'sharp'
 import { prisma } from '@/lib/prisma'
@@ -50,6 +50,17 @@ async function loadInterTight(weight) {
   }
 }
 
+// Load the bundled Noto Sans font (fallback for when Google Fonts is unavailable)
+async function loadBundledFont() {
+  try {
+    const fontPath = path.join(process.cwd(), 'node_modules', 'next', 'dist', 'compiled', '@vercel', 'og', 'noto-sans-v27-latin-regular.ttf')
+    const buffer = await readFile(fontPath)
+    return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength)
+  } catch {
+    return null
+  }
+}
+
 /**
  * Generates a 1200x630 OG card image for a song, saves it to disk,
  * and updates the song's ogImage field in the database.
@@ -93,6 +104,16 @@ export async function generateSongOgImage(songId) {
     if (font500) fonts.push({ name: 'Inter Tight', data: font500, weight: 500, style: 'normal' })
     if (font700) fonts.push({ name: 'Inter Tight', data: font700, weight: 700, style: 'normal' })
     if (font800) fonts.push({ name: 'Inter Tight', data: font800, weight: 800, style: 'normal' })
+
+    // Fallback: use bundled Noto Sans if Google Fonts failed (avoids broken file:// URL on Windows)
+    if (fonts.length === 0) {
+      const fallbackFont = await loadBundledFont()
+      if (fallbackFont) {
+        fonts.push({ name: 'Inter Tight', data: fallbackFont, weight: 400, style: 'normal' })
+        fonts.push({ name: 'Inter Tight', data: fallbackFont, weight: 700, style: 'normal' })
+        fonts.push({ name: 'Inter Tight', data: fallbackFont, weight: 800, style: 'normal' })
+      }
+    }
 
     const titleSize = song.title.length > 40 ? 48 : song.title.length > 25 ? 56 : 64
 

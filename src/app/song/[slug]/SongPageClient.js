@@ -673,9 +673,10 @@ function LiveReaders({ songTitle }) {
   if (count === null) return null
 
   return (
-    <p className="text-sm text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 px-3 py-1.5 rounded-lg mb-3 text-center sm:text-left">
-      <span className="font-semibold">{count} people</span> reading {songTitle} lyrics right now
-    </p>
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30 px-2.5 py-1 rounded-full">
+      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      {count} reading now
+    </span>
   )
 }
 
@@ -1675,139 +1676,150 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
             <div className="lg:col-span-2">
-              {/* Song Header - Clean Minimalist Design */}
-              <header className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 mb-6">
-                <div className="flex flex-col sm:flex-row gap-6">
-                  {/* Cover Image - Larger Size */}
-                  <div className="w-44 h-44 sm:w-52 sm:h-52 rounded-2xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-lg mx-auto sm:mx-0 relative">
-                    {song.coverImage ? (
-                      <Image src={song.coverImage} alt={`${song.title} by ${artistNames} – song cover art`} fill sizes="(max-width: 640px) 176px, 208px" className="object-cover" itemProp="image" />
-                    ) : (
-                      <FiMusic className="w-20 h-20 text-slate-400 dark:text-slate-500" />
-                    )}
+              {/* Song Hero — Google Discover optimized */}
+              <header className="bg-white dark:bg-slate-800 rounded-2xl overflow-hidden shadow-sm border border-slate-100 dark:border-slate-700 mb-6">
+
+                {/* ── Featured image — ogImage preferred (1200×630), fallback to coverImage ── */}
+                {(song.ogImage || song.coverImage) && (
+                  <div className="relative w-full aspect-[16/9] sm:aspect-[1200/630] bg-slate-100 dark:bg-slate-900 overflow-hidden">
+                    <Image
+                      src={song.ogImage || song.coverImage}
+                      alt={`${song.title} by ${artistNames}`}
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
+                      className="object-cover"
+                      itemProp="image"
+                      priority
+                    />
                   </div>
+                )}
 
-                  {/* Song Info */}
-                  <div className="flex-1 text-center sm:text-left">
-                    <h1 itemProp="name" className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-white mb-2">
-                      {song.title} Lyrics
-                      {song.verified && (
-                        <svg className="inline-block w-[18px] h-[18px] sm:w-[21px] sm:h-[21px] ml-1.5 align-middle" viewBox="0 0 20 20" fill="none">
-                          <title>Verified Lyrics</title>
-                          <defs>
-                            <linearGradient id="gemGrad" x1="0" y1="0" x2="20" y2="20" gradientUnits="userSpaceOnUse">
-                              <stop offset="0%" stopColor="#1DB954" />
-                              <stop offset="100%" stopColor="#059669" />
-                            </linearGradient>
-                          </defs>
-                          <rect x="10" y="1" width="12.73" height="12.73" rx="2.5" transform="rotate(45 10 1)" fill="url(#gemGrad)" />
-                          <path d="M7 10.5L9 12.5L13 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
+                {/* ── Song info below image ── */}
+                <div className="px-4 pt-4 pb-3 sm:px-6 sm:pt-5">
+
+                  {/* Movie / Album tag */}
+                  {(song.movie || song.album) && (
+                    <div className="mb-2">
+                      {song.movie ? (
+                        <Link href={`/movie/${song.movie.slug}`} className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs font-medium px-2.5 py-1 rounded-full hover:text-primary transition">
+                          <FiFilm className="w-3 h-3" />
+                          {song.movie.title}
+                        </Link>
+                      ) : (
+                        <Link href={`/album/${song.album.slug}`} className="inline-flex items-center gap-1.5 bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-400 text-xs font-medium px-2.5 py-1 rounded-full hover:text-primary transition">
+                          <FiDisc className="w-3 h-3" />
+                          <span itemScope itemType="https://schema.org/MusicAlbum"><span itemProp="name">{song.album.title}</span></span>
+                        </Link>
                       )}
-                    </h1>
+                    </div>
+                  )}
 
-                    {/* Star Rating Summary */}
+                  {/* Title */}
+                  <h1 itemProp="name" className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white leading-tight mb-2.5">
+                    {song.title} Lyrics
+                    {song.verified && (
+                      <svg className="inline-block w-[18px] h-[18px] sm:w-[22px] sm:h-[22px] ml-1.5 align-middle" viewBox="0 0 20 20" fill="none">
+                        <title>Verified Lyrics</title>
+                        <defs>
+                          <linearGradient id="gemGrad" x1="0" y1="0" x2="20" y2="20" gradientUnits="userSpaceOnUse">
+                            <stop offset="0%" stopColor="#1DB954" />
+                            <stop offset="100%" stopColor="#059669" />
+                          </linearGradient>
+                        </defs>
+                        <rect x="10" y="1" width="12.73" height="12.73" rx="2.5" transform="rotate(45 10 1)" fill="url(#gemGrad)" />
+                        <path d="M7 10.5L9 12.5L13 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </h1>
+
+                  {/* Artists */}
+                  <div itemProp="recordedAs" itemScope itemType="https://schema.org/MusicRecording" className="flex flex-wrap gap-2 mb-3">
+                    {song.artists?.map(({ artist }) => (
+                      <Link
+                        key={artist.id}
+                        href={`/artist/${artist.slug}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-full text-sm font-medium hover:bg-primary/10 hover:text-primary transition"
+                      >
+                        <FiUser className="w-3 h-3" />
+                        <span itemProp="byArtist" itemScope itemType="https://schema.org/MusicGroup">
+                          <span itemProp="name">{artist.name}</span>
+                        </span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* ── Stats + actions bar ── */}
+                <div className="px-4 py-3 sm:px-6 border-t border-slate-100 dark:border-slate-700/60">
+
+                  {/* Mobile: row 1 — rating + live readers */}
+                  {/* Desktop: single row — rating | live readers + views + actions */}
+                  <div className="flex items-center justify-between gap-2">
+                    {/* Rating */}
                     <button
                       onClick={() => ratingsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })}
-                      className="inline-flex items-center gap-1.5 mb-3 group cursor-pointer mx-auto sm:mx-0"
+                      className="inline-flex items-center gap-1.5 group cursor-pointer shrink-0"
                       title="Rate this song"
                     >
                       <div className="flex items-center gap-0.5">
                         {[1, 2, 3, 4, 5].map((star) => (
-                          <svg
-                            key={star}
-                            className={`w-5 h-5 transition-colors ${
-                              star <= Math.round(headerAvgRating)
-                                ? 'text-amber-400 fill-amber-400'
-                                : 'text-slate-300 dark:text-slate-600 fill-slate-300 dark:fill-slate-600'
-                            }`}
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            strokeWidth="1"
+                          <svg key={star}
+                            className={`w-4 h-4 transition-colors ${star <= Math.round(headerAvgRating) ? 'text-amber-400 fill-amber-400' : 'text-slate-300 dark:text-slate-600 fill-slate-300 dark:fill-slate-600'}`}
+                            viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1"
                           >
                             <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                           </svg>
                         ))}
                       </div>
                       <span className="text-sm text-slate-500 dark:text-slate-400 group-hover:text-primary transition">
-                        {headerTotalRatings > 0
-                          ? `${headerAvgRating} (${headerTotalRatings})`
-                          : 'Rate this song'}
+                        {headerTotalRatings > 0 ? `${headerAvgRating} · ${headerTotalRatings} ${headerTotalRatings === 1 ? 'rating' : 'ratings'}` : 'Rate'}
                       </span>
                     </button>
 
-                    <div itemProp="recordedAs" itemScope itemType="https://schema.org/MusicRecording" className="flex flex-col gap-3 mb-3">
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                        {song.artists?.map(({ artist }) => (
-                          <Link
-                            key={artist.id}
-                            href={`/artist/${artist.slug}`}
-                            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-full text-sm font-medium hover:bg-primary/10 hover:text-primary transition"
-                          >
-                            <FiUser className="w-3.5 h-3.5" />
-                            <span itemProp="byArtist" itemScope itemType="https://schema.org/MusicGroup">
-                              <span itemProp="name">{artist.name}</span>
-                            </span>
-                          </Link>
-                        ))}
-                      </div>
-
-                      {/* Meta Info — inside recordedAs so inAlbum is on MusicRecording */}
-                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-4 text-sm text-slate-500 dark:text-slate-400">
-                        {song.album && (
-                          <Link href={`/album/${song.album.slug}`} className="flex items-center gap-1.5 hover:text-primary transition">
-                            <FiDisc className="w-4 h-4" />
-                            <span itemProp="inAlbum" itemScope itemType="https://schema.org/MusicAlbum">
-                              <span itemProp="name">{song.album.title}</span>
-                            </span>
-                          </Link>
-                        )}
-                      {song.movie && (
-                        <Link href={`/movie/${song.movie.slug}`} className="flex items-center gap-1.5 hover:text-primary transition">
-                          <FiFilm className="w-4 h-4" />
-                          <span>{song.movie.title}</span>
-                        </Link>
+                    {/* Right side */}
+                    <div className="flex items-center gap-2">
+                      <LiveReaders songTitle={song.title} />
+                      {viewCount >= 1000 && (
+                        <span className="hidden sm:flex items-center gap-1 text-xs text-slate-400 dark:text-slate-500">
+                          <FiEye className="w-3.5 h-3.5" />{formatViews(viewCount)}
+                        </span>
                       )}
-                        {viewCount >= 1000 && (
-                          <span className="flex items-center gap-1.5">
-                            <FiEye className="w-4 h-4" />
-                            <span>{formatViews(viewCount)} views</span>
-                          </span>
+                      {/* Actions — desktop only here, mobile gets its own row below */}
+                      <div className="hidden sm:flex items-center gap-2">
+                        <button onClick={() => setShowShareModal(true)} className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                          <FiShare2 className="w-3.5 h-3.5" />Share
+                        </button>
+                        <button onClick={copyLyrics} className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition">
+                          {copied ? <FiCheck className="w-3.5 h-3.5 text-green-500" /> : <FiCopy className="w-3.5 h-3.5" />}
+                          {copied ? 'Copied!' : 'Copy'}
+                        </button>
+                        {song.hasWebStory && (
+                          <a href={`/web-stories/${song.slug}`} target="_blank" rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-emerald-500 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium hover:bg-emerald-50 dark:hover:bg-emerald-950 transition">
+                            <FiBookOpen className="w-3.5 h-3.5" />Lyric Story
+                          </a>
                         )}
                       </div>
                     </div>
+                  </div>
 
-                    {/* Live Readers */}
-                    <LiveReaders songTitle={song.title} />
-
-                    {/* Action Buttons */}
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-                      <button
-                        onClick={() => setShowShareModal(true)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
-                      >
-                        <FiShare2 className="w-3.5 h-3.5" />
-                        Share
-                      </button>
-                      <button
-                        onClick={copyLyrics}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium hover:bg-slate-200 dark:hover:bg-slate-600 transition"
-                      >
-                        {copied ? <FiCheck className="w-3.5 h-3.5 text-green-500" /> : <FiCopy className="w-3.5 h-3.5" />}
-                        {copied ? 'Copied!' : 'Copy Lyrics'}
-                      </button>
-                      {song.hasWebStory && (
-                        <a
-                          href={`/web-stories/${song.slug}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm border border-emerald-500 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium hover:bg-emerald-50 dark:hover:bg-emerald-950 transition"
-                        >
-                          <FiBookOpen className="w-3.5 h-3.5" />
-                          Lyric Story
-                        </a>
-                      )}
-                    </div>
+                  {/* Mobile only: row 2 — action buttons full width */}
+                  <div className="flex items-center gap-2 mt-2.5 sm:hidden">
+                    <button onClick={() => setShowShareModal(true)}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium">
+                      <FiShare2 className="w-3.5 h-3.5" />Share
+                    </button>
+                    <button onClick={copyLyrics}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-lg font-medium">
+                      {copied ? <FiCheck className="w-3.5 h-3.5 text-green-500" /> : <FiCopy className="w-3.5 h-3.5" />}
+                      {copied ? 'Copied!' : 'Copy'}
+                    </button>
+                    {song.hasWebStory && (
+                      <a href={`/web-stories/${song.slug}`} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1.5 py-2 text-sm border border-emerald-500 text-emerald-600 dark:text-emerald-400 rounded-lg font-medium">
+                        <FiBookOpen className="w-3.5 h-3.5" />Lyric Story
+                      </a>
+                    )}
                   </div>
                 </div>
               </header>
