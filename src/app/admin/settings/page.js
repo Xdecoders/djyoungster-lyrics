@@ -2,13 +2,16 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiLock, FiUser, FiMail, FiSave, FiEye, FiEyeOff, FiShield } from 'react-icons/fi'
+import { FiLock, FiUser, FiMail, FiSave, FiEye, FiEyeOff, FiShield, FiImage, FiRefreshCw, FiCheck } from 'react-icons/fi'
 
 export default function AdminSettings() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState({ type: '', text: '' })
+  const [ogStats, setOgStats] = useState(null)
+  const [ogGenerating, setOgGenerating] = useState(false)
+  const [ogResult, setOgResult] = useState(null)
 
   // Profile state
   const [profile, setProfile] = useState({
@@ -37,7 +40,36 @@ export default function AdminSettings() {
       return
     }
     fetchProfile()
+    fetchOgStats()
   }, [])
+
+  const fetchOgStats = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/regenerate-og', { headers: { Authorization: `Bearer ${token}` } })
+      if (res.ok) setOgStats(await res.json())
+    } catch {}
+  }
+
+  const handleGenerateOg = async (force) => {
+    setOgGenerating(true)
+    setOgResult(null)
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/regenerate-og', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ force })
+      })
+      const data = await res.json()
+      setOgResult(data)
+      fetchOgStats()
+    } catch {
+      setOgResult({ message: 'Request failed' })
+    } finally {
+      setOgGenerating(false)
+    }
+  }
 
   const fetchProfile = async () => {
     try {
@@ -326,6 +358,61 @@ export default function AdminSettings() {
             </button>
           </form>
         </div>
+        {/* OG Image Generator */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-emerald-100 w-10 h-10 rounded-xl flex items-center justify-center">
+              <FiImage className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-800">OG Image Generator</h2>
+              <p className="text-sm text-slate-500">Generate 1200×630 featured images for Google Discover</p>
+            </div>
+          </div>
+
+          {ogStats && (
+            <div className="flex gap-4 mb-4">
+              <div className="flex-1 bg-slate-50 rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold text-slate-800">{ogStats.total}</p>
+                <p className="text-xs text-slate-500">Total songs</p>
+              </div>
+              <div className="flex-1 bg-emerald-50 rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold text-emerald-600">{ogStats.withOg}</p>
+                <p className="text-xs text-slate-500">Have OG image</p>
+              </div>
+              <div className="flex-1 bg-amber-50 rounded-xl p-3 text-center">
+                <p className="text-2xl font-bold text-amber-600">{ogStats.withoutOg}</p>
+                <p className="text-xs text-slate-500">Missing</p>
+              </div>
+            </div>
+          )}
+
+          {ogResult && (
+            <div className={`mb-4 p-3 rounded-xl text-sm ${ogResult.failed > 0 ? 'bg-amber-50 text-amber-700 border border-amber-200' : 'bg-emerald-50 text-emerald-700 border border-emerald-200'}`}>
+              {ogResult.message} {ogResult.generated !== undefined && `— ${ogResult.generated} generated, ${ogResult.failed} failed`}
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => handleGenerateOg(false)}
+              disabled={ogGenerating || ogStats?.withoutOg === 0}
+              className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition disabled:opacity-50 font-medium text-sm"
+            >
+              <FiRefreshCw className={`w-4 h-4 ${ogGenerating ? 'animate-spin' : ''}`} />
+              {ogGenerating ? 'Generating...' : `Generate Missing (${ogStats?.withoutOg ?? '…'})`}
+            </button>
+            <button
+              onClick={() => handleGenerateOg(true)}
+              disabled={ogGenerating}
+              className="flex items-center gap-2 px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl hover:bg-slate-200 transition disabled:opacity-50 font-medium text-sm"
+            >
+              <FiRefreshCw className="w-4 h-4" />
+              Regenerate All
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
   )
