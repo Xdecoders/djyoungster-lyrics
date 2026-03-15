@@ -91,6 +91,7 @@ export default async function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="icon" href={faviconUrl} />
         <link rel="apple-touch-icon" href={faviconUrl} />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5308405517093129" crossOrigin="anonymous" />
         {/* SSR: header snippet for "Entire site" — appears in initial HTML */}
         {codeSnippets.headerCode && headerAll && (
           <script dangerouslySetInnerHTML={{ __html: extractScriptContent(codeSnippets.headerCode) }} />
@@ -98,15 +99,6 @@ export default async function RootLayout({ children }) {
       </head>
       <body className={`${interTight.className} min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors`}>
         <GoogleAnalytics />
-        {adsenseEnabled && (
-          <Script
-            id="google-adsense"
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseSettings.publisherId}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        )}
         <Script
           id="microsoft-clarity"
           strategy="afterInteractive"
