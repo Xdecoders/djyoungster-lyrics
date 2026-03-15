@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { scrapeUrl } from '@/lib/scrapers'
+import { generateSongOgImage } from '@/lib/generateSongOgImage'
 
 /**
  * Scrape a URL and save as a draft song.
@@ -112,6 +113,9 @@ export async function scrapeAndSaveSong(url) {
       },
       select: { id: true, title: true, slug: true }
     })
+
+    // Fire-and-forget OG image generation (don't block the bulk import)
+    generateSongOgImage(song.id).catch(e => console.error('[OG] Bulk import failed:', e))
 
     return { status: 'scraped', songId: song.id, title: song.title }
   } catch (error) {
