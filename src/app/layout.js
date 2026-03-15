@@ -61,6 +61,16 @@ export async function generateMetadata() {
   }
 }
 
+function extractScriptContent(code) {
+  if (!code) return ''
+  const match = code.trim().match(/^<script[^>]*>([\s\S]*?)<\/script>$/i)
+  return match ? match[1].trim() : code.trim()
+}
+
+function isAll(pages) {
+  return !pages || pages.length === 0 || pages.includes('all')
+}
+
 export default async function RootLayout({ children }) {
   const [siteSettings, adsenseSettings, codeSnippets] = await Promise.all([
     getSiteSettings(),
@@ -70,6 +80,10 @@ export default async function RootLayout({ children }) {
   const faviconUrl = siteSettings.favicon || '/favicon.svg'
   const adsenseEnabled = adsenseSettings.enabled && adsenseSettings.publisherId
 
+  // "Entire site" snippets are injected SSR. Specific-page snippets go to CodeSnippetInjector.
+  const headerAll = isAll(codeSnippets.headerPages)
+  const footerAll = isAll(codeSnippets.footerPages)
+
   return (
     <html lang="en" className={interTight.variable} suppressHydrationWarning>
       <head>
@@ -77,6 +91,10 @@ export default async function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="icon" href={faviconUrl} />
         <link rel="apple-touch-icon" href={faviconUrl} />
+        {/* SSR: header snippet for "Entire site" — appears in initial HTML */}
+        {codeSnippets.headerCode && headerAll && (
+          <script dangerouslySetInnerHTML={{ __html: extractScriptContent(codeSnippets.headerCode) }} />
+        )}
       </head>
       <body className={`${interTight.className} min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors`}>
         <GoogleAnalytics />
@@ -96,18 +114,29 @@ export default async function RootLayout({ children }) {
             __html: `(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","hsvbmdjkxt");`,
           }}
         />
+        {/* SSR: footer snippet for "Entire site" */}
+        {codeSnippets.footerCode && footerAll && (
+          <Script
+            id="footer-snippet-all"
+            strategy="afterInteractive"
+            dangerouslySetInnerHTML={{ __html: extractScriptContent(codeSnippets.footerCode) }}
+          />
+        )}
         <ThemeProvider>
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
           <VisitorTracker />
         </ThemeProvider>
-        <CodeSnippetInjector
-          headerCode={codeSnippets.headerCode}
-          headerPages={codeSnippets.headerPages}
-          footerCode={codeSnippets.footerCode}
-          footerPages={codeSnippets.footerPages}
-        />
+        {/* Client-side: specific page targeting only */}
+        {(!headerAll || !footerAll) && (
+          <CodeSnippetInjector
+            headerCode={!headerAll ? codeSnippets.headerCode : ''}
+            headerPages={codeSnippets.headerPages}
+            footerCode={!footerAll ? codeSnippets.footerCode : ''}
+            footerPages={codeSnippets.footerPages}
+          />
+        )}
       </body>
     </html>
   )
