@@ -1684,7 +1684,15 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                   <div className="relative w-full aspect-[16/9] sm:aspect-[1200/630] bg-slate-100 dark:bg-slate-900 overflow-hidden">
                     <Image
                       src={song.ogImage || song.coverImage}
-                      alt={`${song.title} by ${artistNames}`}
+                      alt={(() => {
+                        const genre = song.genres?.[0]?.genre?.name
+                        const category = song.categories?.[0]?.category?.name
+                        const context = song.movie
+                          ? ` from ${song.movie.title}${song.movie.year ? ` (${song.movie.year})` : ''}`
+                          : song.album ? ` – ${song.album.title}` : ''
+                        const tag = genre || category || null
+                        return `${song.title} Lyrics${context} by ${artistNames}${tag ? ` | ${tag} Song` : ''} – DJYoungster`
+                      })()}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 800px"
                       className="object-cover"
