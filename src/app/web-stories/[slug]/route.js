@@ -106,8 +106,6 @@ const artistNames = song.artists.map(sa => sa.artist.name).join(', ') || PUBLISH
     src="https://cdn.ampproject.org/v0/amp-story-1.0.js"></script>
   <script async custom-element="amp-analytics"
     src="https://cdn.ampproject.org/v0/amp-analytics-0.1.js"></script>
-  ${storyAdsEnabled ? `<script async custom-element="amp-story-auto-ads"
-    src="https://cdn.ampproject.org/v0/amp-story-auto-ads-0.1.js"></script>` : ''}
   <title>${titleEsc} ${artistEsc} Lyric Story - ${PUBLISHER}</title>
   <link rel="canonical" href="${storyUrl}">
   <meta property="og:type" content="article">
