@@ -1012,7 +1012,7 @@ function LyricsToggle({ lyricsMode, setLyricsMode, hasRomanized, hasTranslated, 
   if (availableTabs.length <= 1) return null
 
   return (
-    <div className="flex flex-wrap gap-2 mb-4">
+    <div className="flex flex-wrap gap-2">
       {availableTabs.map((tab) => {
         const Icon = tab.icon
         const isActive = lyricsMode === tab.id
@@ -1755,6 +1755,22 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                       </Link>
                     ))}
                   </div>
+
+                  {/* Categories */}
+                  {categories.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-3">
+                      {categories.map((category) => (
+                        <Link
+                          key={category.id}
+                          href={`/category/${category.slug}`}
+                          className="inline-flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary rounded-full text-xs font-medium hover:bg-primary/20 transition"
+                        >
+                          <FiTag className="w-3 h-3" />
+                          {category.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* ── Stats + actions bar ── */}
@@ -1843,7 +1859,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                     {lyricsMode === 'hindi' && <span className="text-sm font-normal text-primary">(Hindi)</span>}
                     {lyricsMode === 'punjabi' && <span className="text-sm font-normal text-primary">(Punjabi)</span>}
                   </h2>
-                  <FontSizeControl fontSize={lyricsFontSize} setFontSize={setLyricsFontSize} />
                 </div>
 
                 {!isAnySelectMode && (
@@ -1883,14 +1898,17 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
 
                 <hr className="border-slate-200 dark:border-slate-700 my-4" />
 
-                <LyricsToggle
-                  lyricsMode={lyricsMode}
-                  setLyricsMode={setLyricsMode}
-                  hasRomanized={!!song.lyricsRomanized}
-                  hasTranslated={!!song.lyricsTranslated}
-                  hasHindi={!!song.lyricsHindi}
-                  hasPunjabi={!!song.lyricsPunjabi}
-                />
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+                  <LyricsToggle
+                    lyricsMode={lyricsMode}
+                    setLyricsMode={setLyricsMode}
+                    hasRomanized={!!song.lyricsRomanized}
+                    hasTranslated={!!song.lyricsTranslated}
+                    hasHindi={!!song.lyricsHindi}
+                    hasPunjabi={!!song.lyricsPunjabi}
+                  />
+                  <FontSizeControl fontSize={lyricsFontSize} setFontSize={setLyricsFontSize} />
+                </div>
 
                 {/* Story Mode Banner */}
                 {isStoryMode && (
@@ -2064,27 +2082,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
 
             {/* Sidebar */}
             <aside className="lg:col-span-1 lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto scrollbar-hide">
-              {/* Categories/Languages */}
-              {categories.length > 0 && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5 mb-6">
-                  <h3 className="font-semibold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
-                    <FiGrid className="w-4 h-4 text-primary" />
-                    Category
-                  </h3>
-                  <div className="flex flex-wrap gap-2">
-                    {categories.map((category) => (
-                      <Link
-                        key={category.id}
-                        href={`/category/${category.slug}`}
-                        className="px-3 py-1.5 bg-gradient-to-r from-orange-400 to-rose-500 text-white rounded-lg text-sm font-medium hover:from-orange-500 hover:to-rose-600 transition"
-                      >
-                        {category.name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <SongCredits song={song} />
 
               {/* Listen On */}
