@@ -194,7 +194,6 @@ export function BlogPostForm({ mode = 'add', initialData = null, postId = null }
       ...f,
       title,
       slug: slugManual ? f.slug : slugify(title),
-      metaTitle: metaTitleManual ? f.metaTitle : (title ? `${title} | DJYoungster` : ''),
     }))
   }
 
@@ -241,16 +240,21 @@ export function BlogPostForm({ mode = 'add', initialData = null, postId = null }
       })
       if (res.ok) {
         const data = await res.json()
-        // Auto-generate meta from content
-        const plainText = data.content
-          ? data.content.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
-          : ''
+        // Prepend H1 to content if not already present
+        const rawContent = data.content || ''
+        const contentWithH1 = rawContent.trimStart().startsWith('<h1')
+          ? rawContent
+          : data.metaTitle
+            ? `<h1>${data.metaTitle}</h1>\n${rawContent}`
+            : rawContent
+        // Auto-generate meta description from plain text
+        const plainText = rawContent.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()
         const autoMetaDesc = plainText.substring(0, 155).trim() + (plainText.length > 155 ? '...' : '')
         setForm(f => ({
           ...f,
-          content: data.content || f.content,
+          content: contentWithH1,
           excerpt: data.excerpt && !f.excerpt ? data.excerpt : f.excerpt,
-          metaTitle: f.metaTitle || `${f.title} | DJYoungster`,
+          metaTitle: data.metaTitle || f.metaTitle,
           metaDescription: f.metaDescription || autoMetaDesc,
         }))
       } else {

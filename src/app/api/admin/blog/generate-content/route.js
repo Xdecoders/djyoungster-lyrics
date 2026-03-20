@@ -99,7 +99,8 @@ Write a factual research brief in 300-400 words. Only include things you actuall
 
 You have just been given a research brief with real facts. Your job is to rewrite those facts as a natural, engaging blog article — in your own words, in your own voice. Do NOT copy sentences from the research. Transform the information into a story a fan would want to read.
 
-OUTPUT FORMAT: Return a single JSON object with two fields:
+OUTPUT FORMAT: Return a single JSON object with three fields:
+- "metaTitle": an SEO-optimized page title (50-60 characters max, no site name suffix, derived from the actual content — specific, keyword-rich, clickable)
 - "content": the full blog post as an HTML string (use <p>, <h2>, <h3>, <ul>, <li>, <strong>, <em>, <a href="...">...</a> tags only)
 - "excerpt": a 1-2 sentence summary, max 160 characters
 
@@ -138,8 +139,15 @@ BANNED SENTENCE STARTERS:
 FORMATTING:
 - No em dashes (— or --). Use commas or two sentences instead.
 - No hyphens used as pauses.
-- No <h1> tag. The page already has the title.
+- Start "content" with <h1> containing the metaTitle. This is the only <h1> on the page.
 - Simple language. Simpler word always wins.
+
+META TITLE:
+- 50-60 characters maximum
+- Specific and keyword-rich — use the actual subject (song name, film name, artist name, specific event)
+- Clickable and natural, not stuffed with keywords
+- No "DJYoungster" suffix — just the title
+- Must reflect the actual content, not just the input title
 
 EXCERPT:
 - 1-2 sentences, max 160 characters
