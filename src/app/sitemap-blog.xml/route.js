@@ -12,7 +12,7 @@ export async function GET() {
     }),
     prisma.blogCategory.findMany({
       where: { posts: { some: { status: 'published' } } },
-      select: { slug: true, updatedAt: true },
+      select: { slug: true },
       orderBy: { sortOrder: 'asc' },
     }),
   ])
@@ -30,7 +30,6 @@ export async function GET() {
   </url>
   ${categories.map(cat => `<url>
     <loc>${siteUrl}/updates/category/${cat.slug}</loc>
-    <lastmod>${new Date(cat.updatedAt).toISOString().split('T')[0]}</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
   </url>`).join('\n  ')}
