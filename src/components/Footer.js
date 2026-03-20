@@ -81,6 +81,7 @@ export default function Footer() {
     { href: '/albums', label: 'Albums' },
     { href: '/genres', label: 'Genres' },
     { href: '/movies', label: 'Movies' },
+    { href: '/updates', label: 'Latest Updates' },
     { href: '/web-stories', label: 'Lyric Stories' },
     { href: '/request-song', label: 'Request Song Lyrics' },
   ]

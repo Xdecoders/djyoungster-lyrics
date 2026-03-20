@@ -2,6 +2,7 @@ import { FiUsers, FiGlobe, FiCamera, FiVideo } from 'react-icons/fi'
 import SearchWithAutocomplete from './SearchClient'
 import FreshDropsSection from './FreshDropsSection'
 import ChartsSection from './ChartsSection'
+import LatestUpdatesSection from './LatestUpdatesSection'
 
 // Main Server Component for Homepage Content
 export default function HomeContent({ data, siteSettings }) {
@@ -62,6 +63,7 @@ export default function HomeContent({ data, siteSettings }) {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
         <FreshDropsSection data={data} />
         <ChartsSection songs={data.chartSongs} />
+        <LatestUpdatesSection posts={data.recentBlogPosts} />
       </main>
     </div>
   )

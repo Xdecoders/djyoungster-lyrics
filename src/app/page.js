@@ -85,6 +85,7 @@ const getHomepageData = unstable_cache(
         latestSongs, instagramViralSongs,
         hindiSongs, punjabiSongs, englishSongs, teluguSongs, tamilSongs,
         chartSongs,
+        recentBlogPosts,
         siteSettings, aboutPage, faqPage
       ] = await Promise.all([
         prisma.song.findMany({
@@ -110,6 +111,16 @@ const getHomepageData = unstable_cache(
           take: 10,
           select: songSelectFields
         }),
+        prisma.blogPost.findMany({
+          where: { status: 'published' },
+          orderBy: { publishedAt: 'desc' },
+          take: 6,
+          select: {
+            id: true, title: true, slug: true, excerpt: true,
+            coverImage: true, readTime: true, publishedAt: true, author: true,
+            blogCategory: { select: { name: true, color: true, slug: true } },
+          }
+        }),
         getSiteSettings(),
         prisma.page.findUnique({ where: { slug: 'homepage-about' } }),
         prisma.page.findUnique({ where: { slug: 'homepage-faq' } }),
@@ -129,6 +140,7 @@ const getHomepageData = unstable_cache(
         teluguSongs,
         tamilSongs,
         chartSongs,
+        recentBlogPosts,
         aboutHtml: aboutPage?.content || null,
         faqs: parsedFaqs,
         siteSettings: {
@@ -141,7 +153,7 @@ const getHomepageData = unstable_cache(
       return {
         latestSongs: [], instagramViralSongs: [],
         hindiSongs: [], punjabiSongs: [], englishSongs: [], teluguSongs: [], tamilSongs: [],
-        chartSongs: [],
+        chartSongs: [], recentBlogPosts: [],
         aboutHtml: null, faqs: FALLBACK_FAQS,
         siteSettings: {
           heroHeading:     'Discover Your Favorite *Song Lyrics*',

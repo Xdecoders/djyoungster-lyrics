@@ -101,6 +101,7 @@ export default function Header() {
     { href: '/artists', label: 'Artists', icon: FiMic },
     { href: '/albums', label: 'Albums', icon: FiDisc },
     { href: '/movies', label: 'Movies', icon: FiFilm },
+    { href: '/updates', label: 'Updates', icon: FiList },
     { href: '/quiz', label: 'Quiz', icon: FiZap, highlight: true },
   ]
 
