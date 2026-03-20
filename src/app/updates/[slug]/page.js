@@ -29,7 +29,8 @@ export async function generateMetadata({ params }) {
 
   const { post } = data
   const image = post.ogImage || post.coverImage
-  const title = post.metaTitle || post.title
+  const rawTitle = post.metaTitle || post.title
+  const title = rawTitle.includes('DJYoungster') ? rawTitle : `${rawTitle} | DJYoungster`
   const description = post.metaDescription || post.excerpt
 
   return {
@@ -71,6 +72,7 @@ export default async function BlogPostPage({ params }) {
   const { post, relatedPosts } = data
   const recentPosts = await getRecentPosts(params.slug)
 
+  const rawTitle = post.metaTitle || post.title
   const image = post.ogImage || post.coverImage
   const plainText = post.content ? post.content.replace(/<[^>]*>/g, '') : ''
   const wordCount = plainText.split(/\s+/).filter(Boolean).length
@@ -80,7 +82,7 @@ export default async function BlogPostPage({ params }) {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     '@id': `${SITE_URL}/updates/${post.slug}#article`,
-    headline: post.title.substring(0, 110),
+    headline: rawTitle.substring(0, 110),
     description: post.metaDescription || post.excerpt,
     inLanguage: 'en-IN',
     isAccessibleForFree: true,
