@@ -25,7 +25,8 @@ import {
   FiList,
   FiCornerUpRight,
   FiBarChart2,
-  FiZap
+  FiZap,
+  FiEdit
 } from 'react-icons/fi'
 import { SiSpotify } from 'react-icons/si'
 import { useState, useEffect } from 'react'
@@ -112,6 +113,7 @@ export default function AdminLayoutClient({ children }) {
     { href: '/admin/genres', label: 'Genres', icon: FiTag },
     { href: '/admin/categories', label: 'Categories', icon: FiGrid },
     { href: '/admin/movies', label: 'Movies', icon: FiFilm },
+    { href: '/admin/blog', label: 'Blog', icon: FiEdit },
     { href: '/admin/top-lists', label: 'Top Lists', icon: FiList },
     { href: '/admin/analytics', label: 'Analytics', icon: FiBarChart2 },
     { href: '/admin/quiz', label: 'Daily Quiz', icon: FiZap },
@@ -129,6 +131,8 @@ export default function AdminLayoutClient({ children }) {
   const isActive = (path) => {
     // Exact match for scrape and song-requests to avoid conflict with /admin/songs
     if (path === '/admin/songs' && (pathname.startsWith('/admin/songs/scrape') || pathname.startsWith('/admin/song-requests'))) return false
+    // Avoid /admin/blog matching /admin/bulk-import etc
+    if (path === '/admin/blog' && !pathname.startsWith('/admin/blog')) return false
     return pathname.startsWith(path)
   }
 

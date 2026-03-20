@@ -32,6 +32,14 @@ export async function GET(request, { params }) {
           include: {
             tag: true
           }
+        },
+        relatedBlogPost: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            coverImage: true,
+          }
         }
       }
     })
@@ -84,6 +92,7 @@ export async function PUT(request, { params }) {
         dateModified: new Date(),
         albumId: data.albumId || null,
         movieId: data.movieId || null,
+        relatedBlogPostId: data.relatedBlogPostId || null,
         coverImage: data.coverImage || null,
         youtubeUrl: data.youtubeUrl || null,
         spotifyUrl: data.spotifyUrl || null,

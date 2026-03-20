@@ -88,6 +88,7 @@ export async function POST(request) {
         dateModified: new Date(),
         albumId: data.albumId || null,
         movieId: data.movieId || null,
+        relatedBlogPostId: data.relatedBlogPostId || null,
         coverImage: data.coverImage || null,
         youtubeUrl: data.youtubeUrl || null,
         spotifyUrl: data.spotifyUrl || null,

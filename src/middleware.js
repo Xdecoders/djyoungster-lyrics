@@ -16,12 +16,13 @@ async function getRedirects(requestOrigin) {
     return redirectCache
   }
 
-  // Prefer the configured SITE_URL (avoids SSL/proxy overhead on VPS).
-  // Fall back to the origin derived from the incoming request.
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    process.env.SITE_URL ||
-    requestOrigin
+  // On localhost always use the local origin — production SITE_URL would
+  // return the live server's redirects which differ from local DB.
+  // On VPS/prod use SITE_URL to avoid SSL/proxy overhead.
+  const isLocal = requestOrigin.includes('localhost') || requestOrigin.includes('127.0.0.1')
+  const base = isLocal
+    ? requestOrigin
+    : (process.env.NEXT_PUBLIC_SITE_URL || process.env.SITE_URL || requestOrigin)
 
   try {
     const res = await fetch(`${base}/api/redirects`, { cache: 'no-store' })

@@ -76,6 +76,14 @@ function getFirstVerseOrChorus(lyrics) {
   return firstPart
 }
 
+// BCP 47 language code map
+const LANG_BCP47 = {
+  hindi: 'hi', punjabi: 'pa', english: 'en', tamil: 'ta',
+  telugu: 'te', kannada: 'kn', malayalam: 'ml', bengali: 'bn',
+  marathi: 'mr', gujarati: 'gu', odia: 'or', urdu: 'ur',
+  haryanvi: 'hi', bhojpuri: 'bho', rajasthani: 'raj',
+}
+
 /**
  * Generate MusicComposition schema for song pages
  */
@@ -97,15 +105,32 @@ export function generateSongSchema(song, artistNames) {
       ? new Date(song.updatedAt).toISOString().split('T')[0]
       : undefined
 
+  const langCode = song.language
+    ? (LANG_BCP47[song.language.toLowerCase()] || song.language)
+    : undefined
+
+  // Build a descriptive sentence for the composition
+  const descArtist = artistNames || 'Unknown Artist'
+  const descContext = song.movie?.title
+    ? ` from the movie ${song.movie.title}${song.movie.year ? ` (${song.movie.year})` : ''}`
+    : song.album?.title ? ` from the album ${song.album.title}` : ''
+  const description = `${song.title} lyrics by ${descArtist}${descContext}. Read full lyrics with translations on DJYoungster.`
+
   const schema = {
     '@context': 'https://schema.org',
     '@type': 'MusicComposition',
     '@id': `${SITE_URL}/song/${song.slug}`,
     name: song.title,
     url: `${SITE_URL}/song/${song.slug}`,
+    description,
     datePublished,
     ...(dateModified && { dateModified }),
-    inLanguage: song.language || undefined,
+    ...(langCode && { inLanguage: langCode }),
+    publisher: {
+      '@type': 'Organization',
+      name: SITE_NAME,
+      url: SITE_URL,
+    },
   }
 
   // Add lyricist (valid for MusicComposition)
@@ -160,10 +185,10 @@ export function generateSongSchema(song, artistNames) {
   if (song.aggregateRating && song.aggregateRating.count > 0) {
     recording.aggregateRating = {
       '@type': 'AggregateRating',
-      ratingValue: song.aggregateRating.average.toFixed(1),
-      ratingCount: song.aggregateRating.count.toString(),
-      bestRating: '5',
-      worstRating: '1'
+      ratingValue: parseFloat(song.aggregateRating.average.toFixed(1)),
+      ratingCount: song.aggregateRating.count,
+      bestRating: 5,
+      worstRating: 1
     }
   }
 
@@ -180,9 +205,28 @@ export function generateSongSchema(song, artistNames) {
   }
 
   // Prefer 1200×630 ogImage for structured data (Google Discover), fallback to coverImage
-  if (song.ogImage || song.coverImage) {
-    schema.image = getAbsoluteUrl(song.ogImage || song.coverImage)
+  if (song.ogImage) {
+    schema.image = {
+      '@type': 'ImageObject',
+      url: getAbsoluteUrl(song.ogImage),
+      width: 1200,
+      height: 630,
+    }
+  } else if (song.coverImage) {
+    schema.image = {
+      '@type': 'ImageObject',
+      url: getAbsoluteUrl(song.coverImage),
+      width: 800,
+      height: 800,
+    }
   }
+
+  // sameAs: link to streaming platforms for entity disambiguation
+  const sameAs = []
+  if (song.spotifyUrl) sameAs.push(song.spotifyUrl)
+  if (song.youtubeUrl) sameAs.push(song.youtubeUrl)
+  if (song.appleMusicUrl) sameAs.push(song.appleMusicUrl)
+  if (sameAs.length > 0) schema.sameAs = sameAs
 
   // Add multilingual lyrics versions
   const lyricsVersions = []
@@ -192,7 +236,7 @@ export function generateSongSchema(song, artistNames) {
     lyricsVersions.push({
       '@type': 'CreativeWork',
       name: `${song.title} - Original Lyrics`,
-      inLanguage: song.language || 'en',
+      inLanguage: langCode || 'en',
       text: getFirstVerseOrChorus(song.lyrics),
       author: { '@type': 'Person', name: authorName }
     })

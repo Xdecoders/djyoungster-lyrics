@@ -49,6 +49,7 @@ export default function EditSong() {
     categoryIds: [],
     tagIds: [],
     movieId: '',
+    relatedBlogPostId: '',
     coverImage: '',
     youtubeUrl: '',
     spotifyUrl: '',
@@ -118,6 +119,13 @@ export default function EditSong() {
   const [showNewAlbumModal, setShowNewAlbumModal] = useState(false)
   const [newAlbumData, setNewAlbumData] = useState({ title: '', artistId: '', releaseDate: '' })
   const [savingAlbum, setSavingAlbum] = useState(false)
+
+  // Blog post (article) link states
+  const [articleSearch, setArticleSearch] = useState('')
+  const [articleResults, setArticleResults] = useState([])
+  const [showArticleDropdown, setShowArticleDropdown] = useState(false)
+  const [selectedArticle, setSelectedArticle] = useState(null)
+  const articleSearchRef = useRef(null)
 
   // Genre search states
   const [genreSearch, setGenreSearch] = useState('')
@@ -300,6 +308,29 @@ export default function EditSong() {
     }))
   }, [selectedAlbum])
 
+  // Sync selectedArticle with formData.relatedBlogPostId
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      relatedBlogPostId: selectedArticle?.id || ''
+    }))
+  }, [selectedArticle])
+
+  // Article search — debounced API call
+  useEffect(() => {
+    if (!articleSearch.trim()) { setArticleResults([]); return }
+    const t = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/public/blog?search=${encodeURIComponent(articleSearch)}&limit=8`)
+        if (res.ok) {
+          const data = await res.json()
+          setArticleResults(data.posts || [])
+        }
+      } catch {}
+    }, 300)
+    return () => clearTimeout(t)
+  }, [articleSearch])
+
   // Sync selectedGenres with formData.genreIds
   useEffect(() => {
     setFormData(prev => ({
@@ -394,6 +425,7 @@ export default function EditSong() {
         categoryIds: song.categories?.map(sc => sc.category.id) || [],
         tagIds: song.tags?.map(st => st.tag.id) || [],
         movieId: song.movieId || '',
+        relatedBlogPostId: song.relatedBlogPostId || '',
         coverImage: song.coverImage || '',
         youtubeUrl: song.youtubeUrl || '',
         spotifyUrl: song.spotifyUrl || '',
@@ -425,6 +457,11 @@ export default function EditSong() {
       // Set selected movie
       if (song.movie) {
         setSelectedMovie(song.movie)
+      }
+
+      // Set selected article
+      if (song.relatedBlogPost) {
+        setSelectedArticle(song.relatedBlogPost)
       }
 
       // Set selected genres
@@ -2220,6 +2257,67 @@ export default function EditSong() {
                             </button>
                           </div>
                         ) : null}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Linked Article */}
+              <div className="bg-white rounded-xl shadow-sm p-6">
+                <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2 mb-4">
+                  <FiBookOpen className="w-5 h-5 text-primary" />
+                  Linked Article (Optional)
+                </h3>
+                <p className="text-sm text-gray-500 mb-4">Link a blog article to show on this song's page after ratings.</p>
+
+                {selectedArticle ? (
+                  <div className="flex items-center gap-3 p-3 bg-primary/5 border border-primary/20 rounded-lg">
+                    <FiBookOpen className="w-4 h-4 text-primary flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-gray-800 truncate text-sm">{selectedArticle.title}</p>
+                      {selectedArticle.blogCategory && (
+                        <p className="text-xs text-gray-400">{selectedArticle.blogCategory.name}</p>
+                      )}
+                    </div>
+                    <button type="button" onClick={() => { setSelectedArticle(null); setArticleSearch('') }} className="text-gray-400 hover:text-red-500 flex-shrink-0">
+                      <FiX className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative" ref={articleSearchRef}>
+                    <div className="relative">
+                      <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
+                      <input
+                        type="text"
+                        value={articleSearch}
+                        onChange={(e) => { setArticleSearch(e.target.value); setShowArticleDropdown(true) }}
+                        onFocus={() => setShowArticleDropdown(true)}
+                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none"
+                        placeholder="Search articles by title..."
+                      />
+                    </div>
+                    {showArticleDropdown && articleResults.length > 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                        {articleResults.map(article => (
+                          <button
+                            key={article.id}
+                            type="button"
+                            onClick={() => { setSelectedArticle(article); setArticleSearch(''); setShowArticleDropdown(false) }}
+                            className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                          >
+                            <FiBookOpen className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm text-gray-800 truncate">{article.title}</p>
+                              {article.blogCategory && <p className="text-xs text-gray-400">{article.blogCategory.name}</p>}
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {showArticleDropdown && articleSearch && articleResults.length === 0 && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <p className="px-4 py-3 text-sm text-gray-500">No articles found for "{articleSearch}"</p>
                       </div>
                     )}
                   </div>

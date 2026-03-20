@@ -7,6 +7,65 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model BlogCategory {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?    @db.Text
+  color       String?
+  icon        String?
+  sortOrder   Int        @default(0)
+  posts       BlogPost[]
+
+  @@index([slug])
+}
+
+model BlogPost {
+  id              String       @id @default(uuid())
+  title           String
+  slug            String       @unique
+  excerpt         String       @db.Text
+  content         String       @db.LongText
+  coverImage      String?
+  ogImage         String?
+  metaTitle       String?
+  metaDescription String?      @db.Text
+  metaKeywords    String?      @db.Text
+  author          String       @default("Admin")
+  status          String       @default("draft")   // draft, published, archived
+  isFeatured      Boolean      @default(false)
+  readTime        Int?
+  views           Int          @default(0)
+  tags            String?      @db.Text             // JSON string[]
+
+  // Category
+  blogCategoryId  String
+  blogCategory    BlogCategory @relation(fields: [blogCategoryId], references: [id])
+
+  // DB links
+  relatedSongId   String?
+  relatedSong     Song?        @relation("BlogPostRelatedSong", fields: [relatedSongId], references: [id], onDelete: SetNull)
+
+  featuredInSongs Song[]       @relation("SongFeaturedArticle")
+  relatedMovieId  String?
+  relatedMovie    Movie?       @relation(fields: [relatedMovieId], references: [id], onDelete: SetNull)
+  relatedArtistId String?
+  relatedArtist   Artist?      @relation(fields: [relatedArtistId], references: [id], onDelete: SetNull)
+  relatedAlbumId  String?
+  relatedAlbum    Album?       @relation(fields: [relatedAlbumId], references: [id], onDelete: SetNull)
+
+  publishedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([slug])
+  @@index([blogCategoryId])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([publishedAt])
+  @@index([views])
+}
+
 model Song {
   id              String   @id @default(uuid())
   title           String
@@ -51,6 +110,10 @@ model Song {
   albumId    String?
   movie      Movie?         @relation(fields: [movieId], references: [id])
   movieId    String?
+
+  relatedBlogPostId String?
+  relatedBlogPost   BlogPost? @relation("SongFeaturedArticle", fields: [relatedBlogPostId], references: [id], onDelete: SetNull)
+
   artists    SongArtist[]
   genres     SongGenre[]
   categories SongCategory[]
@@ -61,6 +124,7 @@ model Song {
   reactions   SongReaction[]
   annotations Annotation[]
   shareEvents SongShareEvent[]
+  blogPosts   BlogPost[]       @relation("BlogPostRelatedSong")
 
   @@index([slug])
   @@index([title])
@@ -98,9 +162,10 @@ model Artist {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  songs   SongArtist[]
-  albums  Album[]
-  ratings ArtistRating[]
+  songs     SongArtist[]
+  albums    Album[]
+  ratings   ArtistRating[]
+  blogPosts BlogPost[]
 
   @@index([slug])
   @@index([name])
@@ -118,10 +183,11 @@ model Album {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  artist   Artist @relation(fields: [artistId], references: [id])
-  artistId String
-  songs    Song[]
-  ratings  AlbumRating[]
+  artist    Artist       @relation(fields: [artistId], references: [id])
+  artistId  String
+  songs     Song[]
+  ratings   AlbumRating[]
+  blogPosts BlogPost[]
 
   @@index([slug])
   @@index([title])
@@ -213,8 +279,9 @@ model Movie {
   metaDescription String?  @db.Text
   createdAt       DateTime @default(now())
 
-  songs   Song[]
-  ratings MovieRating[]
+  songs     Song[]
+  ratings   MovieRating[]
+  blogPosts BlogPost[]
 
   @@index([slug])
   @@index([title])

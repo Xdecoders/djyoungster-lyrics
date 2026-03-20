@@ -158,6 +158,34 @@ export async function GET() {
         .join('\n')
     }))
 
+    // Fetch featured blog posts
+    const featuredBlogPosts = await prisma.blogPost.findMany({
+      where: { status: 'published', isFeatured: true },
+      orderBy: { publishedAt: 'desc' },
+      take: 4,
+      select: {
+        id: true, title: true, slug: true, excerpt: true,
+        coverImage: true, readTime: true, publishedAt: true, author: true,
+        blogCategory: { select: { name: true, slug: true, color: true } },
+      },
+    })
+
+    // If fewer than 4 featured, fill with latest published
+    let latestBlogPosts = []
+    if (featuredBlogPosts.length < 4) {
+      latestBlogPosts = await prisma.blogPost.findMany({
+        where: { status: 'published', NOT: { isFeatured: true } },
+        orderBy: { publishedAt: 'desc' },
+        take: 4 - featuredBlogPosts.length,
+        select: {
+          id: true, title: true, slug: true, excerpt: true,
+          coverImage: true, readTime: true, publishedAt: true, author: true,
+          blogCategory: { select: { name: true, slug: true, color: true } },
+        },
+      })
+    }
+    const blogPosts = [...featuredBlogPosts, ...latestBlogPosts]
+
     return NextResponse.json({
       latestSongs,
       trendingSongs,
@@ -166,7 +194,8 @@ export async function GET() {
       artists,
       albums,
       tags,
-      lyricStories
+      lyricStories,
+      blogPosts,
     }, {
       headers: { 'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300' }
     })

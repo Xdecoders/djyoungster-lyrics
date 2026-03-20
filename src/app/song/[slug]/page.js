@@ -112,6 +112,8 @@ export async function generateMetadata({ params }) {
     const ogAlternateLocales = new Set(['en_IN'])
     if (song.lyricsHindi) ogAlternateLocales.add('hi_IN')
     if (song.lyricsPunjabi) ogAlternateLocales.add('pa_IN')
+    if (song.lyricsTranslated) ogAlternateLocales.add('en_IN')
+    if (song.lyricsRomanized) ogAlternateLocales.add('en_IN')
     ogAlternateLocales.delete(primaryOgLocale) // don't duplicate primary
     const hreflang = { 'x-default': pageUrl }
     const primaryCode = LANG_CODE[langKey]
@@ -254,6 +256,19 @@ async function getSongData(slug) {
         },
         ratings: {
           select: { rating: true }
+        },
+        relatedBlogPost: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            coverImage: true,
+            readTime: true,
+            blogCategory: {
+              select: { name: true, color: true }
+            }
+          }
         },
       }
     })

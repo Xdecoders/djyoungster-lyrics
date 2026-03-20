@@ -80,6 +80,22 @@ export async function GET(request, { params }) {
             }
           }
         },
+        relatedBlogPost: {
+          select: {
+            id: true,
+            title: true,
+            slug: true,
+            excerpt: true,
+            coverImage: true,
+            readTime: true,
+            blogCategory: {
+              select: {
+                name: true,
+                color: true,
+              }
+            }
+          }
+        },
       }
     })
 

@@ -1957,6 +1957,55 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [] }
                 }}
               />
 
+              {/* Linked Article Card — shown after ratings */}
+              {song.relatedBlogPost && (
+                <div className="mb-6">
+                  <Link
+                    href={`/updates/${song.relatedBlogPost.slug}`}
+                    className="group flex gap-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden hover:border-primary dark:hover:border-primary hover:shadow-md transition-all duration-200"
+                    style={{ textDecoration: 'none' }}
+                  >
+                    {song.relatedBlogPost.coverImage ? (
+                      <div className="w-24 sm:w-32 flex-shrink-0 overflow-hidden">
+                        <img
+                          src={song.relatedBlogPost.coverImage}
+                          alt={song.relatedBlogPost.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-24 sm:w-32 flex-shrink-0 bg-primary/10 flex items-center justify-center">
+                        <FiBookOpen className="w-7 h-7 text-primary/50" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0 p-4">
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Read the Article</p>
+                      <p className="font-bold text-slate-800 dark:text-white group-hover:text-primary transition-colors line-clamp-2 leading-snug text-sm">
+                        {song.relatedBlogPost.title}
+                      </p>
+                      {song.relatedBlogPost.excerpt && (
+                        <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
+                          {song.relatedBlogPost.excerpt}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-3 mt-2 text-xs text-slate-400">
+                        {song.relatedBlogPost.blogCategory && (
+                          <span
+                            className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold text-white"
+                            style={{ backgroundColor: song.relatedBlogPost.blogCategory.color || '#6b7280' }}
+                          >
+                            {song.relatedBlogPost.blogCategory.name}
+                          </span>
+                        )}
+                        {song.relatedBlogPost.readTime && (
+                          <span>{song.relatedBlogPost.readTime} min read</span>
+                        )}
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+
               {/* Daily Lyrics Quiz — teaser card */}
               {(() => {
                 const LANG_CATS = new Set(['hindi', 'punjabi', 'english', 'tamil', 'telugu'])
