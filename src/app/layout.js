@@ -89,7 +89,7 @@ export default async function RootLayout({ children }) {
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="icon" href={faviconUrl} />
         <link rel="apple-touch-icon" href={faviconUrl} />
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5308405517093129" crossOrigin="anonymous" />
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2128567572108655" crossOrigin="anonymous" />
         {/* SSR: header snippet for "Entire site" — appears in initial HTML */}
         {codeSnippets.headerCode && headerAll && (
           <script dangerouslySetInnerHTML={{ __html: extractScriptContent(codeSnippets.headerCode) }} />
