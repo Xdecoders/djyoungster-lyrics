@@ -39,12 +39,18 @@ export async function PUT(request) {
     const adminId = await getAdminId(request)
     if (!adminId) return NextResponse.json({ message: 'Unauthorized' }, { status: 401 })
 
-    const { headerCode, footerCode } = await request.json()
+    const { headerCode, footerCode, headerPages, footerPages } = await request.json()
+    const data = JSON.stringify({
+      headerCode: headerCode || '',
+      footerCode: footerCode || '',
+      headerPages: headerPages || [],
+      footerPages: footerPages || [],
+    })
 
     await prisma.siteSeoSettings.upsert({
       where: { pageKey: 'code-snippets' },
-      update: { metaKeywords: JSON.stringify({ headerCode: headerCode || '', footerCode: footerCode || '' }) },
-      create: { pageKey: 'code-snippets', metaKeywords: JSON.stringify({ headerCode: headerCode || '', footerCode: footerCode || '' }) }
+      update: { metaKeywords: data },
+      create: { pageKey: 'code-snippets', metaKeywords: data }
     })
 
     return NextResponse.json({ message: 'Code snippets saved successfully' })

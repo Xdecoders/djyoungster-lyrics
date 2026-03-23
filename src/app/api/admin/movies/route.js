@@ -8,12 +8,18 @@ function generateSlug(title) {
     .replace(/^-+|-+$/g, '')
 }
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search')?.trim()
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')) : undefined
+
     const movies = await prisma.movie.findMany({
+      where: search ? { title: { contains: search, mode: 'insensitive' } } : undefined,
       orderBy: {
         createdAt: 'desc'
       },
+      take: limit,
       include: {
         _count: {
           select: { songs: true }

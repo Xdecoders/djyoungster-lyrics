@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET() {
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search')?.trim()
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')) : undefined
+
     const albums = await prisma.album.findMany({
+      where: search ? { title: { contains: search, mode: 'insensitive' } } : undefined,
       include: {
         artist: true,
         _count: {
@@ -12,7 +17,8 @@ export async function GET() {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: limit
     })
 
     return NextResponse.json(albums)

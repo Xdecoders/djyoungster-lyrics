@@ -22,18 +22,41 @@ function shouldShow(pages, pathname) {
   return pages.some((page) => PAGE_MATCHERS[page]?.(pathname) ?? false)
 }
 
-function extractScriptContent(code) {
-  if (!code) return ''
-  const match = code.trim().match(/^<script[^>]*>([\s\S]*?)<\/script>$/i)
-  return match ? match[1].trim() : code.trim()
+function parseSnippetTags(code) {
+  if (!code?.trim()) return []
+  const results = []
+  const regex = /<script([^>]*)>([\s\S]*?)<\/script>/gi
+  let match
+  while ((match = regex.exec(code)) !== null) {
+    const attrStr = match[1]
+    const inline = match[2].trim()
+    const srcM = attrStr.match(/src=["']([^"']+)["']/)
+    if (srcM) {
+      results.push({ type: 'external', src: srcM[1] })
+    } else if (inline) {
+      results.push({ type: 'inline', content: inline })
+    }
+  }
+  if (results.length === 0 && code.trim() && !code.trim().startsWith('<')) {
+    results.push({ type: 'inline', content: code.trim() })
+  }
+  return results
 }
 
-function injectScript(id, content, target) {
-  if (!content || document.getElementById(id)) return
-  const el = document.createElement('script')
-  el.id = id
-  el.textContent = content
-  target.appendChild(el)
+function injectSnippet(idPrefix, code, target) {
+  parseSnippetTags(code).forEach((script, i) => {
+    const id = `${idPrefix}-${i}`
+    if (document.getElementById(id)) return
+    const el = document.createElement('script')
+    el.id = id
+    if (script.type === 'external') {
+      el.src = script.src
+      el.async = true
+    } else {
+      el.textContent = script.content
+    }
+    target.appendChild(el)
+  })
 }
 
 export default function CodeSnippetInjector({ headerCode, headerPages, footerCode, footerPages }) {
@@ -42,15 +65,13 @@ export default function CodeSnippetInjector({ headerCode, headerPages, footerCod
   const injectedFooter = useRef(false)
 
   useEffect(() => {
-    const showHeader = headerCode && shouldShow(headerPages, pathname)
-    if (showHeader && !injectedHeader.current) {
-      injectScript('custom-header-snippet', extractScriptContent(headerCode), document.head)
+    if (headerCode && shouldShow(headerPages, pathname) && !injectedHeader.current) {
+      injectSnippet('custom-header-snippet', headerCode, document.head)
       injectedHeader.current = true
     }
 
-    const showFooter = footerCode && shouldShow(footerPages, pathname)
-    if (showFooter && !injectedFooter.current) {
-      injectScript('custom-footer-snippet', extractScriptContent(footerCode), document.body)
+    if (footerCode && shouldShow(footerPages, pathname) && !injectedFooter.current) {
+      injectSnippet('custom-footer-snippet', footerCode, document.body)
       injectedFooter.current = true
     }
   }, [pathname, headerCode, headerPages, footerCode, footerPages])

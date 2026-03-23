@@ -4,9 +4,14 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { generateSongOgImage } from '@/lib/generateSongOgImage'
 
 // GET all songs
-export async function GET() {
+export async function GET(request) {
   try {
+    const { searchParams } = new URL(request.url)
+    const search = searchParams.get('search')?.trim()
+    const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')) : undefined
+
     const songs = await prisma.song.findMany({
+      where: search ? { title: { contains: search, mode: 'insensitive' } } : undefined,
       select: {
         id: true,
         title: true,
@@ -43,7 +48,8 @@ export async function GET() {
       },
       orderBy: {
         createdAt: 'desc'
-      }
+      },
+      take: limit
     })
 
     return NextResponse.json(songs)

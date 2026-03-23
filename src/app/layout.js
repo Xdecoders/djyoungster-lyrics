@@ -61,10 +61,27 @@ export async function generateMetadata() {
   }
 }
 
-function extractScriptContent(code) {
-  if (!code) return ''
-  const match = code.trim().match(/^<script[^>]*>([\s\S]*?)<\/script>$/i)
-  return match ? match[1].trim() : code.trim()
+// Parse a snippet string into an array of { type: 'external'|'inline', src?, content? }
+function parseSnippetTags(code) {
+  if (!code?.trim()) return []
+  const results = []
+  const regex = /<script([^>]*)>([\s\S]*?)<\/script>/gi
+  let match
+  while ((match = regex.exec(code)) !== null) {
+    const attrStr = match[1]
+    const inline = match[2].trim()
+    const srcM = attrStr.match(/src=["']([^"']+)["']/)
+    if (srcM) {
+      results.push({ type: 'external', src: srcM[1] })
+    } else if (inline) {
+      results.push({ type: 'inline', content: inline })
+    }
+  }
+  // Raw JS with no wrapping <script> tags
+  if (results.length === 0 && code.trim() && !code.trim().startsWith('<')) {
+    results.push({ type: 'inline', content: code.trim() })
+  }
+  return results
 }
 
 function isAll(pages) {
@@ -91,8 +108,10 @@ export default async function RootLayout({ children }) {
         <link rel="apple-touch-icon" href={faviconUrl} />
         <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2128567572108655" crossOrigin="anonymous" />
         {/* SSR: header snippet for "Entire site" — appears in initial HTML */}
-        {codeSnippets.headerCode && headerAll && (
-          <script dangerouslySetInnerHTML={{ __html: extractScriptContent(codeSnippets.headerCode) }} />
+        {headerAll && parseSnippetTags(codeSnippets.headerCode).map((s, i) =>
+          s.type === 'external'
+            ? <script key={`hs-${i}`} src={s.src} async />
+            : <script key={`hs-${i}`} dangerouslySetInnerHTML={{ __html: s.content }} />
         )}
       </head>
       <body className={`${interTight.className} min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors`}>
@@ -105,12 +124,10 @@ export default async function RootLayout({ children }) {
           }}
         />
         {/* SSR: footer snippet for "Entire site" */}
-        {codeSnippets.footerCode && footerAll && (
-          <Script
-            id="footer-snippet-all"
-            strategy="afterInteractive"
-            dangerouslySetInnerHTML={{ __html: extractScriptContent(codeSnippets.footerCode) }}
-          />
+        {footerAll && parseSnippetTags(codeSnippets.footerCode).map((s, i) =>
+          s.type === 'external'
+            ? <Script key={`fs-${i}`} id={`footer-snippet-ext-${i}`} src={s.src} strategy="afterInteractive" />
+            : <Script key={`fs-${i}`} id={`footer-snippet-inline-${i}`} strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: s.content }} />
         )}
         <ThemeProvider>
           <Header />
