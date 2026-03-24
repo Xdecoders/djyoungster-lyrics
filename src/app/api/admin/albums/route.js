@@ -8,7 +8,7 @@ export async function GET(request) {
     const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')) : undefined
 
     const albums = await prisma.album.findMany({
-      where: search ? { title: { contains: search, mode: 'insensitive' } } : undefined,
+      where: search ? { title: { contains: search } } : undefined,
       include: {
         artist: true,
         _count: {
