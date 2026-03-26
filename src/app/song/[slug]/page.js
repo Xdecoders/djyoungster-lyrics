@@ -354,6 +354,17 @@ export default async function SongPage({ params }) {
   ]
   const breadcrumbSchema = generateBreadcrumbSchema(breadcrumbs)
 
+  // Fetch ad slots (non-blocking — fall back to empty on error)
+  let adSlots = { afterFeaturedImage: '', beforeRating: '', sidebar: '' }
+  try {
+    const adSettings = await prisma.siteSeoSettings.findUnique({
+      where: { pageKey: 'ad-slots' }
+    })
+    if (adSettings?.metaKeywords) {
+      adSlots = JSON.parse(adSettings.metaKeywords)
+    }
+  } catch {}
+
   return (
     <>
       {songSchema && (
@@ -371,6 +382,7 @@ export default async function SongPage({ params }) {
       <SongPageClient
         initialSong={JSON.parse(JSON.stringify(song))}
         initialRelatedSongs={JSON.parse(JSON.stringify(relatedSongs))}
+        adSlots={adSlots}
       />
     </>
   )
