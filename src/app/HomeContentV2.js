@@ -216,6 +216,23 @@ export default function HomeContentV2({ data }) {
         </div>
       </div>
 
+      {/* Intro about strip */}
+      <div className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 border-b border-emerald-100 dark:border-emerald-900/40 py-5 px-4">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex-1">
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+              <span className="font-bold text-slate-900 dark:text-white">Welcome to DJYoungster</span> — your go-to destination for the latest celebrity news, entertainment buzz, Bollywood updates, OTT releases, award show highlights, and pop culture stories. We cover everything happening in the world of entertainment, keeping you informed and in the loop every single day.
+            </p>
+          </div>
+          <Link
+            href="/about-us"
+            className="flex-shrink-0 text-xs font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
+          >
+            About Us →
+          </Link>
+        </div>
+      </div>
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Hero + sidebar */}
@@ -290,6 +307,53 @@ export default function HomeContentV2({ data }) {
           >
             View All Stories <FiArrowRight className="w-4 h-4" />
           </Link>
+        </div>
+
+        {/* Bottom about section */}
+        <div className="mt-14 rounded-2xl bg-slate-900 dark:bg-slate-800 overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-700">
+            <div className="p-7">
+              <h3 className="text-white font-bold text-base mb-3">About DJYoungster</h3>
+              <p className="text-slate-400 text-sm leading-relaxed">
+                DJYoungster is a leading entertainment platform covering Bollywood, OTT, celebrity news, award shows, and pop culture. Our team of passionate writers delivers accurate, timely, and engaging stories from across the entertainment industry — all in one place.
+              </p>
+            </div>
+            <div className="p-7">
+              <h3 className="text-white font-bold text-base mb-3">What We Cover</h3>
+              <ul className="text-slate-400 text-sm space-y-1.5">
+                {[
+                  'Bollywood & Regional Cinema',
+                  'OTT Platform Releases',
+                  'Celebrity News & Gossip',
+                  'Award Shows & Events',
+                  'TV & Web Series Updates',
+                  'Pop Culture & Viral Trends',
+                ].map(item => (
+                  <li key={item} className="flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="p-7">
+              <h3 className="text-white font-bold text-base mb-3">Stay Updated</h3>
+              <p className="text-slate-400 text-sm leading-relaxed mb-4">
+                Never miss a story. Browse our latest updates, explore by category, or follow us for daily entertainment news delivered fresh every morning.
+              </p>
+              <div className="flex flex-col gap-2">
+                <Link href="/updates" className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors font-medium">
+                  <FiArrowRight className="w-3.5 h-3.5" /> Browse all stories
+                </Link>
+                <Link href="/about-us" className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors font-medium">
+                  <FiArrowRight className="w-3.5 h-3.5" /> Learn more about us
+                </Link>
+                <Link href="/contact-us" className="flex items-center gap-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors font-medium">
+                  <FiArrowRight className="w-3.5 h-3.5" /> Contact us
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </main>
     </div>
