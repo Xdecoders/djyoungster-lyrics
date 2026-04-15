@@ -2,6 +2,7 @@ import { unstable_cache } from 'next/cache'
 import { cache } from 'react'
 import { prisma } from '@/lib/prisma'
 import HomeContent from './HomeContent'
+import HomeContentV2 from './HomeContentV2'
 import AboutSection from './AboutSection'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateWebSiteSchema, generateOrganizationSchema, generateFAQSchema } from '@/lib/schema'
@@ -166,6 +167,51 @@ const getHomepageData = unstable_cache(
   { revalidate: 300, tags: ['homepage'] }     // 5 min TTL + tag for on-demand revalidation
 )
 
+// ─── V2 homepage data (blog/entertainment only) ───────────────────────────────
+const getHomepageV2Data = unstable_cache(
+  async () => {
+    try {
+      const [blogPosts, blogCategories] = await Promise.all([
+        prisma.blogPost.findMany({
+          where: { status: 'published' },
+          orderBy: { publishedAt: 'desc' },
+          take: 20,
+          select: {
+            id: true, title: true, slug: true, excerpt: true,
+            coverImage: true, readTime: true, publishedAt: true,
+            author: true, isFeatured: true,
+            blogCategory: { select: { id: true, name: true, color: true, slug: true } },
+          }
+        }),
+        prisma.blogCategory.findMany({
+          orderBy: { sortOrder: 'asc' },
+          select: { id: true, name: true, slug: true, color: true },
+        }),
+      ])
+      return { blogPosts, blogCategories }
+    } catch (error) {
+      console.error('Error fetching V2 homepage data:', error)
+      return { blogPosts: [], blogCategories: [] }
+    }
+  },
+  ['homepage-v2-data'],
+  { revalidate: 300, tags: ['homepage'] }
+)
+
+// ─── Read active homepage layout (not cached — controls which branch to take) ─
+async function getActiveHomepage() {
+  try {
+    const settings = await prisma.siteSeoSettings.findUnique({
+      where: { pageKey: 'homepage-layout' }
+    })
+    if (settings?.metaKeywords) {
+      const parsed = JSON.parse(settings.metaKeywords)
+      return parsed.activeHomepage || 'v1'
+    }
+  } catch {}
+  return 'v1'
+}
+
 // ─── Metadata ────────────────────────────────────────────────────────────────
 export async function generateMetadata() {
   // Reuses the same request-scoped memoised calls — no extra DB round-trips
@@ -218,9 +264,22 @@ export default async function Home() {
   const websiteSchema      = generateWebSiteSchema()
   const organizationSchema = generateOrganizationSchema()
 
-  // Served from data cache — no DB hit unless cache is stale
-  const data       = await getHomepageData()
-  const faqSchema  = generateFAQSchema(data.faqs)
+  const activeHomepage = await getActiveHomepage()
+
+  if (activeHomepage === 'v2') {
+    const v2Data = await getHomepageV2Data()
+    return (
+      <>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
+        <HomeContentV2 data={v2Data} />
+      </>
+    )
+  }
+
+  // V1 — default lyrics homepage
+  const data      = await getHomepageData()
+  const faqSchema = generateFAQSchema(data.faqs)
 
   return (
     <>

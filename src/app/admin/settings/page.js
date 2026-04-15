@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { FiLock, FiUser, FiMail, FiSave, FiEye, FiEyeOff, FiShield, FiImage, FiRefreshCw, FiCheck, FiCode } from 'react-icons/fi'
+import { FiLock, FiUser, FiMail, FiSave, FiEye, FiEyeOff, FiShield, FiImage, FiRefreshCw, FiCheck, FiCode, FiLayout } from 'react-icons/fi'
 
 export default function AdminSettings() {
   const router = useRouter()
@@ -25,6 +25,11 @@ export default function AdminSettings() {
   const [adSlots, setAdSlots] = useState({ afterFeaturedImage: '', beforeRating: '', sidebar: '' })
   const [adSaving, setAdSaving] = useState(false)
   const [adMessage, setAdMessage] = useState({ type: '', text: '' })
+
+  // Homepage layout state
+  const [activeHomepage, setActiveHomepage] = useState('v1')
+  const [layoutSaving, setLayoutSaving] = useState(false)
+  const [layoutMessage, setLayoutMessage] = useState({ type: '', text: '' })
 
   // Profile state
   const [profile, setProfile] = useState({
@@ -56,6 +61,7 @@ export default function AdminSettings() {
     fetchOgStats()
     fetchSnippets()
     fetchAdSlots()
+    fetchHomepageLayout()
   }, [])
 
   const togglePage = (field, value) => {
@@ -82,6 +88,42 @@ export default function AdminSettings() {
       const res = await fetch('/api/admin/ad-slots', { headers: { Authorization: `Bearer ${token}` } })
       if (res.ok) setAdSlots(await res.json())
     } catch {}
+  }
+
+  const fetchHomepageLayout = async () => {
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/homepage-layout', { headers: { Authorization: `Bearer ${token}` } })
+      if (res.ok) {
+        const data = await res.json()
+        setActiveHomepage(data.activeHomepage || 'v1')
+      }
+    } catch {}
+  }
+
+  const handleSaveLayout = async (value) => {
+    setLayoutSaving(true)
+    setLayoutMessage({ type: '', text: '' })
+    try {
+      const token = localStorage.getItem('adminToken')
+      const res = await fetch('/api/admin/homepage-layout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ activeHomepage: value })
+      })
+      const data = await res.json()
+      if (res.ok) {
+        setActiveHomepage(value)
+        setLayoutMessage({ type: 'success', text: 'Homepage layout updated! Changes will appear within 5 minutes.' })
+      } else {
+        setLayoutMessage({ type: 'error', text: data.message || 'Failed to save' })
+      }
+    } catch {
+      setLayoutMessage({ type: 'error', text: 'An error occurred' })
+    } finally {
+      setLayoutSaving(false)
+      setTimeout(() => setLayoutMessage({ type: '', text: '' }), 4000)
+    }
   }
 
   const handleSaveAdSlots = async (e) => {
@@ -643,6 +685,105 @@ export default function AdminSettings() {
               {adSaving ? 'Saving...' : 'Save Ad Slots'}
             </button>
           </form>
+        </div>
+
+        {/* Homepage Layout */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-2 bg-indigo-50 rounded-xl">
+              <FiLayout className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-slate-800">Homepage Layout</h2>
+              <p className="text-sm text-slate-500">Choose which homepage visitors see</p>
+            </div>
+          </div>
+
+          {layoutMessage.text && (
+            <div className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${
+              layoutMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'
+            }`}>
+              {layoutMessage.text}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* V1 card */}
+            <button
+              type="button"
+              disabled={layoutSaving}
+              onClick={() => handleSaveLayout('v1')}
+              className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-200 ${
+                activeHomepage === 'v1'
+                  ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                  : 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-sm'
+              }`}
+            >
+              {activeHomepage === 'v1' && (
+                <span className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wide">
+                  <FiCheck className="w-3 h-3" /> Active
+                </span>
+              )}
+              <div className="w-full aspect-[16/9] rounded-lg bg-gradient-to-br from-emerald-400 to-teal-500 mb-4 flex flex-col gap-1.5 p-3 overflow-hidden">
+                <div className="h-3 bg-white/40 rounded w-3/4" />
+                <div className="h-2 bg-white/30 rounded w-1/2" />
+                <div className="flex gap-1 mt-1">
+                  {[...Array(4)].map((_, i) => (
+                    <div key={i} className="flex-1 h-8 bg-white/20 rounded" />
+                  ))}
+                </div>
+                <div className="flex gap-1">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex-1 h-6 bg-white/20 rounded" />
+                  ))}
+                </div>
+              </div>
+              <p className="font-bold text-slate-800 text-sm">Lyrics Homepage (V1)</p>
+              <p className="text-xs text-slate-500 mt-0.5">Songs, charts, language tabs, blog updates — full lyrics platform</p>
+            </button>
+
+            {/* V2 card */}
+            <button
+              type="button"
+              disabled={layoutSaving}
+              onClick={() => handleSaveLayout('v2')}
+              className={`relative text-left rounded-2xl border-2 p-5 transition-all duration-200 ${
+                activeHomepage === 'v2'
+                  ? 'border-indigo-500 bg-indigo-50 shadow-md'
+                  : 'border-slate-200 bg-white hover:border-indigo-300 hover:shadow-sm'
+              }`}
+            >
+              {activeHomepage === 'v2' && (
+                <span className="absolute top-3 right-3 flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-500 text-white text-[10px] font-bold uppercase tracking-wide">
+                  <FiCheck className="w-3 h-3" /> Active
+                </span>
+              )}
+              <div className="w-full aspect-[16/9] rounded-lg bg-slate-800 mb-4 flex flex-col gap-1.5 p-3 overflow-hidden">
+                <div className="h-1.5 bg-emerald-400/60 rounded w-full mb-1" />
+                <div className="flex gap-1 flex-1">
+                  <div className="flex-[2] bg-slate-600/60 rounded" />
+                  <div className="flex-1 flex flex-col gap-1">
+                    {[...Array(4)].map((_, i) => (
+                      <div key={i} className="flex-1 bg-slate-600/40 rounded" />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  {[...Array(3)].map((_, i) => (
+                    <div key={i} className="flex-1 h-5 bg-slate-600/40 rounded" />
+                  ))}
+                </div>
+              </div>
+              <p className="font-bold text-slate-800 text-sm">Entertainment Blog (V2)</p>
+              <p className="text-xs text-slate-500 mt-0.5">Blog posts only — entertainment news &amp; updates magazine style</p>
+            </button>
+          </div>
+
+          {layoutSaving && (
+            <p className="text-xs text-slate-400 mt-3 flex items-center gap-1.5">
+              <FiRefreshCw className="w-3 h-3 animate-spin" /> Saving and revalidating cache...
+            </p>
+          )}
         </div>
 
       </div>
