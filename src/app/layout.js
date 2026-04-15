@@ -103,10 +103,8 @@ export default async function RootLayout({ children }) {
     <html lang="en" className={interTight.variable} suppressHydrationWarning>
       <head>
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="icon" href={faviconUrl} />
         <link rel="apple-touch-icon" href={faviconUrl} />
-        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2128567572108655" crossOrigin="anonymous" />
         {/* SSR: header snippet for "Entire site" — appears in initial HTML */}
         {headerAll && parseSnippetTags(codeSnippets.headerCode).map((s, i) =>
           s.type === 'external'
