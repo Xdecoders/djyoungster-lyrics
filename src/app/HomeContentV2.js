@@ -224,12 +224,6 @@ export default function HomeContentV2({ data }) {
               <span className="font-bold text-slate-900 dark:text-white">Welcome to DJYoungster</span> — your go-to destination for the latest celebrity news, entertainment buzz, Bollywood updates, OTT releases, award show highlights, and pop culture stories. We cover everything happening in the world of entertainment, keeping you informed and in the loop every single day.
             </p>
           </div>
-          <Link
-            href="/about-us"
-            className="flex-shrink-0 text-xs font-semibold text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-700 px-3 py-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 transition-colors"
-          >
-            About Us →
-          </Link>
         </div>
       </div>
 
