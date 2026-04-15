@@ -7,539 +7,502 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model admin {
-  id        String   @id
-  email     String   @unique(map: "Admin_email_key")
-  password  String
-  name      String
-  role      String   @default("admin")
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-}
-
-model album {
-  id              String        @id
-  title           String
-  slug            String        @unique(map: "Album_slug_key")
-  coverImage      String?
-  releaseDate     DateTime?
-  label           String?
-  metaTitle       String?
-  metaDescription String?       @db.Text
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime
-  artistId        String
-  artist          artist        @relation(fields: [artistId], references: [id], map: "Album_artistId_fkey")
-  albumrating     albumrating[]
-  blogpost        blogpost[]
-  song            song[]
-
-  @@index([artistId], map: "Album_artistId_fkey")
-  @@index([slug], map: "Album_slug_idx")
-  @@index([title], map: "Album_title_idx")
-}
-
-model albumrating {
-  id        String   @id
-  albumId   String
-  ipAddress String
-  rating    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  album     album    @relation(fields: [albumId], references: [id], onDelete: Cascade, map: "AlbumRating_albumId_fkey")
-
-  @@unique([albumId, ipAddress], map: "AlbumRating_albumId_ipAddress_key")
-  @@index([albumId], map: "AlbumRating_albumId_idx")
-}
-
-model annotation {
-  id        String   @id
-  songId    String
-  startLine Int
-  endLine   Int
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  song      song     @relation(fields: [songId], references: [id], onDelete: Cascade, map: "Annotation_songId_fkey")
-
-  @@index([songId], map: "Annotation_songId_idx")
-}
-
-model appvisit {
-  id        String   @id
-  ipAddress String?
-  userAgent String?  @db.Text
-  platform  String?
-  referrer  String?
-  createdAt DateTime @default(now())
-
-  @@index([createdAt], map: "AppVisit_createdAt_idx")
-  @@index([ipAddress], map: "AppVisit_ipAddress_idx")
-}
-
-model artist {
-  id              String         @id
-  name            String
-  slug            String         @unique(map: "Artist_slug_key")
-  bio             String?        @db.Text
-  imageUrl        String?
-  country         String?
-  socialLinks     String?        @db.Text
-  metaTitle       String?
-  metaDescription String?        @db.Text
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime
-  album           album[]
-  artistrating    artistrating[]
-  blogpost        blogpost[]
-  songartist      songartist[]
-
-  @@index([name], map: "Artist_name_idx")
-  @@index([slug], map: "Artist_slug_idx")
-}
-
-model artistrating {
-  id        String   @id
-  artistId  String
-  ipAddress String
-  rating    Int
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-  artist    artist   @relation(fields: [artistId], references: [id], onDelete: Cascade, map: "ArtistRating_artistId_fkey")
-
-  @@unique([artistId, ipAddress], map: "ArtistRating_artistId_ipAddress_key")
-  @@index([artistId], map: "ArtistRating_artistId_idx")
-}
-
-model blogcategory {
-  id          String     @id
+model BlogCategory {
+  id          String     @id @default(uuid())
   name        String
-  slug        String     @unique(map: "BlogCategory_slug_key")
+  slug        String     @unique
   description String?    @db.Text
   color       String?
   icon        String?
   sortOrder   Int        @default(0)
-  blogpost    blogpost[]
+  posts       BlogPost[]
 
-  @@index([slug], map: "BlogCategory_slug_idx")
+  @@index([slug])
 }
 
-model blogpost {
-  id                                    String       @id
-  title                                 String
-  slug                                  String       @unique(map: "BlogPost_slug_key")
-  excerpt                               String       @db.Text
-  content                               String       @db.LongText
-  coverImage                            String?
-  ogImage                               String?
-  metaTitle                             String?
-  metaDescription                       String?      @db.Text
-  metaKeywords                          String?      @db.Text
-  author                                String       @default("Admin")
-  status                                String       @default("draft")
-  isFeatured                            Boolean      @default(false)
-  readTime                              Int?
-  views                                 Int          @default(0)
-  tags                                  String?      @db.Text
-  blogCategoryId                        String
-  relatedSongId                         String?
-  relatedMovieId                        String?
-  relatedArtistId                       String?
-  relatedAlbumId                        String?
-  publishedAt                           DateTime?
-  createdAt                             DateTime     @default(now())
-  updatedAt                             DateTime
-  blogcategory                          blogcategory @relation(fields: [blogCategoryId], references: [id], map: "BlogPost_blogCategoryId_fkey")
-  album                                 album?       @relation(fields: [relatedAlbumId], references: [id], map: "BlogPost_relatedAlbumId_fkey")
-  artist                                artist?      @relation(fields: [relatedArtistId], references: [id], map: "BlogPost_relatedArtistId_fkey")
-  movie                                 movie?       @relation(fields: [relatedMovieId], references: [id], map: "BlogPost_relatedMovieId_fkey")
-  song_blogpost_relatedSongIdTosong     song?        @relation("blogpost_relatedSongIdTosong", fields: [relatedSongId], references: [id], map: "BlogPost_relatedSongId_fkey")
-  song_song_relatedBlogPostIdToblogpost song[]       @relation("song_relatedBlogPostIdToblogpost")
-
-  @@index([blogCategoryId], map: "BlogPost_blogCategoryId_idx")
-  @@index([isFeatured], map: "BlogPost_isFeatured_idx")
-  @@index([publishedAt], map: "BlogPost_publishedAt_idx")
-  @@index([relatedAlbumId], map: "BlogPost_relatedAlbumId_fkey")
-  @@index([relatedArtistId], map: "BlogPost_relatedArtistId_fkey")
-  @@index([relatedMovieId], map: "BlogPost_relatedMovieId_fkey")
-  @@index([relatedSongId], map: "BlogPost_relatedSongId_fkey")
-  @@index([slug], map: "BlogPost_slug_idx")
-  @@index([status], map: "BlogPost_status_idx")
-  @@index([views], map: "BlogPost_views_idx")
-}
-
-model bulkimport {
-  id            String          @id
-  site          String
-  status        String          @default("pending")
-  totalUrls     Int             @default(0)
-  scraped       Int             @default(0)
-  failed        Int             @default(0)
-  skipped       Int             @default(0)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime
-  bulkimporturl bulkimporturl[]
-}
-
-model bulkimporturl {
-  id         String     @id
-  importId   String
-  url        String     @db.Text
-  status     String     @default("pending")
-  songId     String?
-  error      String?    @db.Text
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime
-  bulkimport bulkimport @relation(fields: [importId], references: [id], onDelete: Cascade, map: "BulkImportUrl_importId_fkey")
-
-  @@index([importId, status], map: "BulkImportUrl_importId_status_idx")
-}
-
-model category {
-  id              String         @id
-  name            String         @unique(map: "Category_name_key")
-  slug            String         @unique(map: "Category_slug_key")
-  createdAt       DateTime       @default(now())
-  metaDescription String?        @db.Text
-  metaTitle       String?
-  description     String?        @db.Text
-  imageUrl        String?
-  songcategory    songcategory[]
-  toplist         toplist[]
-
-  @@index([slug], map: "Category_slug_idx")
-}
-
-model dailyquiz {
-  id                  String                @id
-  language            String
-  date                String
-  playCount           Int                   @default(0)
-  songIds             String                @db.Text
-  createdAt           DateTime              @default(now())
-  dailyquizquestion   dailyquizquestion[]
-  dailyquizsubmission dailyquizsubmission[]
-
-  @@unique([language, date], map: "DailyQuiz_language_date_key")
-  @@index([language, date], map: "DailyQuiz_language_date_idx")
-}
-
-model dailyquizquestion {
-  id           String    @id
-  quizId       String
-  order        Int
-  type         String
-  lyricSnippet String    @db.Text
-  question     String    @db.Text
-  options      String    @db.Text
-  correctIndex Int
-  explanation  String?   @db.Text
-  songId       String?
-  songSlug     String?
-  songTitle    String?
-  dailyquiz    dailyquiz @relation(fields: [quizId], references: [id], onDelete: Cascade, map: "DailyQuizQuestion_quizId_fkey")
-
-  @@index([quizId], map: "DailyQuizQuestion_quizId_idx")
-}
-
-model dailyquizsubmission {
-  id          String    @id
-  quizId      String
-  sessionId   String
-  displayName String?
-  score       Int
-  timeTaken   Int
-  streak      Int       @default(1)
-  submittedAt DateTime  @default(now())
-  dailyquiz   dailyquiz @relation(fields: [quizId], references: [id], onDelete: Cascade, map: "DailyQuizSubmission_quizId_fkey")
-
-  @@index([quizId, score, timeTaken], map: "DailyQuizSubmission_quizId_score_timeTaken_idx")
-  @@index([sessionId], map: "DailyQuizSubmission_sessionId_idx")
-}
-
-model genre {
-  id              String      @id
-  name            String      @unique(map: "Genre_name_key")
-  slug            String      @unique(map: "Genre_slug_key")
-  description     String?     @db.Text
-  imageUrl        String?
-  createdAt       DateTime    @default(now())
-  metaDescription String?     @db.Text
-  metaTitle       String?
-  songgenre       songgenre[]
-
-  @@index([slug], map: "Genre_slug_idx")
-}
-
-model movie {
-  id              String        @id
+model BlogPost {
+  id              String       @id @default(uuid())
   title           String
-  year            Int?
-  director        String?
-  createdAt       DateTime      @default(now())
-  posterUrl       String?
-  slug            String?       @unique(map: "Movie_slug_key")
-  cast            String?       @db.Text
-  description     String?       @db.Text
-  genre           String?
+  slug            String       @unique
+  excerpt         String       @db.Text
+  content         String       @db.LongText
+  coverImage      String?
+  ogImage         String?
+  metaTitle       String?
+  metaDescription String?      @db.Text
+  metaKeywords    String?      @db.Text
+  author          String       @default("Admin")
+  status          String       @default("draft")   // draft, published, archived
+  isFeatured      Boolean      @default(false)
+  readTime        Int?
+  views           Int          @default(0)
+  tags            String?      @db.Text             // JSON string[]
+
+  // Category
+  blogCategoryId  String
+  blogCategory    BlogCategory @relation(fields: [blogCategoryId], references: [id])
+
+  // DB links
+  relatedSongId   String?
+  relatedSong     Song?        @relation("BlogPostRelatedSong", fields: [relatedSongId], references: [id], onDelete: SetNull)
+
+  featuredInSongs Song[]       @relation("SongFeaturedArticle")
+  relatedMovieId  String?
+  relatedMovie    Movie?       @relation(fields: [relatedMovieId], references: [id], onDelete: SetNull)
+  relatedArtistId String?
+  relatedArtist   Artist?      @relation(fields: [relatedArtistId], references: [id], onDelete: SetNull)
+  relatedAlbumId  String?
+  relatedAlbum    Album?       @relation(fields: [relatedAlbumId], references: [id], onDelete: SetNull)
+
+  publishedAt     DateTime?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([slug])
+  @@index([blogCategoryId])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([publishedAt])
+  @@index([views])
+}
+
+model Song {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String   @unique
+  lyrics          String   @db.Text
+  lyricsRomanized String?  @db.Text  // Transliterated lyrics (Roman script)
+  lyricsTranslated String? @db.Text  // English translation
+  lyricsHindi     String?  @db.Text  // Hindi version of lyrics
+  lyricsPunjabi   String?  @db.Text  // Punjabi version of lyrics
+  meaning         String?  @db.Text  // Song meaning/interpretation
+  duration        String?
   language        String?
-  metaDescription String?       @db.Text
+  datePublished   DateTime?
+  dateModified    DateTime?
+  verified        Boolean  @default(false)
+  views           Int      @default(0)
+  likes           Int      @default(0)
+  status          String   @default("published")
   metaTitle       String?
-  musicDirector   String?
-  producer        String?
-  writer          String?
-  blogpost        blogpost[]
-  movierating     movierating[]
-  song            song[]
+  metaDescription String?  @db.Text
+  coverImage      String?
+  ogImage         String?
+  youtubeUrl      String?
+  spotifyUrl      String?
+  appleMusicUrl   String?
 
-  @@index([slug], map: "Movie_slug_idx")
-  @@index([title], map: "Movie_title_idx")
-  @@index([year], map: "Movie_year_idx")
+  // Contributors
+  lyricist        String?  // Writer/Lyricist
+  composer        String?  // Music Composer/Director
+  singers         String?  // Additional singers (comma separated)
+  label           String?  // Music Label/Copyright Company
+  starring        String?  // Models/Starring (comma separated)
+  producer        String?  // Music Producer
+  director        String?  // Music Video Director
+
+  hasWebStory     Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  album      Album?         @relation(fields: [albumId], references: [id])
+  albumId    String?
+  movie      Movie?         @relation(fields: [movieId], references: [id])
+  movieId    String?
+
+  relatedBlogPostId String?
+  relatedBlogPost   BlogPost? @relation("SongFeaturedArticle", fields: [relatedBlogPostId], references: [id], onDelete: SetNull)
+
+  artists    SongArtist[]
+  genres     SongGenre[]
+  categories SongCategory[]
+  tags       SongTag[]
+  songLikes   SongLike[]
+  reports     Report[]
+  ratings     SongRating[]
+  reactions   SongReaction[]
+  annotations Annotation[]
+  shareEvents SongShareEvent[]
+  blogPosts   BlogPost[]       @relation("BlogPostRelatedSong")
+
+  @@index([slug])
+  @@index([title])
+  @@index([views])
+  @@index([createdAt])
+  @@index([status])
+  @@index([datePublished])
+  @@index([albumId])
+  @@index([movieId])
+  @@index([hasWebStory])
 }
 
-model movierating {
-  id        String   @id
-  movieId   String
+model SongLike {
+  id        String   @id @default(uuid())
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId    String
   ipAddress String
-  rating    Int
   createdAt DateTime @default(now())
-  updatedAt DateTime
-  movie     movie    @relation(fields: [movieId], references: [id], onDelete: Cascade, map: "MovieRating_movieId_fkey")
 
-  @@unique([movieId, ipAddress], map: "MovieRating_movieId_ipAddress_key")
-  @@index([movieId], map: "MovieRating_movieId_idx")
+  @@unique([songId, ipAddress])
+  @@index([songId])
+  @@index([ipAddress])
 }
 
-model newsletter {
-  id         String    @id
-  subject    String
-  content    String    @db.Text
-  status     String    @default("draft")
-  sentAt     DateTime?
-  sentTo     Int       @default(0)
-  openCount  Int       @default(0)
-  clickCount Int       @default(0)
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime
+model Artist {
+  id              String   @id @default(uuid())
+  name            String
+  slug            String   @unique
+  bio             String?  @db.Text
+  imageUrl        String?
+  country         String?
+  socialLinks     String?  @db.Text
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  songs     SongArtist[]
+  albums    Album[]
+  ratings   ArtistRating[]
+  blogPosts BlogPost[]
+
+  @@index([slug])
+  @@index([name])
 }
 
-model newslettersubscriber {
-  id             String    @id
-  email          String    @unique(map: "NewsletterSubscriber_email_key")
-  name           String?
-  status         String    @default("active")
-  subscribedAt   DateTime  @default(now())
-  unsubscribedAt DateTime?
-  ipAddress      String?
-
-  @@index([email], map: "NewsletterSubscriber_email_idx")
-  @@index([status], map: "NewsletterSubscriber_status_idx")
-}
-
-model page {
-  id              String   @id
-  slug            String   @unique(map: "Page_slug_key")
+model Album {
+  id              String   @id @default(uuid())
   title           String
-  content         String   @db.LongText
+  slug            String   @unique
+  coverImage      String?
+  releaseDate     DateTime?
+  label           String?
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  artist    Artist       @relation(fields: [artistId], references: [id])
+  artistId  String
+  songs     Song[]
+  ratings   AlbumRating[]
+  blogPosts BlogPost[]
+
+  @@index([slug])
+  @@index([title])
+}
+
+model Genre {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?  @db.Text
+  imageUrl        String?
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  songs SongGenre[]
+
+  @@index([slug])
+}
+
+model Category {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  slug            String   @unique
+  description     String?  @db.Text
+  imageUrl        String?
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
+
+  songs SongCategory[]
+  topLists TopList[]
+
+  @@index([slug])
+}
+
+model TopList {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String   @unique
+  count           Int      @default(50)
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  tagId           String?
+  tag             Tag?      @relation(fields: [tagId], references: [id])
+  description     String?  @db.Text
   metaTitle       String?
   metaDescription String?  @db.Text
   isPublished     Boolean  @default(true)
   createdAt       DateTime @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime @updatedAt
 
-  @@index([slug], map: "Page_slug_idx")
+  @@index([slug])
+  @@index([categoryId])
+  @@index([tagId])
 }
 
-model redirect {
-  id        String   @id
-  oldUrl    String   @unique(map: "Redirect_oldUrl_key")
-  newUrl    String
-  type      Int      @default(301)
-  isActive  Boolean  @default(true)
-  note      String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime
-
-  @@index([isActive], map: "Redirect_isActive_idx")
-  @@index([oldUrl], map: "Redirect_oldUrl_idx")
-}
-
-model report {
-  id            String   @id
-  type          String
-  description   String?  @db.Text
-  status        String   @default("pending")
-  songId        String?
-  reporterIp    String?
-  reporterEmail String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime
-  song          song?    @relation(fields: [songId], references: [id], onDelete: Cascade, map: "Report_songId_fkey")
-
-  @@index([songId], map: "Report_songId_idx")
-  @@index([status], map: "Report_status_idx")
-}
-
-model searchevent {
-  id          String   @id
-  query       String
-  resultCount Int
-  createdAt   DateTime @default(now())
-
-  @@index([createdAt], map: "SearchEvent_createdAt_idx")
-  @@index([query], map: "SearchEvent_query_idx")
-}
-
-model siteseosettings {
-  id              String   @id
-  pageKey         String   @unique(map: "SiteSeoSettings_pageKey_key")
+model SiteSeoSettings {
+  id              String   @id @default(uuid())
+  pageKey         String   @unique  // homepage, songs, artists, albums, movies, genres
   pageTitle       String?
   metaTitle       String?
   metaDescription String?  @db.Text
   metaKeywords    String?  @db.Text
   ogTitle         String?
   ogDescription   String?  @db.Text
+  ogImage         String?  // OG image URL for social media sharing
   createdAt       DateTime @default(now())
-  updatedAt       DateTime
-  ogImage         String?
+  updatedAt       DateTime @updatedAt
 
-  @@index([pageKey], map: "SiteSeoSettings_pageKey_idx")
+  @@index([pageKey])
 }
 
-model song {
-  id                                        String           @id
-  title                                     String
-  slug                                      String           @unique(map: "Song_slug_key")
-  lyrics                                    String           @db.Text
-  duration                                  String?
-  language                                  String?
-  verified                                  Boolean          @default(false)
-  views                                     Int              @default(0)
-  status                                    String           @default("published")
-  metaTitle                                 String?
-  metaDescription                           String?          @db.Text
-  coverImage                                String?
-  createdAt                                 DateTime         @default(now())
-  updatedAt                                 DateTime
-  albumId                                   String?
-  movieId                                   String?
-  youtubeUrl                                String?
-  composer                                  String?
-  director                                  String?
-  label                                     String?
-  lyricist                                  String?
-  producer                                  String?
-  singers                                   String?
-  spotifyUrl                                String?
-  starring                                  String?
-  lyricsRomanized                           String?          @db.Text
-  lyricsTranslated                          String?          @db.Text
-  likes                                     Int              @default(0)
-  meaning                                   String?          @db.Text
-  lyricsHindi                               String?          @db.Text
-  lyricsPunjabi                             String?          @db.Text
-  appleMusicUrl                             String?
-  datePublished                             DateTime?
-  dateModified                              DateTime?
-  hasWebStory                               Boolean          @default(false)
-  ogImage                                   String?
-  relatedBlogPostId                         String?
-  annotation                                annotation[]
-  blogpost_blogpost_relatedSongIdTosong     blogpost[]       @relation("blogpost_relatedSongIdTosong")
-  report                                    report[]
-  album                                     album?           @relation(fields: [albumId], references: [id], map: "Song_albumId_fkey")
-  movie                                     movie?           @relation(fields: [movieId], references: [id], map: "Song_movieId_fkey")
-  blogpost_song_relatedBlogPostIdToblogpost blogpost?        @relation("song_relatedBlogPostIdToblogpost", fields: [relatedBlogPostId], references: [id], map: "Song_relatedBlogPostId_fkey")
-  songartist                                songartist[]
-  songcategory                              songcategory[]
-  songgenre                                 songgenre[]
-  songlike                                  songlike[]
-  songrating                                songrating[]
-  songreaction                              songreaction[]
-  songshareevent                            songshareevent[]
-  songtag                                   songtag[]
+model Movie {
+  id              String   @id @default(uuid())
+  title           String
+  slug            String?  @unique
+  year            Int?
+  director        String?
+  posterUrl       String?
+  description     String?  @db.Text
+  cast            String?  @db.Text  // Starring actors (comma separated)
+  producer        String?
+  musicDirector   String?            // Music Director/Composer
+  writer          String?            // Screenplay/Story Writer
+  genre           String?            // Movie genre
+  language        String?            // Movie language
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  createdAt       DateTime @default(now())
 
-  @@index([albumId], map: "Song_albumId_idx")
-  @@index([createdAt], map: "Song_createdAt_idx")
-  @@index([datePublished], map: "Song_datePublished_idx")
-  @@index([hasWebStory], map: "Song_hasWebStory_idx")
-  @@index([movieId], map: "Song_movieId_idx")
-  @@index([relatedBlogPostId], map: "Song_relatedBlogPostId_fkey")
-  @@index([slug], map: "Song_slug_idx")
-  @@index([status], map: "Song_status_idx")
-  @@index([title], map: "Song_title_idx")
-  @@index([views], map: "Song_views_idx")
+  songs     Song[]
+  ratings   MovieRating[]
+  blogPosts BlogPost[]
+
+  @@index([slug])
+  @@index([title])
+  @@index([year])
 }
 
-model songartist {
+model Admin {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SongArtist {
+  song     Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
   songId   String
+  artist   Artist @relation(fields: [artistId], references: [id], onDelete: Cascade)
   artistId String
-  artist   artist @relation(fields: [artistId], references: [id], onDelete: Cascade, map: "SongArtist_artistId_fkey")
-  song     song   @relation(fields: [songId], references: [id], onDelete: Cascade, map: "SongArtist_songId_fkey")
 
   @@id([songId, artistId])
-  @@index([artistId], map: "SongArtist_artistId_fkey")
 }
 
-model songcategory {
-  songId     String
-  categoryId String
-  category   category @relation(fields: [categoryId], references: [id], onDelete: Cascade, map: "SongCategory_categoryId_fkey")
-  song       song     @relation(fields: [songId], references: [id], onDelete: Cascade, map: "SongCategory_songId_fkey")
-
-  @@id([songId, categoryId])
-  @@index([categoryId], map: "SongCategory_categoryId_fkey")
-}
-
-model songgenre {
+model SongGenre {
+  song    Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
   songId  String
+  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
   genreId String
-  genre   genre  @relation(fields: [genreId], references: [id], onDelete: Cascade, map: "SongGenre_genreId_fkey")
-  song    song   @relation(fields: [songId], references: [id], onDelete: Cascade, map: "SongGenre_songId_fkey")
 
   @@id([songId, genreId])
-  @@index([genreId], map: "SongGenre_genreId_fkey")
 }
 
-model songlike {
-  id        String   @id
+model SongCategory {
+  song       Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId     String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+
+  @@id([songId, categoryId])
+}
+
+model Tag {
+  id              String    @id @default(uuid())
+  name            String    @unique
+  slug            String    @unique
+  description     String?   @db.Text
+  metaTitle       String?
+  metaDescription String?   @db.Text
+  createdAt       DateTime  @default(now())
+
+  songs    SongTag[]
+  topLists TopList[]
+
+  @@index([slug])
+}
+
+model SongTag {
+  song   Song   @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId  String
+
+  @@id([songId, tagId])
+}
+
+model Report {
+  id          String   @id @default(uuid())
+  type        String   // lyrics, spelling, artist, album, credits, other
+  description String?  @db.Text
+  status      String   @default("pending") // pending, reviewed, resolved
+
+  // Related content
+  songId      String?
+  song        Song?    @relation(fields: [songId], references: [id], onDelete: Cascade)
+
+  // Reporter info
+  reporterIp  String?
+  reporterEmail String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([status])
+  @@index([songId])
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String?
+  status       String   @default("active") // active, unsubscribed
+  subscribedAt DateTime @default(now())
+  unsubscribedAt DateTime?
+  ipAddress    String?
+
+  @@index([email])
+  @@index([status])
+}
+
+model Newsletter {
+  id          String   @id @default(uuid())
+  subject     String
+  content     String   @db.Text
+  status      String   @default("draft") // draft, sent
+  sentAt      DateTime?
+  sentTo      Int      @default(0) // Number of recipients
+  openCount   Int      @default(0)
+  clickCount  Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Page {
+  id              String   @id @default(uuid())
+  slug            String   @unique  // about-us, privacy-policy, terms-and-conditions, disclaimer, contact-us
+  title           String
+  content         String   @db.LongText
+  metaTitle       String?
+  metaDescription String?  @db.Text
+  isPublished     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model BulkImport {
+  id        String   @id @default(uuid())
+  site      String
+  status    String   @default("pending") // pending, discovering, running, paused, completed
+  totalUrls Int      @default(0)
+  scraped   Int      @default(0)
+  failed    Int      @default(0)
+  skipped   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  urls      BulkImportUrl[]
+}
+
+model BulkImportUrl {
+  id        String     @id @default(uuid())
+  importId  String
+  import    BulkImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  url       String     @db.Text
+  status    String     @default("pending") // pending, scraped, failed, skipped
+  songId    String?
+  error     String?    @db.Text
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@index([importId, status])
+}
+
+model SongRating {
+  id        String   @id @default(uuid())
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
   songId    String
   ipAddress String
+  rating    Int      // 1-5
   createdAt DateTime @default(now())
-  song      song     @relation(fields: [songId], references: [id], onDelete: Cascade, map: "SongLike_songId_fkey")
+  updatedAt DateTime @updatedAt
 
-  @@unique([songId, ipAddress], map: "SongLike_songId_ipAddress_key")
-  @@index([ipAddress], map: "SongLike_ipAddress_idx")
-  @@index([songId], map: "SongLike_songId_idx")
+  @@unique([songId, ipAddress])
+  @@index([songId])
 }
 
-model songrating {
-  id        String   @id
+model SongReaction {
+  id        String   @id @default(uuid())
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
   songId    String
   ipAddress String
-  rating    Int
+  emoji     String   // fire, heart, sad, party, hundred
   createdAt DateTime @default(now())
-  updatedAt DateTime
-  song      song     @relation(fields: [songId], references: [id], onDelete: Cascade, map: "SongRating_songId_fkey")
 
-  @@unique([songId, ipAddress], map: "SongRating_songId_ipAddress_key")
-  @@index([songId], map: "SongRating_songId_idx")
+  @@unique([songId, ipAddress, emoji])
+  @@index([songId])
 }
 
-model songreaction {
-  id        String   @id
-  songId    String
+model ArtistRating {
+  id        String   @id @default(uuid())
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  artistId  String
   ipAddress String
-  emoji     String
+  rating    Int      // 1-5
   createdAt DateTime @default(now())
-  song      song     @relation(fields: [songId], references: [id], onDelete: Cascade, map: "SongReaction_songId_fkey")
+  updatedAt DateTime @updatedAt
 
-  @@unique([songId, ipAddress, emoji], map: "SongReaction_songId_ipAddress_emoji_key")
-  @@index([songId], map: "SongReaction_songId_idx")
+  @@unique([artistId, ipAddress])
+  @@index([artistId])
 }
 
-model songrequest {
-  id              String   @id
+model AlbumRating {
+  id        String   @id @default(uuid())
+  album     Album    @relation(fields: [albumId], references: [id], onDelete: Cascade)
+  albumId   String
+  ipAddress String
+  rating    Int      // 1-5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([albumId, ipAddress])
+  @@index([albumId])
+}
+
+model MovieRating {
+  id        String   @id @default(uuid())
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  movieId   String
+  ipAddress String
+  rating    Int      // 1-5
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([movieId, ipAddress])
+  @@index([movieId])
+}
+
+model SongRequest {
+  id              String   @id @default(uuid())
   songName        String
   artistName      String
   lyrics          String?  @db.Text
@@ -548,69 +511,119 @@ model songrequest {
   email           String
   newsletterOptIn Boolean  @default(false)
   ipAddress       String?
-  status          String   @default("pending")
+  status          String   @default("pending") // pending, reviewed, completed, rejected
   adminNotes      String?  @db.Text
   createdAt       DateTime @default(now())
-  updatedAt       DateTime
+  updatedAt       DateTime @updatedAt
 
-  @@index([createdAt], map: "SongRequest_createdAt_idx")
-  @@index([email], map: "SongRequest_email_idx")
-  @@index([status], map: "SongRequest_status_idx")
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
 }
 
-model songshareevent {
-  id        String   @id
+model Annotation {
+  id        String   @id @default(uuid())
   songId    String
-  type      String
+  startLine Int
+  endLine   Int
+  content   String   @db.Text
   createdAt DateTime @default(now())
-  song      song     @relation(fields: [songId], references: [id], onDelete: Cascade, map: "SongShareEvent_songId_fkey")
+  updatedAt DateTime @updatedAt
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
 
-  @@index([createdAt], map: "SongShareEvent_createdAt_idx")
-  @@index([songId], map: "SongShareEvent_songId_idx")
-  @@index([type], map: "SongShareEvent_type_idx")
+  @@index([songId])
 }
 
-model songtag {
-  songId String
-  tagId  String
-  song   song   @relation(fields: [songId], references: [id], onDelete: Cascade, map: "SongTag_songId_fkey")
-  tag    tag    @relation(fields: [tagId], references: [id], onDelete: Cascade, map: "SongTag_tagId_fkey")
+model AppVisit {
+  id        String   @id @default(uuid())
+  ipAddress String?
+  userAgent String?  @db.Text
+  platform  String?  // android, ios, desktop
+  referrer  String?
+  createdAt DateTime @default(now())
 
-  @@id([songId, tagId])
-  @@index([tagId], map: "SongTag_tagId_fkey")
+  @@index([ipAddress])
+  @@index([createdAt])
 }
 
-model tag {
-  id              String    @id
-  name            String    @unique(map: "Tag_name_key")
-  slug            String    @unique(map: "Tag_slug_key")
-  createdAt       DateTime  @default(now())
-  description     String?   @db.Text
-  metaDescription String?   @db.Text
-  metaTitle       String?
-  songtag         songtag[]
-  toplist         toplist[]
+model Redirect {
+  id        String   @id @default(uuid())
+  oldUrl    String   @unique
+  newUrl    String
+  type      Int      @default(301)  // 301 permanent, 302 temporary
+  isActive  Boolean  @default(true)
+  note      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@index([slug], map: "Tag_slug_idx")
+  @@index([isActive])
+  @@index([oldUrl])
+}
+model SongShareEvent {
+  id        String   @id @default(uuid())
+  song      Song     @relation(fields: [songId], references: [id], onDelete: Cascade)
+  songId    String
+  type      String   // 'story' | 'reel'
+  createdAt DateTime @default(now())
+
+  @@index([songId])
+  @@index([type])
+  @@index([createdAt])
 }
 
-model toplist {
-  id              String    @id
-  title           String
-  slug            String    @unique(map: "TopList_slug_key")
-  count           Int       @default(50)
-  categoryId      String?
-  description     String?   @db.Text
-  metaTitle       String?
-  metaDescription String?   @db.Text
-  isPublished     Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime
-  tagId           String?
-  category        category? @relation(fields: [categoryId], references: [id], map: "TopList_categoryId_fkey")
-  tag             tag?      @relation(fields: [tagId], references: [id], map: "TopList_tagId_fkey")
+model SearchEvent {
+  id          String   @id @default(uuid())
+  query       String
+  resultCount Int
+  createdAt   DateTime @default(now())
 
-  @@index([categoryId], map: "TopList_categoryId_idx")
-  @@index([slug], map: "TopList_slug_idx")
-  @@index([tagId], map: "TopList_tagId_idx")
+  @@index([createdAt])
+  @@index([query])
+}
+
+model DailyQuiz {
+  id          String                @id @default(uuid())
+  language    String                // "hindi", "punjabi", "english", etc.
+  date        String                // "2026-03-14"
+  playCount   Int                   @default(0)
+  songIds     String                @db.Text // JSON array of song IDs used
+  questions   DailyQuizQuestion[]
+  submissions DailyQuizSubmission[]
+  createdAt   DateTime              @default(now())
+
+  @@unique([language, date])
+  @@index([language, date])
+}
+
+model DailyQuizQuestion {
+  id           String    @id @default(uuid())
+  quizId       String
+  quiz         DailyQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  order        Int
+  type         String    // "complete_lyric" | "which_song" | "which_artist"
+  lyricSnippet String    @db.Text
+  question     String    @db.Text
+  options      String    @db.Text  // JSON string[]
+  correctIndex Int
+  explanation  String?   @db.Text
+  songId       String?
+  songSlug     String?
+  songTitle    String?
+
+  @@index([quizId])
+}
+
+model DailyQuizSubmission {
+  id          String    @id @default(uuid())
+  quizId      String
+  quiz        DailyQuiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  sessionId   String
+  displayName String?
+  score       Int
+  timeTaken   Int       // seconds
+  streak      Int       @default(1)
+  submittedAt DateTime  @default(now())
+
+  @@index([quizId, score, timeTaken])
+  @@index([sessionId])
 }
