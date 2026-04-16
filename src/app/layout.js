@@ -8,6 +8,7 @@ import VisitorTracker from '@/components/VisitorTracker'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { getSiteSettings, getCodeSnippets } from '@/lib/seo'
 import CodeSnippetInjector from '@/components/CodeSnippetInjector'
+import AppPromoPopup from '@/components/AppPromoPopup'
 
 const interTight = Inter_Tight({
   subsets: ['latin'],
@@ -132,6 +133,7 @@ export default async function RootLayout({ children }) {
           <main className="flex-1">{children}</main>
           <Footer />
           <VisitorTracker />
+          <AppPromoPopup />
         </ThemeProvider>
         {/* Client-side: specific page targeting only */}
         {(!headerAll || !footerAll) && (

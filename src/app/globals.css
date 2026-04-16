@@ -95,6 +95,21 @@ html {
   animation: slideUp 0.3s ease-out;
 }
 
+@keyframes slideUpFromBottom {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(80px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUpFromBottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Auto-capitalize entity names (song, artist, album, movie, genre, tag titles) */
 h1, h2, h3, h4,
 [itemprop="name"],
