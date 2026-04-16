@@ -8,18 +8,15 @@ import {
   FiSearch,
   FiMenu,
   FiX,
-  FiDisc,
-  FiMic,
-  FiFilm,
-  FiGrid,
   FiChevronDown,
   FiSun,
   FiMoon,
-  FiGlobe,
+  FiInfo,
   FiList,
-  FiTrendingUp,
-  FiBookOpen,
-  FiZap
+  FiFilm,
+  FiZap,
+  FiMail,
+  FiShield
 } from 'react-icons/fi'
 import { FaWhatsapp } from 'react-icons/fa'
 import { useTheme } from '@/context/ThemeContext'
@@ -30,7 +27,6 @@ export default function Header() {
   const [searchQuery, setSearchQuery] = useState('')
   const [isScrolled, setIsScrolled] = useState(false)
   const [isBrowseOpen, setIsBrowseOpen] = useState(false)
-  const [topLists, setTopLists] = useState([])
   const searchInputRef = useRef(null)
   const browseRef = useRef(null)
   const pathname = usePathname()
@@ -64,14 +60,6 @@ export default function Header() {
     }
   }, [isSearchOpen])
 
-  // Fetch published top lists for Browse menu
-  useEffect(() => {
-    fetch('/api/top-lists')
-      .then(res => res.ok ? res.json() : [])
-      .then(data => setTopLists(Array.isArray(data) ? data : []))
-      .catch(() => {})
-  }, [])
-
   // Close browse dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -98,24 +86,18 @@ export default function Header() {
   }
 
   const navLinks = [
-    { href: '/songs', label: 'Songs', icon: FiMusic },
-    { href: '/artists', label: 'Artists', icon: FiMic },
-    { href: '/albums', label: 'Albums', icon: FiDisc },
-    { href: '/movies', label: 'Movies', icon: FiFilm },
-    { href: '/updates', label: 'Updates', icon: FiList },
+    { href: '/about', label: 'About', icon: FiInfo },
+    { href: '/updates/category/news', label: 'News', icon: FiList },
+    { href: '/updates/category/movie-reviews', label: 'Reviews', icon: FiFilm },
     { href: '/quiz', label: 'Quiz', icon: FiZap, highlight: true },
+    { href: '/contact', label: 'Contact Us', icon: FiMail },
   ]
 
   const browseLinks = [
-    { href: '/languages', label: 'Languages', icon: FiGlobe, description: 'Browse by language' },
-    { href: '/genres', label: 'Genres', icon: FiGrid, description: 'Browse by genre' },
-    { href: '/web-stories', label: 'Lyric Stories', icon: FiBookOpen, description: 'Tap-through lyric stories' },
-    ...topLists.map(tl => ({
-      href: `/list/${tl.slug}`,
-      label: tl.title,
-      icon: FiTrendingUp,
-      description: `Top ${tl.count} songs`
-    })),
+    { href: '/privacy-policy', label: 'Privacy Policy' },
+    { href: '/terms-and-conditions', label: 'Terms and Conditions' },
+    { href: '/disclaimer', label: 'Disclaimer' },
+    { href: '/dmca', label: 'DMCA' },
   ]
 
   return (
@@ -182,26 +164,24 @@ export default function Header() {
                       : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
-                  Browse
+                  Policies
                   <FiChevronDown className={`w-4 h-4 transition-transform ${isBrowseOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {/* Dropdown Menu */}
                 {isBrowseOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 py-2 animate-fadeIn">
+                  <div className="absolute top-full left-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 py-2 animate-fadeIn">
                     {browseLinks.map((link) => (
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
+                          isActive(link.href)
+                            ? 'text-primary bg-emerald-50 dark:bg-emerald-900/30'
+                            : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-700'
+                        }`}
                       >
-                        <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/30">
-                          <link.icon className="w-4 h-4 text-primary" />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{link.label}</p>
-                          <p className="text-xs text-slate-400 dark:text-slate-500">{link.description}</p>
-                        </div>
+                        {link.label}
                       </Link>
                     ))}
                   </div>
@@ -358,7 +338,7 @@ export default function Header() {
           ))}
 
           <div className="pt-2 border-t border-slate-100 dark:border-slate-800 mt-2">
-            <p className="px-4 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Browse</p>
+            <p className="px-4 py-2 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Policies</p>
             {browseLinks.map((link) => (
               <Link
                 key={link.href}
@@ -369,7 +349,7 @@ export default function Header() {
                     : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800'
                 }`}
               >
-                <link.icon className="w-5 h-5" />
+                <FiShield className="w-5 h-5" />
                 <span className="font-medium">{link.label}</span>
               </Link>
             ))}

@@ -136,7 +136,7 @@ export default function ChartsSection({ songs: initialSongs }) {
             <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : songs.length === 0 ? (
-          <p className="text-slate-400 text-sm text-center py-12">No songs found for this period.</p>
+          <p className="text-slate-400 text-sm text-center py-12">No results found for this period.</p>
         ) : (
           songs.map((song, index) => (
             <ChartRow key={song.id} song={song} index={index} isLast={index === songs.length - 1} />

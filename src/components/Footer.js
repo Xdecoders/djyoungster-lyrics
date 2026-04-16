@@ -76,14 +76,12 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   const quickLinks = [
-    { href: '/songs', label: 'All Songs' },
     { href: '/artists', label: 'Artists' },
     { href: '/albums', label: 'Albums' },
     { href: '/genres', label: 'Genres' },
     { href: '/movies', label: 'Movies' },
     { href: '/updates', label: 'Latest Updates' },
     { href: '/web-stories', label: 'Lyric Stories' },
-    { href: '/request-song', label: 'Request Song Lyrics' },
   ]
 
   const legalLinks = [
@@ -111,7 +109,7 @@ export default function Footer() {
                 <span className="text-xl font-bold text-slate-800 dark:text-white">DJYoungster</span>
               </Link>
               <p className="text-sm text-slate-500 dark:text-slate-400 mb-6 max-w-xs">
-                Your ultimate destination for song lyrics. Find, read, and sing along to your favorite songs from Bollywood, Punjabi, and more.
+                Your ultimate destination for lyrics. Find, read, and sing along to your favorites from Bollywood, Punjabi, and more.
               </p>
 
               {/* Newsletter */}
@@ -211,17 +209,17 @@ export default function Footer() {
                         href={`/category/${cat.slug}`}
                         className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition"
                       >
-                        {cat.name} Songs
+                        {cat.name}
                       </Link>
                     </li>
                   ))
                 ) : (
                   <>
-                    <li><Link href="/category/hindi" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Hindi Songs</Link></li>
-                    <li><Link href="/category/punjabi" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Punjabi Songs</Link></li>
-                    <li><Link href="/category/english" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">English Songs</Link></li>
-                    <li><Link href="/category/tamil" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Tamil Songs</Link></li>
-                    <li><Link href="/category/telugu" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Telugu Songs</Link></li>
+                    <li><Link href="/category/hindi" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Hindi</Link></li>
+                    <li><Link href="/category/punjabi" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Punjabi</Link></li>
+                    <li><Link href="/category/english" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">English</Link></li>
+                    <li><Link href="/category/tamil" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Tamil</Link></li>
+                    <li><Link href="/category/telugu" className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition">Telugu</Link></li>
                   </>
                 )}
               </ul>
@@ -255,7 +253,7 @@ export default function Footer() {
                         href={`/tag/${tag.slug}`}
                         className="text-sm text-slate-500 dark:text-slate-400 hover:text-primary transition"
                       >
-                        {tag.name.replace(/\b\w/g, c => c.toUpperCase())} Songs
+                        {tag.name.replace(/\b\w/g, c => c.toUpperCase())}
                       </Link>
                     </li>
                   ))
@@ -275,7 +273,7 @@ export default function Footer() {
                 &copy; {currentYear} DJYoungster Lyrics. All rights reserved.
               </p>
               <p className="text-sm text-slate-400 dark:text-slate-500">
-                Feelings borrowed from songs.
+                Every lyric tells a story.
               </p>
             </div>
           </div>

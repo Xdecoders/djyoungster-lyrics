@@ -107,7 +107,7 @@ export default function FreshDropsSection({ data }) {
           })}
         </div>
       ) : (
-        <p className="text-slate-400 text-sm py-8 text-center">No songs found in this category.</p>
+        <p className="text-slate-400 text-sm py-8 text-center">No lyrics found in this category.</p>
       )}
     </section>
   )

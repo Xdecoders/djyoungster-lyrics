@@ -11,12 +11,11 @@ export default function HomeContent({ data, siteSettings }) {
       {/* Background */}
       <div className="fixed inset-0 -z-10 bg-[#f8fafc] dark:bg-slate-900" />
 
-      {/* Hero Banner */}
-      <section className="px-4 pt-8 pb-8 sm:px-6 lg:px-8">
+      {/* Hero Banner — temporarily hidden, re-enable when ready */}
+      {/* <section className="px-4 pt-8 pb-8 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="relative rounded-3xl overflow-visible">
 
-            {/* Actual clipped background — separate from content so dropdown can escape */}
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-primary via-emerald-500 to-teal-600 overflow-hidden pointer-events-none">
               <div className="absolute top-0 right-0 w-72 h-72 bg-white/10 rounded-full -translate-y-1/3 translate-x-1/4" />
               <div className="absolute bottom-0 left-1/3 w-48 h-48 bg-white/5 rounded-full translate-y-1/2" />
@@ -39,7 +38,6 @@ export default function HomeContent({ data, siteSettings }) {
                 <SearchWithAutocomplete />
               </div>
 
-              {/* Trust pills */}
               <div className="flex flex-wrap justify-center gap-2">
                 {[
                   { icon: FiUsers,  text: '35K+ Users' },
@@ -57,13 +55,13 @@ export default function HomeContent({ data, siteSettings }) {
 
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <LatestUpdatesSection posts={data.recentBlogPosts} />
         <FreshDropsSection data={data} />
         <ChartsSection songs={data.chartSongs} />
-        <LatestUpdatesSection posts={data.recentBlogPosts} />
       </main>
     </div>
   )
