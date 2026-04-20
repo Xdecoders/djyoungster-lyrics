@@ -112,9 +112,9 @@ export default async function RootLayout({ children }) {
             ? <script key={`hs-${i}`} src={s.src} async />
             : <script key={`hs-${i}`} dangerouslySetInnerHTML={{ __html: s.content }} />
         )}
+        <GoogleAnalytics />
       </head>
       <body className={`${interTight.className} min-h-screen flex flex-col bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 transition-colors`}>
-        <GoogleAnalytics />
         <Script
           id="microsoft-clarity"
           strategy="afterInteractive"
