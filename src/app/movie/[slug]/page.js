@@ -5,16 +5,15 @@ import { generateMovieSchema, generateBreadcrumbSchema } from '@/lib/schema'
 import { toTitleCase } from '@/lib/utils'
 import MoviePageClient from './MoviePageClient'
 
-// ISR - Cache pages and revalidate every 60 seconds
 export const revalidate = 60
+export const dynamicParams = true
 
-// Pre-render all movies at build time
 export async function generateStaticParams() {
   const movies = await prisma.movie.findMany({
     where: { slug: { not: null } },
     select: { slug: true }
   })
-  return movies.map(movie => ({ slug: movie.slug }))
+  return movies.map(movie => ({ slug: movie.slug })).filter(p => p.slug)
 }
 
 export async function generateMetadata({ params }) {
