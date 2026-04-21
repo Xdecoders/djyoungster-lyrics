@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import BlogIndexClient from './BlogIndexClient'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
+const BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : SITE_URL
 
 export const metadata = {
   title: 'Updates — Movie Reviews, Box Office, Bollywood News | DJYoungster',
@@ -61,13 +62,36 @@ const blogSchema = {
   },
 }
 
-export default function BlogPage() {
+export const revalidate = 300
+
+async function getInitialData() {
+  try {
+    const [postsRes, catsRes] = await Promise.all([
+      fetch(`${BASE_URL}/api/public/blog?page=1&limit=12`, { next: { revalidate: 300 } }),
+      fetch(`${BASE_URL}/api/public/blog/categories`, { next: { revalidate: 300 } }),
+    ])
+    const postsData = postsRes.ok ? await postsRes.json() : { posts: [], total: 0, totalPages: 1 }
+    const categories = catsRes.ok ? await catsRes.json() : []
+    return {
+      posts: postsData.posts || [],
+      total: postsData.total || 0,
+      totalPages: postsData.totalPages || 1,
+      categories: Array.isArray(categories) ? categories : [],
+    }
+  } catch {
+    return { posts: [], total: 0, totalPages: 1, categories: [] }
+  }
+}
+
+export default async function BlogPage() {
+  const initialData = await getInitialData()
+
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }} />
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>}>
-        <BlogIndexClient />
+        <BlogIndexClient initialData={initialData} />
       </Suspense>
     </>
   )

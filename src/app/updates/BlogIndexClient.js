@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useSearchParams } from 'next/navigation'
 import { FiClock, FiSearch, FiTag, FiChevronLeft, FiChevronRight } from 'react-icons/fi'
@@ -100,24 +100,27 @@ function FeaturedCard({ post }) {
   )
 }
 
-export default function BlogIndexClient() {
+export default function BlogIndexClient({ initialData = {} }) {
   const searchParams = useSearchParams()
   const initialCategory = searchParams.get('category') || ''
 
-  const [posts, setPosts] = useState([])
-  const [categories, setCategories] = useState([])
-  const [total, setTotal] = useState(0)
-  const [totalPages, setTotalPages] = useState(1)
-  const [loading, setLoading] = useState(true)
+  const [posts, setPosts] = useState(initialData.posts || [])
+  const [categories, setCategories] = useState(initialData.categories || [])
+  const [total, setTotal] = useState(initialData.total || 0)
+  const [totalPages, setTotalPages] = useState(initialData.totalPages || 1)
+  const [loading, setLoading] = useState(false)
   const [page, setPage] = useState(1)
   const [activeCategory, setActiveCategory] = useState(initialCategory)
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
-    fetch('/api/public/blog/categories').then(r => r.json()).then(setCategories).catch(() => {})
-  }, [])
+  // Skip the very first fetch when SSR already provided page-1 data with no filters
+  const skipRef = useRef(initialData.posts?.length > 0 && !initialCategory)
 
   useEffect(() => {
+    if (skipRef.current) {
+      skipRef.current = false
+      return
+    }
     fetchPosts()
   }, [page, activeCategory, search])
 

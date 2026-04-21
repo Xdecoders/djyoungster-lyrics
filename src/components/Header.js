@@ -168,24 +168,22 @@ export default function Header() {
                   <FiChevronDown className={`w-4 h-4 transition-transform ${isBrowseOpen ? 'rotate-180' : ''}`} />
                 </button>
 
-                {/* Dropdown Menu */}
-                {isBrowseOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 py-2 animate-fadeIn">
-                    {browseLinks.map((link) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
-                          isActive(link.href)
-                            ? 'text-primary bg-emerald-50 dark:bg-emerald-900/30'
-                            : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-700'
-                        }`}
-                      >
-                        {link.label}
-                      </Link>
-                    ))}
-                  </div>
-                )}
+                {/* Dropdown Menu — always in DOM so Googlebot can crawl policy links */}
+                <div className={`absolute top-full left-0 mt-2 w-44 bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-100 dark:border-slate-700 py-2 animate-fadeIn ${isBrowseOpen ? '' : 'hidden'}`}>
+                  {browseLinks.map((link) => (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      className={`block px-4 py-2.5 text-sm font-medium transition-colors ${
+                        isActive(link.href)
+                          ? 'text-primary bg-emerald-50 dark:bg-emerald-900/30'
+                          : 'text-slate-600 dark:text-slate-300 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-700'
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
             </nav>
 
