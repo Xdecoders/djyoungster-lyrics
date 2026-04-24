@@ -14,7 +14,6 @@ import {
   FiInfo,
   FiList,
   FiFilm,
-  FiZap,
   FiMail,
   FiShield
 } from 'react-icons/fi'
@@ -89,7 +88,6 @@ export default function Header() {
     { href: '/about', label: 'About', icon: FiInfo },
     { href: '/updates/category/news', label: 'News', icon: FiList },
     { href: '/updates/category/movie-reviews', label: 'Reviews', icon: FiFilm },
-    { href: '/quiz', label: 'Quiz', icon: FiZap, highlight: true },
     { href: '/contact', label: 'Contact Us', icon: FiMail },
   ]
 
