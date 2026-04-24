@@ -40,9 +40,9 @@ export function getAbsoluteUrl(url) {
 const DEFAULT_SETTINGS = {
   homepage: {
     pageTitle: 'Homepage',
-    metaTitle: 'DJYoungster - Trusted Song Lyrics | Hindi, Punjabi, English with Translations & Instagram Story Creator',
-    metaDescription: 'DJYoungster is your trusted destination for verified song lyrics in Hindi, Punjabi, English, Tamil, Telugu & more. Get accurate lyrics with translations and create stunning Instagram stories with our free lyrics story maker. 35,000+ satisfied users.',
-    metaKeywords: 'song lyrics, hindi lyrics, punjabi lyrics, english lyrics, lyrics translation, romanized lyrics, instagram story lyrics, bollywood songs, verified lyrics, accurate lyrics',
+    metaTitle: 'DJYoungster – Entertainment News, Reviews, Box Office Updates & Industry Insights',
+    metaDescription: 'DJYoungster is your go-to source for entertainment news, movie reviews, box office updates, and music industry insights.',
+    metaKeywords: 'entertainment news, movie reviews, box office, music industry, bollywood news, industry insights',
   },
   songs: {
     pageTitle: 'All Songs',

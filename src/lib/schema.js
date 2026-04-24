@@ -11,10 +11,10 @@ export function generateWebSiteSchema() {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
     name: SITE_NAME,
-    alternateName: 'DJ Youngster Lyrics',
+    alternateName: 'DJYoungster Entertainment',
     url: SITE_URL,
-    description: 'Multilingual song lyrics platform - Punjabi, Hindi, English lyrics with translations',
-    inLanguage: ['en', 'pa', 'hi'],
+    description: 'DJYoungster – Entertainment News, Reviews, Box Office Updates & Industry Insights',
+    inLanguage: ['en', 'hi'],
     potentialAction: {
       '@type': 'SearchAction',
       target: {

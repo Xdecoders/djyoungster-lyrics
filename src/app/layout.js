@@ -25,8 +25,8 @@ export async function generateMetadata() {
 
   return {
     metadataBase: new URL(siteUrl),
-    title: 'DJYoungster Lyrics - Find Your Favorite Song Lyrics',
-    description: 'Discover thousands of song lyrics from Bollywood, Punjabi, English, Tamil, Telugu and more. Search, read, and sing along to your favorite songs.',
+    title: 'DJYoungster – Entertainment News, Reviews, Box Office Updates & Industry Insights',
+    description: 'DJYoungster is your go-to source for entertainment news, movie reviews, box office updates, and music industry insights.',
     openGraph: {
       siteName: 'DJYoungster',
       type: 'website',
