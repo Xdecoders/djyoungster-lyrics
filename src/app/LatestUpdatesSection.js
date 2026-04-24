@@ -52,49 +52,33 @@ function PostCard({ post }) {
   )
 }
 
-export default function LatestUpdatesSection({ posts = [] }) {
-  if (!posts.length) return null
-
-  // Group posts by category, preserving recency order of first occurrence
-  const categoryMap = new Map()
-  for (const post of posts) {
-    const key = post.blogCategory?.slug || '__uncategorized__'
-    if (!categoryMap.has(key)) {
-      categoryMap.set(key, { category: post.blogCategory, posts: [] })
-    }
-    categoryMap.get(key).posts.push(post)
-  }
-
-  const sections = Array.from(categoryMap.values())
+export default function LatestUpdatesSection({ sections = [] }) {
+  if (!sections.length) return null
 
   return (
     <div className="mt-12 space-y-10">
-      {sections.map(({ category, posts: catPosts }) => (
-        <section key={category?.slug || '__uncategorized__'}>
-          {/* Section header */}
+      {sections.map(({ category, posts }) => (
+        <section key={category.slug}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <span
                 className="w-1 h-5 rounded-full flex-shrink-0"
-                style={{ backgroundColor: category?.color || '#10b981' }}
+                style={{ backgroundColor: category.color || '#10b981' }}
               />
               <h2 className="text-lg font-bold text-slate-800 dark:text-white">
-                {category?.name || 'Updates'}
+                {category.name}
               </h2>
             </div>
-            {category?.slug && (
-              <Link
-                href={`/updates?category=${category.slug}`}
-                className="flex items-center gap-1 text-sm font-medium text-primary hover:text-emerald-700 transition-colors"
-              >
-                View all <FiArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            )}
+            <Link
+              href={`/updates?category=${category.slug}`}
+              className="flex items-center gap-1 text-sm font-medium text-primary hover:text-emerald-700 transition-colors"
+            >
+              View all <FiArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
 
-          {/* Cards grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {catPosts.slice(0, 4).map((post) => (
+            {posts.map(post => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>

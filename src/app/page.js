@@ -20,20 +20,29 @@ const getGlobalSettings   = cache(() => getSiteSettings())
 const getHomepageData = unstable_cache(
   async () => {
     try {
-      const recentBlogPosts = await prisma.blogPost.findMany({
-        where: { status: 'published' },
-        orderBy: { publishedAt: 'desc' },
-        take: 20,
-        select: {
-          id: true, title: true, slug: true, excerpt: true,
-          coverImage: true, readTime: true, publishedAt: true, author: true,
-          blogCategory: { select: { name: true, color: true, slug: true } },
-        }
+      const blogCategories = await prisma.blogCategory.findMany({
+        orderBy: { sortOrder: 'asc' },
+        select: { id: true, name: true, slug: true, color: true },
       })
-      return { recentBlogPosts }
+
+      const categorySections = await Promise.all(
+        blogCategories.map(cat =>
+          prisma.blogPost.findMany({
+            where: { status: 'published', blogCategoryId: cat.id },
+            orderBy: { publishedAt: 'desc' },
+            take: 4,
+            select: {
+              id: true, title: true, slug: true, excerpt: true,
+              coverImage: true, readTime: true, publishedAt: true, author: true,
+            }
+          }).then(posts => ({ category: cat, posts }))
+        )
+      )
+
+      return { categorySections: categorySections.filter(s => s.posts.length > 0) }
     } catch (error) {
       console.error('Error fetching homepage data:', error)
-      return { recentBlogPosts: [] }
+      return { categorySections: [] }
     }
   },
   ['homepage-data'],
