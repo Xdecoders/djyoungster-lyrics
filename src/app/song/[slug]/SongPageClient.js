@@ -47,7 +47,6 @@ import {
   FiZap
 } from 'react-icons/fi'
 import { MdTranslate } from 'react-icons/md'
-import AdWidget from '@/components/AdWidget'
 import { FaWhatsapp, FaFacebook, FaSpotify, FaYoutube, FaPinterest, FaInstagram, FaTumblr } from 'react-icons/fa'
 import { FaXTwitter, FaLinkedinIn } from 'react-icons/fa6'
 
@@ -1517,7 +1516,7 @@ function SongRecommendationToast({ relatedSongs, categories, visible, onDismiss,
   )
 }
 
-export default function SongPageClient({ initialSong, initialRelatedSongs = [], adSlots = {} }) {
+export default function SongPageClient({ initialSong, initialRelatedSongs = [] }) {
   const params = useParams()
   // Use initial data from server - no loading state needed
   const [song] = useState(initialSong)
@@ -1849,9 +1848,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [], 
                 </div>
               </header>
 
-              {/* Ad Slot: After Featured Image */}
-              <AdWidget code={adSlots.afterFeaturedImage} className="mb-6 rounded-2xl" />
-
               {/* Lyrics Section */}
               <section className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6 sm:p-8 mb-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
@@ -1949,9 +1945,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [], 
                   />
                 </div>
               </section>
-
-              {/* Ad Slot: Before Rating */}
-              <AdWidget code={adSlots.beforeRating} className="mb-6 rounded-2xl" />
 
               {/* Ratings & Reactions */}
               <RatingsAndReactions
@@ -2138,9 +2131,6 @@ export default function SongPageClient({ initialSong, initialRelatedSongs = [], 
 
             {/* Sidebar */}
             <aside className="lg:col-span-1 lg:sticky lg:top-8 lg:self-start lg:max-h-[calc(100vh-2rem)] lg:overflow-y-auto scrollbar-hide">
-              {/* Ad Slot: Sidebar */}
-              <AdWidget code={adSlots.sidebar} className="mb-6 rounded-2xl" />
-
               <SongCredits song={song} />
 
               {/* Listen On */}

@@ -21,11 +21,6 @@ export default function AdminSettings() {
   const [snippetSaving, setSnippetSaving] = useState(false)
   const [snippetMessage, setSnippetMessage] = useState({ type: '', text: '' })
 
-  // Ad slots state
-  const [adSlots, setAdSlots] = useState({ afterFeaturedImage: '', beforeRating: '', sidebar: '' })
-  const [adSaving, setAdSaving] = useState(false)
-  const [adMessage, setAdMessage] = useState({ type: '', text: '' })
-
   // Homepage layout state
   const [activeHomepage, setActiveHomepage] = useState('v1')
   const [layoutSaving, setLayoutSaving] = useState(false)
@@ -60,7 +55,6 @@ export default function AdminSettings() {
     fetchProfile()
     fetchOgStats()
     fetchSnippets()
-    fetchAdSlots()
     fetchHomepageLayout()
   }, [])
 
@@ -79,14 +73,6 @@ export default function AdminSettings() {
       const token = localStorage.getItem('adminToken')
       const res = await fetch('/api/admin/code-snippets', { headers: { Authorization: `Bearer ${token}` } })
       if (res.ok) setSnippets(await res.json())
-    } catch {}
-  }
-
-  const fetchAdSlots = async () => {
-    try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('/api/admin/ad-slots', { headers: { Authorization: `Bearer ${token}` } })
-      if (res.ok) setAdSlots(await res.json())
     } catch {}
   }
 
@@ -123,26 +109,6 @@ export default function AdminSettings() {
     } finally {
       setLayoutSaving(false)
       setTimeout(() => setLayoutMessage({ type: '', text: '' }), 4000)
-    }
-  }
-
-  const handleSaveAdSlots = async (e) => {
-    e.preventDefault()
-    setAdSaving(true)
-    setAdMessage({ type: '', text: '' })
-    try {
-      const token = localStorage.getItem('adminToken')
-      const res = await fetch('/api/admin/ad-slots', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify(adSlots)
-      })
-      const data = await res.json()
-      setAdMessage({ type: res.ok ? 'success' : 'error', text: data.message })
-    } catch {
-      setAdMessage({ type: 'error', text: 'An error occurred' })
-    } finally {
-      setAdSaving(false)
     }
   }
 
@@ -611,81 +577,6 @@ export default function AdminSettings() {
           </form>
         </div>
 
-        {/* Ad Slots */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 mb-6">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center">
-              <FiCode className="w-5 h-5 text-amber-600" />
-            </div>
-            <div>
-              <h2 className="text-lg font-bold text-slate-800">Advertisement Slots</h2>
-              <p className="text-sm text-slate-500">Paste ad code (AdSense, custom HTML) for each slot. Leave empty to hide.</p>
-            </div>
-          </div>
-
-          {adMessage.text && (
-            <div className={`mb-4 p-3 rounded-xl text-sm font-medium ${adMessage.type === 'success' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'}`}>
-              {adMessage.text}
-            </div>
-          )}
-
-          <form onSubmit={handleSaveAdSlots} className="space-y-5">
-
-            {/* After Featured Image */}
-            <div className="border border-slate-100 rounded-xl p-4 space-y-2">
-              <div>
-                <p className="text-sm font-semibold text-slate-700">After Featured Image</p>
-                <p className="text-xs text-slate-400 mt-0.5">Shown between the song cover card and the lyrics section. High visibility — 728×90 leaderboard or responsive ad recommended.</p>
-              </div>
-              <textarea
-                value={adSlots.afterFeaturedImage}
-                onChange={(e) => setAdSlots({ ...adSlots, afterFeaturedImage: e.target.value })}
-                rows={5}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none transition font-mono text-sm resize-y"
-                placeholder={'<!-- Google AdSense or custom ad code -->\n<ins class="adsbygoogle" ...></ins>'}
-              />
-            </div>
-
-            {/* Before Rating */}
-            <div className="border border-slate-100 rounded-xl p-4 space-y-2">
-              <div>
-                <p className="text-sm font-semibold text-slate-700">Before Rating / After Lyrics</p>
-                <p className="text-xs text-slate-400 mt-0.5">Shown after lyrics end and before the star rating section. User has finished reading — good engagement point. 336×280 rectangle or responsive.</p>
-              </div>
-              <textarea
-                value={adSlots.beforeRating}
-                onChange={(e) => setAdSlots({ ...adSlots, beforeRating: e.target.value })}
-                rows={5}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none transition font-mono text-sm resize-y"
-                placeholder={'<!-- Google AdSense or custom ad code -->\n<ins class="adsbygoogle" ...></ins>'}
-              />
-            </div>
-
-            {/* Sidebar */}
-            <div className="border border-slate-100 rounded-xl p-4 space-y-2">
-              <div>
-                <p className="text-sm font-semibold text-slate-700">Sidebar (Desktop)</p>
-                <p className="text-xs text-slate-400 mt-0.5">Top of the right sidebar on song pages (desktop only). 300×250 or 300×600 format works best here.</p>
-              </div>
-              <textarea
-                value={adSlots.sidebar}
-                onChange={(e) => setAdSlots({ ...adSlots, sidebar: e.target.value })}
-                rows={5}
-                className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none transition font-mono text-sm resize-y"
-                placeholder={'<!-- Google AdSense or custom ad code -->\n<ins class="adsbygoogle" ...></ins>'}
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={adSaving}
-              className="flex items-center gap-2 px-6 py-3 bg-amber-500 text-white rounded-xl hover:bg-amber-600 transition disabled:opacity-50 font-medium"
-            >
-              <FiSave className="w-5 h-5" />
-              {adSaving ? 'Saving...' : 'Save Ad Slots'}
-            </button>
-          </form>
-        </div>
 
         {/* Homepage Layout */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
