@@ -5,6 +5,7 @@ import HomeContent from './HomeContent'
 import HomeContentV2 from './HomeContentV2'
 import { getSeoSettings, getSiteSettings, getAbsoluteUrl } from '@/lib/seo'
 import { generateWebSiteSchema, generateOrganizationSchema } from '@/lib/schema'
+import AdSenseScript from '@/components/AdSenseScript'
 
 // ISR — rebuild page at most every 5 minutes
 // Between rebuilds every visitor gets the pre-built HTML instantly (CDN/edge cache)
@@ -152,6 +153,7 @@ export default async function Home() {
     const v2Data = await getHomepageV2Data()
     return (
       <>
+        <AdSenseScript />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
         <HomeContentV2 data={v2Data} />
@@ -163,6 +165,7 @@ export default async function Home() {
 
   return (
     <>
+      <AdSenseScript />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }} />
 

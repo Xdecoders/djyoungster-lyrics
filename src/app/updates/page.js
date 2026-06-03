@@ -1,5 +1,6 @@
 import { Suspense } from 'react'
 import BlogIndexClient from './BlogIndexClient'
+import AdSenseScript from '@/components/AdSenseScript'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
 const BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : SITE_URL
@@ -88,6 +89,7 @@ export default async function BlogPage() {
 
   return (
     <>
+      <AdSenseScript />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(blogSchema) }} />
       <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-400">Loading...</div>}>

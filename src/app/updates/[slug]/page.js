@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import BlogPostClient from './BlogPostClient'
+import AdSenseScript from '@/components/AdSenseScript'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
 const BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : SITE_URL
@@ -148,6 +149,7 @@ export default async function BlogPostPage({ params }) {
 
   return (
     <>
+      <AdSenseScript />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <BlogPostClient post={post} relatedPosts={relatedPosts} recentPosts={recentPosts} siteUrl={SITE_URL} />
