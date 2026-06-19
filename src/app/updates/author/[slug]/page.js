@@ -2,7 +2,6 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { FiClock, FiMapPin, FiCalendar, FiTwitter, FiInstagram, FiArrowLeft, FiTag } from 'react-icons/fi'
 import { getAuthor, AUTHORS } from '@/lib/authors'
-import AdSenseScript from '@/components/AdSenseScript'
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://djyoungster.com'
 const baseUrl = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : siteUrl
@@ -113,7 +112,6 @@ export default async function AuthorPage({ params }) {
 
   return (
     <>
-      <AdSenseScript />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="min-h-screen bg-slate-50">
