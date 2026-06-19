@@ -13,6 +13,7 @@ export async function GET() {
     { url: `${baseUrl}/sitemap-movies.xml`, name: 'Movies' },
     { url: `${baseUrl}/sitemap-categories.xml`, name: 'Categories' },
     { url: `${baseUrl}/sitemap-tags.xml`, name: 'Tags' },
+    { url: `${baseUrl}/sitemap-blog.xml`, name: 'Blog' },
   ]
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
