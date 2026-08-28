@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { FaGooglePlay } from 'react-icons/fa6'
+import { FaGooglePlay, FaAppStoreIos } from 'react-icons/fa6'
 import { FiX, FiMusic } from 'react-icons/fi'
 
 const STORAGE_KEY = 'appPromo_dismissedAt'
@@ -62,7 +62,7 @@ export default function AppPromoPopup() {
             <div className="bg-gradient-to-br from-primary to-emerald-600 rounded-2xl p-4 shadow-lg mb-4">
               <FiMusic className="w-10 h-10 text-white" />
             </div>
-            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Free Android App</p>
+            <p className="text-xs font-semibold text-primary uppercase tracking-widest mb-1">Free App — Android & iOS</p>
             <h2 className="text-xl font-bold text-slate-800 dark:text-white">DJYoungster Lyrics</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
               Bollywood, Punjabi, English & more — all your favourite lyrics in one place.
@@ -84,16 +84,28 @@ export default function AppPromoPopup() {
           </ul>
 
           {/* CTA */}
-          <a
-            href="https://play.google.com/store/apps/details?id=net.djyoungster.twa&hl=en_IN"
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={dismiss}
-            className="flex items-center justify-center gap-3 w-full py-3 bg-gradient-to-r from-primary to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition shadow-md text-sm"
-          >
-            <FaGooglePlay className="w-5 h-5" />
-            Get it on Google Play
-          </a>
+          <div className="flex flex-col gap-2.5">
+            <a
+              href="https://play.google.com/store/apps/details?id=net.djyoungster.twa&hl=en_IN"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={dismiss}
+              className="flex items-center justify-center gap-3 w-full py-3 bg-gradient-to-r from-primary to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white rounded-xl font-semibold transition shadow-md text-sm"
+            >
+              <FaGooglePlay className="w-5 h-5" />
+              Get it on Google Play
+            </a>
+            <a
+              href="https://apps.apple.com/us/app/djyoungster/id6794410019"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={dismiss}
+              className="flex items-center justify-center gap-3 w-full py-3 bg-slate-900 dark:bg-slate-700 hover:bg-slate-700 dark:hover:bg-slate-600 text-white rounded-xl font-semibold transition shadow-md text-sm"
+            >
+              <FaAppStoreIos className="w-5 h-5" />
+              Download on the App Store
+            </a>
+          </div>
         </div>
       </div>
     </div>
